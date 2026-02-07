@@ -68,18 +68,18 @@ class _SavingsContent extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () => context.go('/dashboard'),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: () => context.go('/dashboard'),
+                //   child: Container(
+                //     width: 44,
+                //     height: 44,
+                //     decoration: BoxDecoration(
+                //       color: Colors.white.withOpacity(0.15),
+                //       borderRadius: BorderRadius.circular(12),
+                //     ),
+                //     child: const Icon(Icons.arrow_back, color: Colors.white),
+                //   ),
+                // ),
                 const SizedBox(width: 16),
                 const Expanded(
                   child: Text(

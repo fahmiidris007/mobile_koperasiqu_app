@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -7,176 +8,273 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
+import '../providers/auth_provider.dart';
 
 /// Pending verification status page
-class PendingPage extends StatelessWidget {
+class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final regState = ref.watch(registrationProvider);
+    final phone = regState.data.phone;
+
     return GradientBackground(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 48),
 
-            // Hourglass icon with animation
-            Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.warning.withOpacity(0.3),
-                        AppColors.warning.withOpacity(0.1),
-                      ],
+              // Hourglass icon with animation
+              Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.warning.withOpacity(0.3),
+                          AppColors.warning.withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
                     ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.hourglass_top_rounded,
-                    size: 56,
-                    color: AppColors.warning,
-                  ),
-                )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .scaleXY(begin: 1, end: 1.05, duration: 2.seconds)
-                .then()
-                .animate()
-                .fadeIn(duration: 600.ms),
+                    child: const Icon(
+                      Icons.hourglass_top_rounded,
+                      size: 56,
+                      color: AppColors.warning,
+                    ),
+                  )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .scaleXY(begin: 1, end: 1.05, duration: 2.seconds)
+                  .then()
+                  .animate()
+                  .fadeIn(duration: 600.ms),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // Status card
-            GlassContainer(
-                  padding: const EdgeInsets.all(28),
-                  borderRadius: 28,
-                  child: Column(
-                    children: [
-                      // Status badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.warning.withOpacity(0.5),
+              // Status card
+              GlassContainer(
+                    padding: const EdgeInsets.all(28),
+                    borderRadius: 28,
+                    child: Column(
+                      children: [
+                        // Status badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColors.warning.withOpacity(0.5),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.schedule,
+                                size: 16,
+                                color: AppColors.warning,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'PENDING',
+                                style: TextStyle(
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.schedule,
-                              size: 16,
-                              color: AppColors.warning,
+
+                        const SizedBox(height: 24),
+
+                        const Text(
+                          'Menunggu Verifikasi',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Text(
+                          'Pendaftaran Anda sedang dalam proses verifikasi. Kami akan menghubungi Anda dalam 1-2 hari kerja.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate(delay: 200.ms)
+                  .fadeIn(duration: 600.ms)
+                  .slideY(begin: 0.1, end: 0),
+
+              const SizedBox(height: 24),
+
+              // What's next section
+              GlassContainer(
+                padding: const EdgeInsets.all(20),
+                opacity: 0.1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Apa selanjutnya?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _NextStepItem(
+                      number: '1',
+                      text: 'Tim kami akan mereview dokumen Anda',
+                    ),
+                    _NextStepItem(
+                      number: '2',
+                      text: 'Kemungkinan wawancara singkat via WhatsApp',
+                    ),
+                    _NextStepItem(
+                      number: '3',
+                      text: 'Notifikasi aktivasi akun akan dikirim',
+                    ),
+                  ],
+                ),
+              ).animate(delay: 400.ms).fadeIn(duration: 600.ms),
+
+              const SizedBox(height: 24),
+
+              // Login info card
+              if (phone.isNotEmpty)
+                GlassContainer(
+                  padding: const EdgeInsets.all(20),
+                  opacity: 0.15,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.login,
+                            color: Colors.green.shade300,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Info Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              'PENDING',
-                              style: TextStyle(
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                letterSpacing: 1,
-                              ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Anda dapat login dengan:',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.phone,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'No. HP: $phone',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Password: (yang Anda daftarkan)',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-
-                      const Text(
-                        'Menunggu Verifikasi',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Text(
-                        'Pendaftaran Anda sedang dalam proses verifikasi. Kami akan menghubungi Anda dalam 1-2 hari kerja.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          height: 1.5,
-                        ),
-                      ),
                     ],
                   ),
-                )
-                .animate(delay: 200.ms)
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: 0.1, end: 0),
+                ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-            // What's next section
-            GlassContainer(
-              padding: const EdgeInsets.all(20),
-              opacity: 0.1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Apa selanjutnya?',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _NextStepItem(
-                    number: '1',
-                    text: 'Tim kami akan mereview dokumen Anda',
-                  ),
-                  _NextStepItem(
-                    number: '2',
-                    text: 'Kemungkinan wawancara singkat via WhatsApp',
-                  ),
-                  _NextStepItem(
-                    number: '3',
-                    text: 'Notifikasi aktivasi akun akan dikirim',
-                  ),
-                ],
+              // Contact button
+              GlassOutlineButton(
+                text: 'Hubungi Kami',
+                icon: Icons.chat_bubble_outline,
+                onPressed: () {
+                  // Open WhatsApp or contact page
+                },
+              ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
+
+              const SizedBox(height: 16),
+
+              // Back to home
+              TextButton(
+                onPressed: () {
+                  // Reset registration state to clear step indicator
+                  ref.read(registrationProvider.notifier).reset();
+                  context.go(Routes.welcome);
+                },
+                child: Text(
+                  'Kembali ke Beranda',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                ),
               ),
-            ).animate(delay: 400.ms).fadeIn(duration: 600.ms),
 
-            const Spacer(flex: 1),
-
-            // Contact button
-            GlassOutlineButton(
-              text: 'Hubungi Kami',
-              icon: Icons.chat_bubble_outline,
-              onPressed: () {
-                // Open WhatsApp or contact page
-              },
-            ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
-
-            const SizedBox(height: 16),
-
-            // Back to home
-            TextButton(
-              onPressed: () => context.go(Routes.welcome),
-              child: Text(
-                'Kembali ke Beranda',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
-              ),
-            ),
-
-            const SizedBox(height: 40),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

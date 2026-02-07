@@ -3,10 +3,30 @@ import '../../domain/entities/registration_data.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/mock_auth_datasource.dart';
 
-/// Implementation of AuthRepository using mock data source
+/// Implementation of AuthRepository using mock data source with local persistence
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl({MockAuthDatasource? datasource})
-    : _datasource = datasource ?? MockAuthDatasource();
+  AuthRepositoryImpl._internal(this._datasource);
+
+  static AuthRepositoryImpl? _instance;
+
+  /// Initialize the repository (must be called before use)
+  static Future<AuthRepositoryImpl> getInstance() async {
+    if (_instance == null) {
+      final datasource = await MockAuthDatasource.getInstance();
+      _instance = AuthRepositoryImpl._internal(datasource);
+    }
+    return _instance!;
+  }
+
+  /// Get the singleton instance synchronously (after initialization)
+  static AuthRepositoryImpl get instance {
+    if (_instance == null) {
+      throw StateError(
+        'AuthRepositoryImpl not initialized. Call getInstance() first.',
+      );
+    }
+    return _instance!;
+  }
 
   final MockAuthDatasource _datasource;
 
