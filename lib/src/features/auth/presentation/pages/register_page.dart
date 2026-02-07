@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -63,10 +65,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   void _updateRegistrationData() {
+    final currentData = ref.read(registrationProvider).data;
     ref
         .read(registrationProvider.notifier)
         .updateData(
-          RegistrationData(
+          currentData.copyWith(
             fullName: _nameController.text,
             nik: _nikController.text,
             birthDate: _birthDate,
@@ -192,7 +195,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: StepIndicator(
               currentStep: currentStep,
-              steps: const ['Data Diri', 'Pekerjaan', 'Keluarga', 'Dokumen'],
+              steps: const ['Data Diri', 'Pekerjaan', 'Keluarga'],
             ),
           ),
 
