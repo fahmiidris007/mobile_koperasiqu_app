@@ -261,7 +261,11 @@ class PendingPage extends ConsumerWidget {
 
               // Back to home
               TextButton(
-                onPressed: () => context.go(Routes.welcome),
+                onPressed: () {
+                  // Reset registration state to clear step indicator
+                  ref.read(registrationProvider.notifier).reset();
+                  context.go(Routes.welcome);
+                },
                 child: Text(
                   'Kembali ke Beranda',
                   style: TextStyle(color: Colors.white.withOpacity(0.7)),
