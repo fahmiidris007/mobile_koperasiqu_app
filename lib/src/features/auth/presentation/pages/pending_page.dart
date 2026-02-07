@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -7,13 +8,17 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
+import '../providers/auth_provider.dart';
 
 /// Pending verification status page
-class PendingPage extends StatelessWidget {
+class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final regState = ref.watch(registrationProvider);
+    final phone = regState.data.phone;
+
     return GradientBackground(
       child: SafeArea(
         child: SingleChildScrollView(
@@ -153,6 +158,93 @@ class PendingPage extends StatelessWidget {
                   ],
                 ),
               ).animate(delay: 400.ms).fadeIn(duration: 600.ms),
+
+              const SizedBox(height: 24),
+
+              // Login info card
+              if (phone.isNotEmpty)
+                GlassContainer(
+                  padding: const EdgeInsets.all(20),
+                  opacity: 0.15,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.login,
+                            color: Colors.green.shade300,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Info Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Anda dapat login dengan:',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.phone,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'No. HP: $phone',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Password: (yang Anda daftarkan)',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
               const SizedBox(height: 32),
 

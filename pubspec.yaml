@@ -43,6 +43,9 @@ dependencies:
   
   # Google Fonts (Manrope)
   google_fonts: ^6.2.1
+  
+  # Local Storage
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:

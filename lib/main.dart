@@ -5,12 +5,17 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
+import 'src/features/auth/data/repositories/auth_repository_impl.dart';
+import 'src/features/auth/presentation/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize date formatting for Indonesian locale
   await initializeDateFormatting('id_ID', null);
+
+  // Initialize auth repository with local storage
+  final authRepository = await AuthRepositoryImpl.getInstance();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -25,7 +30,12 @@ void main() async {
   // Preferred orientations
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  runApp(const ProviderScope(child: KoperasiQuApp()));
+  runApp(
+    ProviderScope(
+      overrides: [authRepositoryProvider.overrideWithValue(authRepository)],
+      child: const KoperasiQuApp(),
+    ),
+  );
 }
 
 /// Main application widget

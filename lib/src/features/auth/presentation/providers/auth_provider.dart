@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/user.dart';
@@ -41,11 +39,9 @@ class AuthError extends AuthState {
 
 /// Auth notifier for managing authentication state
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthInitial()) {
-    _repository = AuthRepositoryImpl();
-  }
+  AuthNotifier(this._repository) : super(const AuthInitial());
 
-  late final AuthRepositoryImpl _repository;
+  final AuthRepositoryImpl _repository;
 
   /// Check initial auth state
   Future<void> checkAuthState() async {
@@ -134,11 +130,9 @@ class RegistrationState {
 
 /// Registration notifier for multi-step form
 class RegistrationNotifier extends StateNotifier<RegistrationState> {
-  RegistrationNotifier() : super(const RegistrationState()) {
-    _repository = AuthRepositoryImpl();
-  }
+  RegistrationNotifier(this._repository) : super(const RegistrationState());
 
-  late final AuthRepositoryImpl _repository;
+  final AuthRepositoryImpl _repository;
 
   /// Update registration data
   void updateData(RegistrationData data) {
@@ -213,12 +207,20 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
   }
 }
 
-// Providers
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+/// Provider for the auth repository (must be overridden at app startup)
+final authRepositoryProvider = Provider<AuthRepositoryImpl>((ref) {
+  throw UnimplementedError('authRepositoryProvider must be overridden');
 });
 
+/// Auth provider
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return AuthNotifier(repository);
+});
+
+/// Registration provider
 final registrationProvider =
     StateNotifierProvider<RegistrationNotifier, RegistrationState>((ref) {
-      return RegistrationNotifier();
+      final repository = ref.watch(authRepositoryProvider);
+      return RegistrationNotifier(repository);
     });
