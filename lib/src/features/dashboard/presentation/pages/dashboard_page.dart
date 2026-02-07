@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
@@ -135,21 +136,24 @@ class _DashboardContent extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        // Avatar
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Center(
-            child: Text(
-              'AF',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+        // Avatar - tap to go to profile
+        GestureDetector(
+          onTap: () => context.push(Routes.profile),
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Center(
+              child: Text(
+                'AF',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),

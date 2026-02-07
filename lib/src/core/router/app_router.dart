@@ -14,6 +14,7 @@ import '../../features/shopping/presentation/pages/catalog_page.dart';
 import '../../features/shopping/presentation/pages/product_detail_page.dart';
 import '../../features/shopping/presentation/pages/checkout_page.dart';
 import '../../features/ppob/presentation/pages/ppob_menu_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 
 /// App route paths
 class Routes {
@@ -108,6 +109,12 @@ class AppRouter {
             builder: (context, state) => const PpobMenuPage(),
           ),
         ],
+      ),
+
+      // Profile (without bottom navigation)
+      GoRoute(
+        path: Routes.profile,
+        builder: (context, state) => const ProfilePage(),
       ),
     ],
   );
