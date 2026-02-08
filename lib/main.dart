@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/data/repositories/auth_repository_impl.dart';
 import 'src/features/auth/presentation/providers/auth_provider.dart';
+import 'src/core/services/hive_transaction_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize date formatting for Indonesian locale
   await initializeDateFormatting('id_ID', null);
+
+  // Initialize Hive for local database
+  await Hive.initFlutter();
+  await HiveTransactionStorage.getInstance();
 
   // Initialize auth repository with local storage
   final authRepository = await AuthRepositoryImpl.getInstance();

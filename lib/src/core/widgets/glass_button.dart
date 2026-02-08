@@ -12,6 +12,7 @@ class GlassButton extends StatelessWidget {
     this.icon,
     this.width,
     this.gradient,
+    this.textStyle,
   });
 
   final String text;
@@ -20,6 +21,7 @@ class GlassButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final Gradient? gradient;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -58,17 +60,23 @@ class GlassButton extends StatelessWidget {
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
                       Icon(icon, size: 20),
                       const SizedBox(width: 8),
                     ],
-                    Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                    Flexible(
+                      child: Text(
+                        text,
+                        style:
+                            textStyle ??
+                            const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -87,12 +95,14 @@ class GlassOutlineButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.width,
+    this.textStyle,
   });
 
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
   final double? width;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -124,11 +134,13 @@ class GlassOutlineButton extends StatelessWidget {
                 ],
                 Text(
                   text,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                  style:
+                      textStyle ??
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                 ),
               ],
             ),

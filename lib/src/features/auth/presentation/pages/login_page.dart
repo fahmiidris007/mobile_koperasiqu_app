@@ -63,8 +63,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
-            const SizedBox(height: 60),
-
+            SizedBox(height: 16),
             // Back button
             Align(
               alignment: Alignment.centerLeft,
@@ -82,7 +81,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 16),
 
             // Logo
             Container(

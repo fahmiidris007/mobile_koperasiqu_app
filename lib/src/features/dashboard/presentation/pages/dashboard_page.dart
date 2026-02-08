@@ -8,6 +8,8 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/services/hive_transaction_storage.dart' as hive_tx;
+import '../../../savings/presentation/providers/transaction_provider.dart';
 import '../../domain/entities/dashboard_data.dart';
 import '../../data/datasources/mock_dashboard_datasource.dart';
 
@@ -24,6 +26,7 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
+    final txState = ref.watch(transactionProvider);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 100), // Space for nav bar
@@ -33,16 +36,17 @@ class DashboardPage extends ConsumerWidget {
         error: (e, _) => Center(
           child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
         ),
-        data: (data) => _DashboardContent(data: data),
+        data: (data) => _DashboardContent(data: data, txState: txState),
       ),
     );
   }
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.data});
+  const _DashboardContent({required this.data, required this.txState});
 
   final DashboardData data;
+  final TransactionState txState;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +106,7 @@ class _DashboardContent extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => context.push(Routes.savings),
                   child: const Text(
                     'Lihat Semua',
                     style: TextStyle(color: AppColors.teal),
@@ -113,18 +117,41 @@ class _DashboardContent extends StatelessWidget {
           ),
         ),
 
-        // Transaction list
+        // Transaction list - use real data from Hive if available
         SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final tx = data.recentTransactions[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: _TransactionItem(transaction: tx)
-                  .animate(delay: (400 + index * 100).ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideX(begin: 0.05, end: 0),
-            );
-          }, childCount: data.recentTransactions.length),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              // Use real transactions from Hive
+              if (txState.transactions.isNotEmpty) {
+                final tx = txState.recentTransactions[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 4,
+                  ),
+                  child: _HiveTransactionItem(transaction: tx)
+                      .animate(delay: (400 + index * 100).ms)
+                      .fadeIn(duration: 400.ms)
+                      .slideX(begin: 0.05, end: 0),
+                );
+              }
+              // Fallback to mock data
+              final tx = data.recentTransactions[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                child: _TransactionItem(transaction: tx)
+                    .animate(delay: (400 + index * 100).ms)
+                    .fadeIn(duration: 400.ms)
+                    .slideX(begin: 0.05, end: 0),
+              );
+            },
+            childCount: txState.transactions.isNotEmpty
+                ? txState.recentTransactions.length
+                : data.recentTransactions.length,
+          ),
         ),
 
         // Bottom spacing
@@ -241,8 +268,11 @@ class _DashboardContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          // Use real balance from Hive if available, fallback to mock data
           Text(
-            Formatters.formatCurrency(data.totalSavings),
+            Formatters.formatCurrency(
+              txState.balance > 0 ? txState.balance : data.totalSavings,
+            ),
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -299,7 +329,7 @@ class _DashboardContent extends StatelessWidget {
                 child: _QuickActionButton(
                   icon: Icons.add,
                   label: 'Setor',
-                  onTap: () => context.push('/savings/deposit'),
+                  onTap: () => context.push(Routes.deposit),
                 ),
               ),
               const SizedBox(width: 12),
@@ -307,7 +337,7 @@ class _DashboardContent extends StatelessWidget {
                 child: _QuickActionButton(
                   icon: Icons.arrow_upward,
                   label: 'Tarik',
-                  onTap: () {},
+                  onTap: () => context.push(Routes.withdrawal),
                 ),
               ),
               const SizedBox(width: 12),
@@ -563,6 +593,146 @@ class _TransactionItem extends StatelessWidget {
         return Icons.card_giftcard;
       case TransactionType.transfer:
         return Icons.swap_horiz;
+    }
+  }
+
+  String _formatRelativeDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inHours < 1) {
+      return '${diff.inMinutes} menit lalu';
+    } else if (diff.inHours < 24) {
+      return '${diff.inHours} jam lalu';
+    } else if (diff.inDays == 1) {
+      return 'Kemarin';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays} hari lalu';
+    } else {
+      return Formatters.formatDate(date);
+    }
+  }
+}
+
+/// Transaction item for Hive TransactionModel
+class _HiveTransactionItem extends StatelessWidget {
+  const _HiveTransactionItem({required this.transaction});
+
+  final hive_tx.TransactionModel transaction;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      opacity: 0.1,
+      child: Row(
+        children: [
+          // Icon
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color:
+                  (transaction.isCredit ? AppColors.success : AppColors.expense)
+                      .withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _getTransactionIcon(),
+              color: transaction.isCredit
+                  ? AppColors.success
+                  : AppColors.expense,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+
+          // Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getTypeName(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Amount
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${transaction.isCredit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: transaction.isCredit
+                      ? AppColors.success
+                      : Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _formatRelativeDate(transaction.date),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getTransactionIcon() {
+    switch (transaction.type) {
+      case hive_tx.TransactionType.deposit:
+        return Icons.arrow_downward_rounded;
+      case hive_tx.TransactionType.withdrawal:
+        return Icons.arrow_upward_rounded;
+      case hive_tx.TransactionType.purchase:
+        return Icons.shopping_bag_outlined;
+      case hive_tx.TransactionType.cashback:
+        return Icons.card_giftcard;
+      case hive_tx.TransactionType.transfer:
+        return Icons.swap_horiz;
+      case hive_tx.TransactionType.interest:
+        return Icons.percent;
+    }
+  }
+
+  String _getTypeName() {
+    switch (transaction.type) {
+      case hive_tx.TransactionType.deposit:
+        return 'Setoran';
+      case hive_tx.TransactionType.withdrawal:
+        return 'Penarikan';
+      case hive_tx.TransactionType.purchase:
+        return 'Pembelian';
+      case hive_tx.TransactionType.cashback:
+        return 'Cashback';
+      case hive_tx.TransactionType.transfer:
+        return 'Transfer';
+      case hive_tx.TransactionType.interest:
+        return 'Bunga';
     }
   }
 
