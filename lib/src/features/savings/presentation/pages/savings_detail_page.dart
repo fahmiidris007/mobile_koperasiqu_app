@@ -311,6 +311,16 @@ class _SavingsContent extends StatelessWidget {
   }
 
   Widget _buildChart(BuildContext context) {
+    // Use real data from Hive if available, otherwise use mock data
+    final hasRealData = txState.monthlyBalanceData.isNotEmpty;
+    final chartData = hasRealData
+        ? txState.monthlyBalanceData
+        : monthlySummary
+              .map((e) => (month: '', balance: e.endBalance))
+              .toList();
+
+    if (chartData.isEmpty) return const SizedBox.shrink();
+
     return GlassContainer(
       padding: const EdgeInsets.all(20),
       borderRadius: 20,
@@ -357,20 +367,16 @@ class _SavingsContent extends StatelessWidget {
                       reservedSize: 30,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
-                        final months = [
-                          'Jul',
-                          'Ags',
-                          'Sep',
-                          'Okt',
-                          'Nov',
-                          'Des',
-                        ];
-                        if (value.toInt() < 0 ||
-                            value.toInt() >= months.length) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= chartData.length) {
                           return const Text('');
                         }
+                        // Use real month labels from txState
+                        final label = hasRealData
+                            ? chartData[index].month
+                            : ['Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'][index];
                         return Text(
-                          months[value.toInt()],
+                          label,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.5),
                             fontSize: 11,
@@ -383,10 +389,10 @@ class _SavingsContent extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: monthlySummary.asMap().entries.map((e) {
+                    spots: chartData.asMap().entries.map((e) {
                       return FlSpot(
                         e.key.toDouble(),
-                        e.value.endBalance / 1000000,
+                        e.value.balance / 1000000,
                       );
                     }).toList(),
                     isCurved: true,

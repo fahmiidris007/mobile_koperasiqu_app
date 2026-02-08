@@ -37,6 +37,57 @@ class TransactionState {
   /// Get recent transactions for dashboard (top 5)
   List<TransactionModel> get recentTransactions =>
       transactions.take(5).toList();
+
+  /// Get monthly balance data for chart (last 6 months)
+  /// Returns list of (monthLabel, balance) tuples
+  List<({String month, double balance})> get monthlyBalanceData {
+    if (transactions.isEmpty) return [];
+
+    final now = DateTime.now();
+    final result = <({String month, double balance})>[];
+
+    // Calculate monthly balances for last 6 months
+    for (int i = 5; i >= 0; i--) {
+      final targetMonth = DateTime(now.year, now.month - i, 1);
+      final monthEnd = DateTime(targetMonth.year, targetMonth.month + 1, 0);
+
+      // Sum all transactions up to this month's end
+      double runningBalance = balance;
+
+      // Calculate balance at end of target month by reversing future transactions
+      for (final tx in transactions) {
+        if (tx.date.isAfter(monthEnd)) {
+          // This transaction is after our target month, reverse its effect
+          if (tx.isCredit) {
+            runningBalance -= tx.amount;
+          } else {
+            runningBalance += tx.amount;
+          }
+        }
+      }
+
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Ags',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      result.add((
+        month: months[targetMonth.month - 1],
+        balance: runningBalance,
+      ));
+    }
+
+    return result;
+  }
 }
 
 /// Transaction notifier for state management
