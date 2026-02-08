@@ -373,6 +373,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   text: 'Tambah ke Keranjang',
                   icon: Icons.shopping_cart,
                   onPressed: _addToCart,
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

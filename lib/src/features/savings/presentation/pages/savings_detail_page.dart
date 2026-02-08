@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mobile_koperasiqu_app/src/core/router/app_router.dart';
 
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
@@ -80,12 +81,12 @@ class _SavingsContent extends StatelessWidget {
                 //     child: const Icon(Icons.arrow_back, color: Colors.white),
                 //   ),
                 // ),
-                const SizedBox(width: 16),
+                // const SizedBox(width: 16),
                 const Expanded(
                   child: Text(
                     'Tabungan',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -136,7 +137,7 @@ class _SavingsContent extends StatelessWidget {
                   child: GlassButton(
                     text: 'Setor',
                     icon: Icons.add,
-                    onPressed: () => context.push('/savings/deposit'),
+                    onPressed: () => context.push(Routes.deposit),
                   ),
                 ),
                 const SizedBox(width: 12),

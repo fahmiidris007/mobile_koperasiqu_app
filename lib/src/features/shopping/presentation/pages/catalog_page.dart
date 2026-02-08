@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile_koperasiqu_app/src/core/router/app_router.dart';
 
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
@@ -72,7 +73,7 @@ class CatalogPage extends ConsumerWidget {
                   const SizedBox(width: 12),
                   // Cart button
                   GestureDetector(
-                    onTap: () => context.push('/shopping/checkout'),
+                    onTap: () => context.push(Routes.checkout),
                     child: Container(
                       width: 48,
                       height: 48,
@@ -253,7 +254,7 @@ class _ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.push('/shopping/product/${product.id}'),
+      onTap: () => context.push(Routes.productDetail, extra: product.id),
       child: GlassContainer(
         padding: EdgeInsets.zero,
         borderRadius: 18,

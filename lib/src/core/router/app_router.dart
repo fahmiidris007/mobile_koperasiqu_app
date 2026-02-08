@@ -29,7 +29,7 @@ class Routes {
 
   static const String dashboard = '/dashboard';
   static const String savings = '/savings';
-  static const String savingsDeposit = '/savings/deposit';
+  static const String deposit = '/savings/deposit';
   static const String shopping = '/shopping';
   static const String productDetail = '/shopping/product/:id';
   static const String checkout = '/shopping/checkout';
@@ -80,29 +80,10 @@ class AppRouter {
           GoRoute(
             path: Routes.savings,
             builder: (context, state) => const SavingsDetailPage(),
-            routes: [
-              GoRoute(
-                path: 'deposit',
-                builder: (context, state) => const DepositPage(),
-              ),
-            ],
           ),
           GoRoute(
             path: Routes.shopping,
             builder: (context, state) => const CatalogPage(),
-            routes: [
-              GoRoute(
-                path: 'product/:id',
-                builder: (context, state) {
-                  final id = state.pathParameters['id'] ?? '';
-                  return ProductDetailPage(productId: id);
-                },
-              ),
-              GoRoute(
-                path: 'checkout',
-                builder: (context, state) => const CheckoutPage(),
-              ),
-            ],
           ),
           GoRoute(
             path: Routes.ppob,
@@ -115,6 +96,27 @@ class AppRouter {
       GoRoute(
         path: Routes.profile,
         builder: (context, state) => const ProfilePage(),
+      ),
+
+      // Deposit (without bottom navigation)
+      GoRoute(
+        path: Routes.deposit,
+        builder: (context, state) => const DepositPage(),
+      ),
+
+      // Product detail (without bottom navigation)
+      GoRoute(
+        path: Routes.productDetail,
+        builder: (context, state) {
+          final id = state.extra as String;
+          return ProductDetailPage(productId: id);
+        },
+      ),
+
+      // Checkout (without bottom navigation)
+      GoRoute(
+        path: Routes.checkout,
+        builder: (context, state) => const CheckoutPage(),
       ),
     ],
   );
