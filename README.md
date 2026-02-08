@@ -19,10 +19,12 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 - Status pending untuk verifikasi anggota
 
 ### 💰 Simpanan
-- Dashboard simpanan dengan saldo dan bunga
+- Dashboard simpanan dengan saldo real-time
 - Chart pertumbuhan tabungan (menggunakan fl_chart)
-- Deposit dengan preset amount
-- Riwayat transaksi
+- Deposit (Setor) dengan preset amount dan keterangan
+- Withdrawal (Tarik) dengan validasi saldo
+- Riwayat transaksi dengan CRUD operations
+- Saldo tersinkronisasi di seluruh halaman
 
 ### 🛒 Belanja
 - Katalog produk dengan filter kategori
@@ -36,10 +38,10 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 - Token listrik
 
 ### 🎯 Dashboard
-- Ringkasan simpanan dan poin
+- Ringkasan simpanan dengan saldo real-time
 - Member tier display
-- Transaksi terkini
-- Quick actions
+- Transaksi terkini (real-time dari Hive)
+- Quick actions (Setor, Tarik, Transfer, Pinjam)
 - Promo banners
 
 ---
@@ -48,19 +50,19 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 
 ```
 lib/
-├── app/                    # App configuration
-│   ├── routes/            # GoRouter navigation
-│   └── theme/             # Liquid Glass theme
 ├── core/
-│   └── utils/             # Formatters & validators
+│   ├── router/             # GoRouter navigation
+│   ├── theme/              # Liquid Glass theme
+│   ├── services/           # Hive transaction storage
+│   ├── utils/              # Formatters & validators
+│   └── widgets/            # Glass components
 ├── features/
-│   ├── auth/              # Authentication feature
-│   ├── dashboard/         # Dashboard feature
-│   ├── savings/           # Savings feature
-│   ├── shopping/          # Shopping feature
-│   └── ppob/              # PPOB feature
-└── shared/
-    └── widgets/           # Reusable widgets
+│   ├── auth/               # Authentication feature
+│   ├── dashboard/          # Dashboard feature
+│   ├── savings/            # Savings feature (deposit, withdrawal)
+│   ├── shopping/           # Shopping feature
+│   ├── ppob/               # PPOB feature
+│   └── profile/            # Profile feature
 ```
 
 Setiap feature mengikuti struktur:
@@ -76,7 +78,7 @@ Setiap feature mengikuti struktur:
 |----------|---------|
 | State Management | `flutter_riverpod` |
 | Navigation | `go_router` |
-| DI | `get_it` |
+| Local Database | `hive`, `hive_flutter` |
 | Animations | `flutter_animate` |
 | Charts | `fl_chart` |
 | Images | `cached_network_image`, `flutter_svg` |
