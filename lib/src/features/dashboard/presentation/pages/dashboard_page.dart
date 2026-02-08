@@ -106,7 +106,7 @@ class _DashboardContent extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => context.push(Routes.savings),
                   child: const Text(
                     'Lihat Semua',
                     style: TextStyle(color: AppColors.teal),
@@ -329,7 +329,7 @@ class _DashboardContent extends StatelessWidget {
                 child: _QuickActionButton(
                   icon: Icons.add,
                   label: 'Setor',
-                  onTap: () => context.push('/savings/deposit'),
+                  onTap: () => context.push(Routes.deposit),
                 ),
               ),
               const SizedBox(width: 12),
@@ -337,7 +337,7 @@ class _DashboardContent extends StatelessWidget {
                 child: _QuickActionButton(
                   icon: Icons.arrow_upward,
                   label: 'Tarik',
-                  onTap: () {},
+                  onTap: () => context.push(Routes.withdrawal),
                 ),
               ),
               const SizedBox(width: 12),

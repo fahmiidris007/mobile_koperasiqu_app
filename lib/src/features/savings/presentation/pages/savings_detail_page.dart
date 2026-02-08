@@ -154,7 +154,7 @@ class _SavingsContent extends StatelessWidget {
                   child: GlassOutlineButton(
                     text: 'Tarik',
                     icon: Icons.arrow_upward,
-                    onPressed: () {},
+                    onPressed: () => context.push(Routes.withdrawal),
                   ),
                 ),
               ],
