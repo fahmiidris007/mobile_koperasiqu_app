@@ -33,8 +33,11 @@ class _MainShellState extends State<MainShell> {
         context.go('/shopping');
         break;
       case 3:
-        context.go('/ppob');
+        context.go('/profile');
         break;
+      // case 4:
+      //   context.go('/ppob');
+      //   break;
     }
   }
 
@@ -48,9 +51,12 @@ class _MainShellState extends State<MainShell> {
       _currentIndex = 1;
     } else if (location.startsWith('/shopping')) {
       _currentIndex = 2;
-    } else if (location.startsWith('/ppob')) {
+    } else if (location.startsWith('/profile')) {
       _currentIndex = 3;
     }
+    // else if (location.startsWith('/ppob')) {
+    //   _currentIndex = 4;
+    // }
 
     return SimpleGradientBackground(
       child: Stack(
@@ -73,10 +79,11 @@ class _MainShellState extends State<MainShell> {
                   icon: Icons.shopping_bag_rounded,
                   label: 'Belanja',
                 ),
-                GlassNavBarItem(
-                  icon: Icons.receipt_long_rounded,
-                  label: 'PPOB',
-                ),
+                GlassNavBarItem(icon: Icons.person_rounded, label: 'Profil'),
+                // GlassNavBarItem(
+                //   icon: Icons.receipt_long_rounded,
+                //   label: 'PPOB',
+                // ),
               ],
             ),
           ),

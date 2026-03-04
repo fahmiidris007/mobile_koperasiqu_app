@@ -70,16 +70,6 @@ class _DashboardContent extends StatelessWidget {
           ),
         ),
 
-        // Quick actions grid
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: _buildQuickActions(
-              context,
-            ).animate(delay: 200.ms).fadeIn(duration: 500.ms),
-          ),
-        ),
-
         // Promo banner
         SliverToBoxAdapter(
           child: Padding(
@@ -340,49 +330,11 @@ class _DashboardContent extends StatelessWidget {
                   onTap: () => context.push(Routes.withdrawal),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionButton(
-                  icon: Icons.swap_horiz,
-                  label: 'Transfer',
-                  onTap: () {},
-                ),
-              ),
             ],
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    final actions = data.quickActions.take(4).toList();
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: actions.map((action) {
-        return GlassQuickAction(
-          icon: _getIconData(action.icon),
-          label: action.label,
-          onTap: () => context.push(action.route),
-        );
-      }).toList(),
-    );
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'savings':
-        return Icons.savings_rounded;
-      case 'deposit':
-        return Icons.add_circle_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'ppob':
-        return Icons.receipt_long_rounded;
-      default:
-        return Icons.circle;
-    }
   }
 
   Widget _buildPromoBanner(BuildContext context) {
