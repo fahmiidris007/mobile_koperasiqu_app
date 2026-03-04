@@ -17,225 +17,224 @@ class ProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GradientBackground(
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: CustomScrollView(
+            slivers: [
               // Header
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: const Text(
                     'Profil Saya',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
-                  ),
-                ],
-              ).animate().fadeIn(duration: 400.ms),
-
-              const SizedBox(height: 32),
+                  ).animate().fadeIn(duration: 400.ms),
+                ),
+              ),
 
               // Profile card
-              GlassContainer(
-                    padding: const EdgeInsets.all(24),
-                    borderRadius: 24,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  child:
+                      GlassContainer(
+                            padding: const EdgeInsets.all(24),
+                            borderRadius: 24,
+                            child: Column(
+                              children: [
+                                // Avatar
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.primaryGradient,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'AF',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 28,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Name
+                                const Text(
+                                  'Ahmad Fahmi',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+
+                                // Member ID
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.primaryGradient,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.verified,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'KQ-2024-001',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                // Contact info
+                                Text(
+                                  '081234567890',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                ),
+                                Text(
+                                  'ahmad@email.com',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          .animate(delay: 100.ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.1, end: 0),
+                ),
+              ),
+
+              // Menu items
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    borderRadius: 20,
+                    opacity: 0.1,
                     child: Column(
                       children: [
-                        // Avatar
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'AF',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28,
-                              ),
-                            ),
-                          ),
+                        _MenuItem(
+                          icon: Icons.person_outline,
+                          title: 'Edit Profil',
+                          onTap: () {},
                         ),
-                        const SizedBox(height: 16),
-
-                        // Name
-                        const Text(
-                          'Ahmad Fahmi',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.security_outlined,
+                          title: 'Keamanan Akun',
+                          onTap: () {},
                         ),
-                        const SizedBox(height: 4),
-
-                        // Member ID
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'KQ-2024-001',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.notifications_outlined,
+                          title: 'Notifikasi',
+                          onTap: () {},
                         ),
-
-                        const SizedBox(height: 16),
-
-                        // Contact info
-                        Text(
-                          '081234567890',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.7),
-                          ),
-                        ),
-                        Text(
-                          'ahmad@email.com',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.7),
-                          ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.history,
+                          title: 'Riwayat Transaksi',
+                          onTap: () {},
                         ),
                       ],
                     ),
-                  )
-                  .animate(delay: 100.ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideY(begin: 0.1, end: 0),
-
-              const SizedBox(height: 24),
-
-              // Menu items
-              GlassContainer(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                borderRadius: 20,
-                opacity: 0.1,
-                child: Column(
-                  children: [
-                    _MenuItem(
-                      icon: Icons.person_outline,
-                      title: 'Edit Profil',
-                      onTap: () {},
-                    ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.security_outlined,
-                      title: 'Keamanan Akun',
-                      onTap: () {},
-                    ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.notifications_outlined,
-                      title: 'Notifikasi',
-                      onTap: () {},
-                    ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.history,
-                      title: 'Riwayat Transaksi',
-                      onTap: () {},
-                    ),
-                  ],
+                  ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
                 ),
-              ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
-
-              const SizedBox(height: 16),
+              ),
 
               // Support menu
-              GlassContainer(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                borderRadius: 20,
-                opacity: 0.1,
-                child: Column(
-                  children: [
-                    _MenuItem(
-                      icon: Icons.help_outline,
-                      title: 'Pusat Bantuan',
-                      onTap: () {},
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    borderRadius: 20,
+                    opacity: 0.1,
+                    child: Column(
+                      children: [
+                        _MenuItem(
+                          icon: Icons.help_outline,
+                          title: 'Pusat Bantuan',
+                          onTap: () {},
+                        ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.description_outlined,
+                          title: 'Syarat & Ketentuan',
+                          onTap: () {},
+                        ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.privacy_tip_outlined,
+                          title: 'Kebijakan Privasi',
+                          onTap: () {},
+                        ),
+                        _MenuDivider(),
+                        _MenuItem(
+                          icon: Icons.info_outline,
+                          title: 'Tentang Aplikasi',
+                          subtitle: 'Versi 1.0.0',
+                          onTap: () {},
+                        ),
+                      ],
                     ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.description_outlined,
-                      title: 'Syarat & Ketentuan',
-                      onTap: () {},
-                    ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'Kebijakan Privasi',
-                      onTap: () {},
-                    ),
-                    _MenuDivider(),
-                    _MenuItem(
-                      icon: Icons.info_outline,
-                      title: 'Tentang Aplikasi',
-                      subtitle: 'Versi 1.0.0',
-                      onTap: () {},
-                    ),
-                  ],
+                  ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
                 ),
-              ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
-
-              const SizedBox(height: 16),
+              ),
 
               // Logout button
-              GlassContainer(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                borderRadius: 20,
-                opacity: 0.1,
-                child: _MenuItem(
-                  icon: Icons.logout,
-                  title: 'Keluar',
-                  iconColor: AppColors.error,
-                  titleColor: AppColors.error,
-                  showArrow: false,
-                  onTap: () => _showLogoutDialog(context, ref),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    borderRadius: 20,
+                    opacity: 0.1,
+                    child: _MenuItem(
+                      icon: Icons.logout,
+                      title: 'Keluar',
+                      iconColor: AppColors.error,
+                      titleColor: AppColors.error,
+                      showArrow: false,
+                      onTap: () => _showLogoutDialog(context, ref),
+                    ),
+                  ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
                 ),
-              ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
+              ),
 
-              const SizedBox(height: 40),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
         ),
