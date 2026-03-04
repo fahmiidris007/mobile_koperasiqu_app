@@ -13,7 +13,8 @@ import '../../features/savings/presentation/pages/deposit_page.dart';
 import '../../features/savings/presentation/pages/withdrawal_page.dart';
 import '../../features/shopping/presentation/pages/catalog_page.dart';
 import '../../features/shopping/presentation/pages/product_detail_page.dart';
-import '../../features/shopping/presentation/pages/checkout_page.dart';
+import '../../features/shopping/presentation/pages/wishlist_page.dart';
+// import '../../features/shopping/presentation/pages/checkout_page.dart';
 // import '../../features/ppob/presentation/pages/ppob_menu_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 
@@ -33,6 +34,7 @@ class Routes {
   static const String deposit = '/savings/deposit';
   static const String withdrawal = '/savings/withdrawal';
   static const String shopping = '/shopping';
+  static const String wishlist = '/shopping/wishlist';
   static const String productDetail = '/shopping/product/:id';
   static const String checkout = '/shopping/checkout';
   static const String ppob = '/ppob';
@@ -119,11 +121,17 @@ class AppRouter {
         },
       ),
 
-      // Checkout (without bottom navigation)
+      // Wishlist page (without bottom navigation)
       GoRoute(
-        path: Routes.checkout,
-        builder: (context, state) => const CheckoutPage(),
+        path: Routes.wishlist,
+        builder: (context, state) => const WishlistPage(),
       ),
+
+      // Checkout (without bottom navigation) - DISABLED (replaced by wishlist)
+      // GoRoute(
+      //   path: Routes.checkout,
+      //   builder: (context, state) => const CheckoutPage(),
+      // ),
     ],
   );
 }

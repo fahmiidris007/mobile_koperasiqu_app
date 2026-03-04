@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
-import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/product.dart';
 import '../../data/datasources/mock_shopping_datasource.dart';
-import '../providers/cart_provider.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Product by ID provider
 final productByIdProvider = FutureProvider.family<Product?, String>((
@@ -65,29 +65,42 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
-  int _quantity = 1;
+  static const String _waNumber = '6288294392767';
 
-  void _addToCart() {
-    for (int i = 0; i < _quantity; i++) {
-      ref.read(cartProvider.notifier).addToCart(widget.product);
-    }
+  Future<void> _openWhatsApp(BuildContext context, dynamic product) async {
+    final productName = product.name as String;
+    final price = Formatters.formatCurrency(product.price as double);
+    final category = (product.category.displayName) as String;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$_quantity item ditambahkan ke keranjang'),
-        backgroundColor: AppColors.success,
-        action: SnackBarAction(
-          label: 'Lihat',
-          textColor: Colors.white,
-          onPressed: () => context.push('/shopping/checkout'),
+    final message =
+        'Halo Admin KoperasiQu! 👋\n\n'
+        'Saya tertarik untuk membeli produk berikut:\n'
+        '📦 *$productName*\n'
+        '🏷️ Kategori: $category\n'
+        '💰 Harga: $price\n\n'
+        'Apakah produk ini masih tersedia? Mohon informasi lebih lanjut. Terima kasih! 🙏';
+
+    final encodedMessage = Uri.encodeComponent(message);
+    final url = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('WhatsApp tidak ditemukan di perangkat ini'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final isWishlisted = ref.watch(
+      wishlistProvider.select((s) => s.contains(product.id)),
+    );
 
     return Column(
       children: [
@@ -119,14 +132,40 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                 child: const Icon(Icons.share, color: Colors.white),
               ),
               const SizedBox(width: 8),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+              // Wishlist toggle button
+              GestureDetector(
+                onTap: () async {
+                  final added = await ref
+                      .read(wishlistProvider.notifier)
+                      .toggle(product);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          added
+                              ? 'Ditambahkan ke wishlist'
+                              : 'Dihapus dari wishlist',
+                        ),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: added ? Colors.green : Colors.grey,
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: isWishlisted
+                        ? Colors.red.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isWishlisted ? Icons.favorite : Icons.favorite_border,
+                    color: isWishlisted ? Colors.red : Colors.white,
+                  ),
                 ),
-                child: const Icon(Icons.favorite_border, color: Colors.white),
               ),
             ],
           ),
@@ -314,6 +353,76 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
         ),
 
         // Bottom bar
+        // Container(
+        //   padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        //   decoration: BoxDecoration(
+        //     color: Colors.black.withOpacity(0.3),
+        //     border: Border(
+        //       top: BorderSide(color: Colors.white.withOpacity(0.1)),
+        //     ),
+        //   ),
+        //   child: Row(
+        //     children: [
+        //       // Quantity selector
+        //       Container(
+        //         decoration: BoxDecoration(
+        //           color: Colors.white.withOpacity(0.1),
+        //           borderRadius: BorderRadius.circular(12),
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             IconButton(
+        //               icon: const Icon(
+        //                 Icons.remove,
+        //                 color: Colors.white,
+        //                 size: 18,
+        //               ),
+        //               onPressed: _quantity > 1
+        //                   ? () => setState(() => _quantity--)
+        //                   : null,
+        //             ),
+        //             SizedBox(
+        //               width: 32,
+        //               child: Center(
+        //                 child: Text(
+        //                   '$_quantity',
+        //                   style: const TextStyle(
+        //                     color: Colors.white,
+        //                     fontWeight: FontWeight.bold,
+        //                   ),
+        //                 ),
+        //               ),
+        //             ),
+        //             IconButton(
+        //               icon: const Icon(
+        //                 Icons.add,
+        //                 color: Colors.white,
+        //                 size: 18,
+        //               ),
+        //               onPressed: () => setState(() => _quantity++),
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //       const SizedBox(width: 12),
+
+        //       // Add to cart button
+        //       Expanded(
+        //         child: GlassButton(
+        //           text: 'Tambah ke Keranjang',
+        //           icon: Icons.shopping_cart,
+        //           onPressed: _addToCart,
+        //           textStyle: const TextStyle(
+        //             fontSize: 12,
+        //             fontWeight: FontWeight.w600,
+        //             color: Colors.white,
+        //           ),
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
+        // Bottom bar - Beli di WhatsApp
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           decoration: BoxDecoration(
@@ -322,65 +431,52 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
               top: BorderSide(color: Colors.white.withOpacity(0.1)),
             ),
           ),
-          child: Row(
-            children: [
-              // Quantity selector
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+          child: GestureDetector(
+            onTap: () => _openWhatsApp(context, product),
+            child: Container(
+              width: double.infinity,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF25D366), Color(0xFF128C7E)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.remove,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      onPressed: _quantity > 1
-                          ? () => setState(() => _quantity--)
-                          : null,
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: Center(
-                        child: Text(
-                          '$_quantity',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      onPressed: () => setState(() => _quantity++),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Add to cart button
-              Expanded(
-                child: GlassButton(
-                  text: 'Tambah ke Keranjang',
-                  icon: Icons.shopping_cart,
-                  onPressed: _addToCart,
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF25D366).withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                ),
+                ],
               ),
-            ],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg',
+                    width: 24,
+                    height: 24,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.chat_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Beli di WhatsApp',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

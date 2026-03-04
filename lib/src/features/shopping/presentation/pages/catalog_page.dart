@@ -9,7 +9,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/product.dart';
 import '../../data/datasources/mock_shopping_datasource.dart';
-import '../providers/cart_provider.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Products provider
 final productsProvider = FutureProvider<List<Product>>((ref) async {
@@ -28,7 +28,7 @@ class CatalogPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(productsProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
-    final cart = ref.watch(cartProvider);
+    final wishlist = ref.watch(wishlistProvider);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 100),
@@ -71,9 +71,9 @@ class CatalogPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Cart button
+                  // Wishlist button
                   GestureDetector(
-                    onTap: () => context.push(Routes.checkout),
+                    onTap: () => context.push(Routes.wishlist),
                     child: Container(
                       width: 48,
                       height: 48,
@@ -85,12 +85,12 @@ class CatalogPage extends ConsumerWidget {
                         children: [
                           const Center(
                             child: Icon(
-                              Icons.shopping_cart,
+                              Icons.favorite_rounded,
                               color: Colors.white,
                               size: 22,
                             ),
                           ),
-                          if (cart.itemCount > 0)
+                          if (wishlist.items.isNotEmpty)
                             Positioned(
                               top: 6,
                               right: 6,
@@ -103,7 +103,7 @@ class CatalogPage extends ConsumerWidget {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    '${cart.itemCount}',
+                                    '${wishlist.items.length}',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -253,6 +253,10 @@ class _ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isWishlisted = ref.watch(
+      wishlistProvider.select((s) => s.contains(product.id)),
+    );
+
     return GestureDetector(
       onTap: () => context.push(Routes.productDetail, extra: product.id),
       child: GlassContainer(
@@ -306,6 +310,46 @@ class _ProductCard extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  // Wishlist button
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final added = await ref
+                            .read(wishlistProvider.notifier)
+                            .toggle(product);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                added
+                                    ? '${product.name} ditambahkan ke wishlist'
+                                    : '${product.name} dihapus dari wishlist',
+                              ),
+                              duration: const Duration(seconds: 2),
+                              backgroundColor: added
+                                  ? Colors.green
+                                  : Colors.grey,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          color: isWishlisted ? Colors.red : Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
