@@ -4,7 +4,7 @@
   <strong>Koperasi Digital untuk Masa Depan Anda</strong>
 </p>
 
-KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layanan simpanan, pinjaman, belanja, dan pembayaran tagihan. Dibangun dengan Flutter menggunakan arsitektur modern dan desain **Liquid Glass** (glassmorphism).
+KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layanan simpanan, belanja, dan manajemen profil anggota. Dibangun dengan Flutter menggunakan arsitektur modern dan desain **Liquid Glass** (glassmorphism).
 
 ---
 
@@ -28,21 +28,22 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 
 ### 🛒 Belanja
 - Katalog produk dengan filter kategori
-- Detail produk dengan rating dan diskon
-- Keranjang belanja
-- Checkout dengan ringkasan pesanan
-
-### 📱 PPOB
-- Menu pembayaran tagihan
-- Pembelian pulsa dan data
-- Token listrik
+- Wishlist produk dengan penyimpanan Hive (persisten)
+  - Toggle wishlist dari katalog & halaman detail
+  - Halaman daftar wishlist dengan hapus per-item & clear all
+- Detail produk dengan rating dan info diskon
+- Tombol **Beli di WhatsApp** — langsung chat ke admin dengan pesan produk terisi otomatis
 
 ### 🎯 Dashboard
 - Ringkasan simpanan dengan saldo real-time
 - Member tier display
 - Transaksi terkini (real-time dari Hive)
-- Quick actions (Setor, Tarik, Transfer, Pinjam)
-- Promo banners
+- Quick actions: Setor, Tarik
+
+### 👤 Profil
+- Halaman profil di bottom navigation
+- Info anggota, menu pengaturan, pusat bantuan
+- Logout dengan konfirmasi dialog
 
 ---
 
@@ -53,16 +54,15 @@ lib/
 ├── core/
 │   ├── router/             # GoRouter navigation
 │   ├── theme/              # Liquid Glass theme
-│   ├── services/           # Hive transaction storage
+│   ├── services/           # Hive storage (transaksi & wishlist)
 │   ├── utils/              # Formatters & validators
 │   └── widgets/            # Glass components
 ├── features/
 │   ├── auth/               # Authentication feature
-│   ├── dashboard/          # Dashboard feature
-│   ├── savings/            # Savings feature (deposit, withdrawal)
-│   ├── shopping/           # Shopping feature
-│   ├── ppob/               # PPOB feature
-│   └── profile/            # Profile feature
+│   ├── dashboard/          # Dashboard + main shell
+│   ├── savings/            # Simpanan (deposit, withdrawal)
+│   ├── shopping/           # Belanja + wishlist
+│   └── profile/            # Profil anggota
 ```
 
 Setiap feature mengikuti struktur:
@@ -81,9 +81,10 @@ Setiap feature mengikuti struktur:
 | Local Database | `hive`, `hive_flutter` |
 | Animations | `flutter_animate` |
 | Charts | `fl_chart` |
+| Deep Links | `url_launcher` |
 | Images | `cached_network_image`, `flutter_svg` |
 | Forms | `image_picker` |
-| Utilities | `intl`, `uuid` |
+| Utilities | `intl`, `uuid`, `equatable` |
 | Fonts | `google_fonts` |
 
 ---
@@ -106,15 +107,11 @@ cd mobile_koperasiqu_app
 # Install dependencies
 flutter pub get
 
-# Generate files (freezed, json_serializable)
-dart run build_runner build --delete-conflicting-outputs
-
 # Jalankan aplikasi
 flutter run
 ```
 
 ---
-
 
 ## 🎨 Design System
 
@@ -122,7 +119,7 @@ Aplikasi menggunakan tema **Liquid Glass** dengan:
 - Glassmorphism cards dengan blur effect
 - Gradient backgrounds (Deep Purple → Blue)
 - Animated transitions
-- Custom bottom navigation bar
+- Custom bottom navigation bar: **Beranda · Tabungan · Belanja · Profil**
 - Consistent spacing dan typography
 
 ---
