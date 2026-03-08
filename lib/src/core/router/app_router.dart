@@ -17,6 +17,10 @@ import '../../features/shopping/presentation/pages/wishlist_page.dart';
 // import '../../features/shopping/presentation/pages/checkout_page.dart';
 // import '../../features/ppob/presentation/pages/ppob_menu_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/account_security_page.dart';
+import '../../features/savings/presentation/pages/transaction_history_page.dart';
+import '../../features/dashboard/presentation/pages/notification_page.dart';
 
 /// App route paths
 class Routes {
@@ -39,6 +43,10 @@ class Routes {
   static const String checkout = '/shopping/checkout';
   static const String ppob = '/ppob';
   static const String profile = '/profile';
+  static const String editProfile = '/profile/edit';
+  static const String accountSecurity = '/profile/security';
+  static const String transactionHistory = '/savings/history';
+  static const String notifications = '/notifications';
 }
 
 /// App router configuration class
@@ -125,6 +133,30 @@ class AppRouter {
       GoRoute(
         path: Routes.wishlist,
         builder: (context, state) => const WishlistPage(),
+      ),
+
+      // Transaction history (without bottom navigation)
+      GoRoute(
+        path: Routes.transactionHistory,
+        builder: (context, state) => const TransactionHistoryPage(),
+      ),
+
+      // Notification page (without bottom navigation)
+      GoRoute(
+        path: Routes.notifications,
+        builder: (context, state) => const NotificationPage(),
+      ),
+
+      // Edit profile (without bottom navigation)
+      GoRoute(
+        path: Routes.editProfile,
+        builder: (context, state) => const EditProfilePage(),
+      ),
+
+      // Account security (without bottom navigation)
+      GoRoute(
+        path: Routes.accountSecurity,
+        builder: (context, state) => const AccountSecurityPage(),
       ),
 
       // Checkout (without bottom navigation) - DISABLED (replaced by wishlist)

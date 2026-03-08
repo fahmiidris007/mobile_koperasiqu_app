@@ -166,22 +166,33 @@ class _SavingsContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: const Text(
-              'Riwayat Transaksi',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Riwayat Transaksi',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push(Routes.transactionHistory),
+                  child: const Text(
+                    'Lihat Semua',
+                    style: TextStyle(color: AppColors.teal),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
 
-        // Transaction list - use real data from Hive if available
+        // Transaction list — limited to 5 items
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              // Use real transactions from Hive
               if (txState.transactions.isNotEmpty) {
                 final tx = txState.transactions[index];
                 return Padding(
@@ -194,7 +205,6 @@ class _SavingsContent extends StatelessWidget {
                       .fadeIn(duration: 400.ms),
                 );
               }
-              // Fallback to mock savings transactions
               final tx = savings.transactions[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -207,12 +217,47 @@ class _SavingsContent extends StatelessWidget {
               );
             },
             childCount: txState.transactions.isNotEmpty
-                ? txState.transactions.length
-                : savings.transactions.length,
+                ? txState.transactions.length.clamp(0, 5)
+                : savings.transactions.length.clamp(0, 5),
           ),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+        // Lihat Semua button footer
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: GestureDetector(
+              onTap: () => context.push(Routes.transactionHistory),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.12)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Tampilkan Semua Transaksi',
+                      style: TextStyle(
+                        color: AppColors.teal,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 13,
+                      color: AppColors.teal,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

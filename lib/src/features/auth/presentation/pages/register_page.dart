@@ -494,34 +494,38 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: 16),
             ],
 
-            // Number of children
-            Row(
-              children: [
-                const Icon(Icons.child_care, color: Colors.white70),
-                const SizedBox(width: 12),
-                Text(
-                  'Jumlah Anak: $_numberOfChildren',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(
-                    Icons.remove_circle_outline,
-                    color: Colors.white70,
+            // Number of children - sembunyikan jika belum menikah
+            if (_maritalStatus != null &&
+                _maritalStatus != MaritalStatus.single) ...[
+              Row(
+                children: [
+                  const Icon(Icons.child_care, color: Colors.white70),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Jumlah Anak: $_numberOfChildren',
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  onPressed: _numberOfChildren > 0
-                      ? () => setState(() => _numberOfChildren--)
-                      : null,
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.add_circle_outline,
-                    color: Colors.white70,
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.white70,
+                    ),
+                    onPressed: _numberOfChildren > 0
+                        ? () => setState(() => _numberOfChildren--)
+                        : null,
                   ),
-                  onPressed: () => setState(() => _numberOfChildren++),
-                ),
-              ],
-            ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.add_circle_outline,
+                      color: Colors.white70,
+                    ),
+                    onPressed: () => setState(() => _numberOfChildren++),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
 
             const Divider(color: Colors.white24, height: 32),
 

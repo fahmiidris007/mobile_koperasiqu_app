@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -10,14 +12,43 @@ import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../providers/auth_provider.dart';
 
+/// Dummy bank account info
+class _BankInfo {
+  static const String accountNumber = '1234-5678-9012-3456';
+  static const String waNumber = '6288294392767';
+}
+
 /// Pending verification status page
 class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
+
+  Future<void> _openWhatsApp(BuildContext context, String phone) async {
+    final message =
+        'Halo Admin KoperasiQu! 👋\n\n'
+        'Saya baru saja mendaftarkan diri sebagai anggota KoperasiQu dan sedang menunggu proses verifikasi.\n\n'
+        '📱 No. HP Terdaftar: $phone\n\n'
+        'Mohon bantuannya untuk mempercepat proses verifikasi akun saya. Terima kasih! 🙏';
+
+    final encoded = Uri.encodeComponent(message);
+    final url = Uri.parse('https://wa.me/${_BankInfo.waNumber}?text=$encoded');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('WhatsApp tidak tersedia di perangkat ini'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final regState = ref.watch(registrationProvider);
     final phone = regState.data.phone;
+    final fullName = regState.data.fullName;
 
     return GradientBackground(
       child: SafeArea(
@@ -246,15 +277,129 @@ class PendingPage extends ConsumerWidget {
                   ),
                 ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
+              const SizedBox(height: 24),
+
+              // Bank account info card
+              GlassContainer(
+                padding: const EdgeInsets.all(20),
+                opacity: 0.15,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance,
+                          color: Colors.blue.shade300,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Rekening Koperasi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Simpan nomor rekening ini untuk keperluan setor simpanan.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.55),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.12),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          _BankRow(
+                            label: 'Atas Nama',
+                            value: fullName.isNotEmpty ? fullName : 'Anggota',
+                            icon: Icons.person_outline,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.credit_card,
+                                size: 16,
+                                color: Colors.white54,
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'No. Rekening :',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                _BankInfo.accountNumber,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  letterSpacing: 1.5,
+                                ),
+                                textAlign: TextAlign.justify,
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  Clipboard.setData(
+                                    const ClipboardData(
+                                      text: _BankInfo.accountNumber,
+                                    ),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Nomor rekening disalin!'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: const Icon(
+                                  Icons.copy,
+                                  size: 18,
+                                  color: AppColors.teal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate(delay: 550.ms).fadeIn(duration: 600.ms),
+
               const SizedBox(height: 32),
 
               // Contact button
               GlassOutlineButton(
-                text: 'Hubungi Kami',
+                text: 'Hubungi Kami via WhatsApp',
                 icon: Icons.chat_bubble_outline,
-                onPressed: () {
-                  // Open WhatsApp or contact page
-                },
+                onPressed: () => _openWhatsApp(context, phone),
               ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
 
               const SizedBox(height: 16),
@@ -323,6 +468,42 @@ class _NextStepItem extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BankRow extends StatelessWidget {
+  const _BankRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.white54),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ],
     );
   }
 }
