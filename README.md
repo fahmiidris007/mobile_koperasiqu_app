@@ -28,22 +28,38 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 
 ### 🛒 Belanja
 - Katalog produk dengan filter kategori
-- Wishlist produk dengan penyimpanan Hive (persisten)
-  - Toggle wishlist dari katalog & halaman detail
-  - Halaman daftar wishlist dengan hapus per-item & clear all
+- Wishlist dengan penyimpanan Hive (persisten)
+  - Toggle dari katalog & halaman detail
+  - Halaman wishlist dengan hapus per-item & clear all
 - Detail produk dengan rating dan info diskon
-- Tombol **Beli di WhatsApp** — langsung chat ke admin dengan pesan produk terisi otomatis
+- Tombol Beli di WhatsApp — langsung chat admin dengan nama produk terisi otomatis
 
 ### 🎯 Dashboard
-- Ringkasan simpanan dengan saldo real-time
-- Member tier display
-- Transaksi terkini (real-time dari Hive)
+- Saldo simpanan real-time dari Hive
+- Informasi Rekening KoperasiQu dengan atas nama user & salin rekening
+- Transaksi terkini (5 item terbaru) + tombol Lihat Semua ke halaman riwayat
 - Quick actions: Setor, Tarik
+- Ikon notifikasi di header → navigasi ke halaman notifikasi
+
+###  Notifikasi
+- Notifikasi dibuat dari data transaksi Hive secara otomatis
+- Ditambah notifikasi dummy sistem (Verifikasi Akun, Promo)
+- Status baca / belum dibaca (dot indikator + opacity)
+- Tombol Tandai Semua Dibaca
+- Badge tipe: Transaksi · Sistem · Promo
+- Waktu relatif (baru saja, X menit/jam/hari lalu)
 
 ### 👤 Profil
-- Halaman profil di bottom navigation
-- Info anggota, menu pengaturan, pusat bantuan
-- Logout dengan konfirmasi dialog
+- Info anggota dengan avatar inisial nama
+- Edit Profil — form nama, HP, email, pekerjaan, pre-fill dari data registrasi
+- Keamanan Akun:
+  - Security score card dengan progress bar
+  - Ubah Password (bottom sheet)
+  - Ubah M-PIN 6 digit — flow 2 langkah
+  - Toggle Biometrik / Notif Login / Notif Transaksi
+  - Kelola Perangkat, Riwayat Login, Nonaktifkan Akun (dengan dialog konfirmasi)
+- Akses Notifikasi & Riwayat Transaksi dari menu profil
+- Logout dengan dialog konfirmasi
 
 ---
 
@@ -52,23 +68,23 @@ KoperasiQu adalah aplikasi mobile untuk koperasi digital yang menyediakan layana
 ```
 lib/
 ├── core/
-│   ├── router/             # GoRouter navigation
-│   ├── theme/              # Liquid Glass theme
+│   ├── router/             # GoRouter navigation + route constants
+│   ├── theme/              # Liquid Glass theme & colors
 │   ├── services/           # Hive storage (transaksi & wishlist)
 │   ├── utils/              # Formatters & validators
-│   └── widgets/            # Glass components
+│   └── widgets/            # Glass components (GlassContainer, GlassButton, dll)
 ├── features/
 │   ├── auth/               # Authentication feature
-│   ├── dashboard/          # Dashboard + main shell
-│   ├── savings/            # Simpanan (deposit, withdrawal)
-│   ├── shopping/           # Belanja + wishlist
-│   └── profile/            # Profil anggota
+│   ├── dashboard/          # Dashboard, notifikasi, main shell
+│   ├── savings/            # Simpanan, deposit, withdrawal, history
+│   ├── shopping/           # Katalog, wishlist, product detail
+│   └── profile/            # Profil, edit profil, keamanan akun
 ```
 
 Setiap feature mengikuti struktur:
-- `data/` - Datasources, models, repositories
-- `domain/` - Entities, use cases
-- `presentation/` - Pages, providers, widgets
+- `data/` — Datasources, models, repositories
+- `domain/` — Entities, use cases
+- `presentation/` — Pages, providers, widgets
 
 ---
 
@@ -81,7 +97,7 @@ Setiap feature mengikuti struktur:
 | Local Database | `hive`, `hive_flutter` |
 | Animations | `flutter_animate` |
 | Charts | `fl_chart` |
-| Deep Links | `url_launcher` |
+| Deep Links / WhatsApp | `url_launcher` |
 | Images | `cached_network_image`, `flutter_svg` |
 | Forms | `image_picker` |
 | Utilities | `intl`, `uuid`, `equatable` |
@@ -89,11 +105,36 @@ Setiap feature mengikuti struktur:
 
 ---
 
+## 🗺️ Routes
+
+| Path | Halaman |
+|------|---------|
+| `/` | Splash |
+| `/welcome` | Welcome |
+| `/login` | Login |
+| `/register` | Registrasi (multi-step) |
+| `/ekyc` | E-KYC |
+| `/pending` | Pending verifikasi |
+| `/dashboard` | Dashboard (shell) |
+| `/savings` | Halaman Tabungan (shell) |
+| `/savings/deposit` | Setor |
+| `/savings/withdrawal` | Tarik |
+| `/savings/history` | Semua Riwayat Transaksi |
+| `/shopping` | Katalog Produk (shell) |
+| `/shopping/product/:id` | Detail Produk |
+| `/shopping/wishlist` | Wishlist |
+| `/profile` | Profil (shell) |
+| `/profile/edit` | Edit Profil |
+| `/profile/security` | Keamanan Akun |
+| `/notifications` | Notifikasi |
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter 3.35.3
-- IDE (VSCode / Android Studio / Xcode (iOS))
+- Flutter 3.35.3+
+- IDE (VSCode / Android Studio / Xcode untuk iOS)
 
 ### Installation
 
@@ -116,11 +157,11 @@ flutter run
 ## 🎨 Design System
 
 Aplikasi menggunakan tema **Liquid Glass** dengan:
-- Glassmorphism cards dengan blur effect
+- Glassmorphism cards dengan backdrop blur
 - Gradient backgrounds (Deep Purple → Blue)
-- Animated transitions
-- Custom bottom navigation bar: **Beranda · Tabungan · Belanja · Profil**
-- Consistent spacing dan typography
+- Micro-animations via `flutter_animate`
+- Custom bottom navigation: **Beranda · Tabungan · Belanja · Profil**
+- Consistent spacing, rounded corners, dan typography (Google Fonts)
 
 ---
 

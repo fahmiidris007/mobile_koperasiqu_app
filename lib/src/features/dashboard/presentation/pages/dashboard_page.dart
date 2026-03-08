@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,6 +13,7 @@ import '../../../../core/services/hive_transaction_storage.dart' as hive_tx;
 import '../../../savings/presentation/providers/transaction_provider.dart';
 import '../../domain/entities/dashboard_data.dart';
 import '../../data/datasources/mock_dashboard_datasource.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// Dashboard data provider
 final dashboardProvider = FutureProvider<DashboardData>((ref) async {
@@ -27,26 +29,35 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
     final txState = ref.watch(transactionProvider);
+    final fullName = ref.watch(
+      registrationProvider.select((s) => s.data.fullName),
+    );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 100), // Space for nav bar
+      padding: const EdgeInsets.only(bottom: 100),
       child: dashboardAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: Colors.white)),
         error: (e, _) => Center(
           child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
         ),
-        data: (data) => _DashboardContent(data: data, txState: txState),
+        data: (data) =>
+            _DashboardContent(data: data, txState: txState, fullName: fullName),
       ),
     );
   }
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.data, required this.txState});
+  const _DashboardContent({
+    required this.data,
+    required this.txState,
+    required this.fullName,
+  });
 
   final DashboardData data;
   final TransactionState txState;
+  final String fullName;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +78,17 @@ class _DashboardContent extends StatelessWidget {
             child: _buildBalanceCard(
               context,
             ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
+          ),
+        ),
+
+        // Rekening koperasi card
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: _buildRekeningCard(context)
+                .animate(delay: 200.ms)
+                .fadeIn(duration: 500.ms)
+                .slideY(begin: 0.05, end: 0),
           ),
         ),
 
@@ -96,7 +118,7 @@ class _DashboardContent extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push(Routes.savings),
+                  onPressed: () => context.push(Routes.transactionHistory),
                   child: const Text(
                     'Lihat Semua',
                     style: TextStyle(color: AppColors.teal),
@@ -204,7 +226,7 @@ class _DashboardContent extends StatelessWidget {
         // Notification bell
         GlassIconButton(
           icon: Icons.notifications_outlined,
-          onPressed: () {},
+          onPressed: () => context.push(Routes.notifications),
           size: 44,
         ),
       ],
@@ -331,6 +353,85 @@ class _DashboardContent extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRekeningCard(BuildContext context) {
+    const accountNumber = '1234-5678-9012-3456';
+    final rekening = 'No. Rekening KoperasiQu';
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 20,
+      opacity: 0.12,
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.account_balance,
+              color: Colors.blue,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  rekening,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  accountNumber,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(const ClipboardData(text: accountNumber));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Nomor rekening disalin!'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.teal.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text(
+                'Salin',
+                style: TextStyle(
+                  color: AppColors.teal,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ],
       ),
