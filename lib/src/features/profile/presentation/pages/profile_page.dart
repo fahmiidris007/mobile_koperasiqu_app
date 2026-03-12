@@ -267,6 +267,7 @@ class ProfilePage extends ConsumerWidget {
               await ref.read(authProvider.notifier).logout();
               if (context.mounted) {
                 context.go(Routes.welcome);
+                context.push(Routes.login);
               }
             },
             child: const Text(
