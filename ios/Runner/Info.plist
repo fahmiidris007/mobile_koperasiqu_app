@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Kamera digunakan untuk mengambil foto KTP dan selfie untuk verifikasi identitas Anda.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Akses galeri digunakan untuk memilih foto KTP dari penyimpanan perangkat Anda.</string>
 </dict>
 </plist>

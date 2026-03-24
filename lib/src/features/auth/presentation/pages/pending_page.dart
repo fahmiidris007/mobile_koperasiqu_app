@@ -22,11 +22,11 @@ class _BankInfo {
 class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
 
-  Future<void> _openWhatsApp(BuildContext context, String phone) async {
+  Future<void> _openWhatsApp(BuildContext context, String email) async {
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya baru saja mendaftarkan diri sebagai anggota KoperasiQu dan sedang menunggu proses verifikasi.\n\n'
-        '📱 No. HP Terdaftar: $phone\n\n'
+        '📧 Email Terdaftar: $email\n\n'
         'Mohon bantuannya untuk mempercepat proses verifikasi akun saya. Terima kasih! 🙏';
 
     final encoded = Uri.encodeComponent(message);
@@ -47,7 +47,7 @@ class PendingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final regState = ref.watch(registrationProvider);
-    final phone = regState.data.phone;
+    final email = regState.data.email;
     final fullName = regState.data.fullName;
 
     return GradientBackground(
@@ -193,7 +193,7 @@ class PendingPage extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Login info card
-              if (phone.isNotEmpty)
+              if (email.isNotEmpty)
                 GlassContainer(
                   padding: const EdgeInsets.all(20),
                   opacity: 0.15,
@@ -239,13 +239,13 @@ class PendingPage extends ConsumerWidget {
                             Row(
                               children: [
                                 const Icon(
-                                  Icons.phone,
+                                  Icons.email_outlined,
                                   size: 16,
                                   color: Colors.white70,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'No. HP: $phone',
+                                  'Email: $email',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
@@ -399,7 +399,7 @@ class PendingPage extends ConsumerWidget {
               GlassOutlineButton(
                 text: 'Hubungi Kami via WhatsApp',
                 icon: Icons.chat_bubble_outline,
-                onPressed: () => _openWhatsApp(context, phone),
+                onPressed: () => _openWhatsApp(context, email),
               ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
 
               const SizedBox(height: 16),

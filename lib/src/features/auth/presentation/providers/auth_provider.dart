@@ -66,12 +66,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Login with phone and password
-  Future<void> login(String phone, String password) async {
+  /// Login with email and password
+  Future<void> login(String email, String password) async {
     state = const AuthLoading();
 
     try {
-      final user = await _repository.login(phone: phone, password: password);
+      final user = await _repository.login(email: email, password: password);
 
       if (user.isApproved) {
         state = AuthAuthenticated(user);

@@ -46,7 +46,7 @@ class MockAuthDatasource {
     }
 
     // Add default demo users if not exists
-    if (!_users.containsKey('08123456789')) {
+    if (!_users.containsKey('ahmad@email.com')) {
       final demoUser1 = StoredUserData(
         id: 'user-001',
         name: 'Ahmad Fahmi',
@@ -57,11 +57,11 @@ class MockAuthDatasource {
         memberId: 'KQ-2024-001',
         joinDate: DateTime(2024, 1, 15),
       );
-      _users['08123456789'] = demoUser1;
-      await _storage.saveUser('08123456789', demoUser1.toJson());
+      _users['ahmad@email.com'] = demoUser1;
+      await _storage.saveUser('ahmad@email.com', demoUser1.toJson());
     }
 
-    if (!_users.containsKey('08111222333')) {
+    if (!_users.containsKey('siti@email.com')) {
       final demoUser2 = StoredUserData(
         id: 'user-002',
         name: 'Siti Aisyah',
@@ -72,8 +72,8 @@ class MockAuthDatasource {
         memberId: null,
         joinDate: null,
       );
-      _users['08111222333'] = demoUser2;
-      await _storage.saveUser('08111222333', demoUser2.toJson());
+      _users['siti@email.com'] = demoUser2;
+      await _storage.saveUser('siti@email.com', demoUser2.toJson());
     }
 
     // Load current user id
@@ -85,15 +85,15 @@ class MockAuthDatasource {
     await Future.delayed(const Duration(milliseconds: 800));
   }
 
-  /// Login with phone and password
-  Future<User> login({required String phone, required String password}) async {
+  /// Login with email and password
+  Future<User> login({required String email, required String password}) async {
     await _simulateDelay();
 
-    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-    final userData = _users[cleanPhone];
+    final normalizedEmail = email.trim().toLowerCase();
+    final userData = _users[normalizedEmail];
 
     if (userData == null) {
-      throw AuthException('Nomor HP tidak terdaftar');
+      throw AuthException('Email tidak terdaftar');
     }
 
     if (userData.password != password) {
@@ -110,29 +110,29 @@ class MockAuthDatasource {
   Future<User> register(RegistrationData data) async {
     await _simulateDelay();
 
-    final cleanPhone = data.phone.replaceAll(RegExp(r'\D'), '');
+    final normalizedEmail = data.email.trim().toLowerCase();
 
-    if (_users.containsKey(cleanPhone)) {
-      throw AuthException('Nomor HP sudah terdaftar');
+    if (_users.containsKey(normalizedEmail)) {
+      throw AuthException('Email sudah terdaftar');
     }
 
     final userId = const Uuid().v4();
     final newUser = StoredUserData(
       id: userId,
       name: data.fullName,
-      phone: cleanPhone,
-      email: data.email,
+      phone: data.phone,
+      email: normalizedEmail,
       password: data.password,
       status: 'pending',
       memberId: null,
       joinDate: DateTime.now(),
     );
 
-    _users[cleanPhone] = newUser;
+    _users[normalizedEmail] = newUser;
     _currentUserId = userId;
 
     // Persist to local storage
-    await _storage.saveUser(cleanPhone, newUser.toJson());
+    await _storage.saveUser(normalizedEmail, newUser.toJson());
     await _storage.setCurrentUserId(userId);
 
     return newUser.toUser();

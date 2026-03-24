@@ -3,9 +3,9 @@ import '../entities/registration_data.dart';
 
 /// Abstract repository for authentication operations
 abstract class AuthRepository {
-  /// Login with phone and password
+  /// Login with email and password
   /// Returns User on success, throws on failure
-  Future<User> login({required String phone, required String password});
+  Future<User> login({required String email, required String password});
 
   /// Register a new member
   /// Returns User with pending status on success

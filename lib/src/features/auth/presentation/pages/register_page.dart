@@ -31,6 +31,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   DateTime? _birthDate;
   Gender? _gender;
 
@@ -55,6 +58,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _occupationController.dispose();
     _companyController.dispose();
     _positionController.dispose();
@@ -342,13 +346,50 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             TextFormField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: _obscurePassword,
               style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
-                prefixIcon: Icon(Icons.lock, color: Colors.white70),
+                prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
               validator: Validators.password,
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Konfirmasi Password',
+                prefixIcon: const Icon(
+                  Icons.lock_outline,
+                  color: Colors.white70,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
+                  onPressed: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  ),
+                ),
+              ),
+              validator: (v) =>
+                  Validators.confirmPassword(v, _passwordController.text),
             ),
           ],
         ),

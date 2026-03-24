@@ -20,13 +20,13 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -36,7 +36,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     await ref
         .read(authProvider.notifier)
-        .login(_phoneController.text, _passwordController.text);
+        .login(_emailController.text.trim(), _passwordController.text);
   }
 
   @override
@@ -141,19 +141,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                         const SizedBox(height: 32),
 
-                        // Phone field
+                        // Email field
                         TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: 'Nomor HP',
+                            labelText: 'Email',
                             prefixIcon: Icon(
-                              Icons.phone,
+                              Icons.email_outlined,
                               color: Colors.white.withOpacity(0.7),
                             ),
                           ),
-                          validator: Validators.phoneNumber,
+                          validator: Validators.email,
                         ),
 
                         const SizedBox(height: 20),
@@ -290,7 +290,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Demo: 08123456789 / 123456',
+                      'Demo: ahmad@email.com / 123456',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withOpacity(0.7),
