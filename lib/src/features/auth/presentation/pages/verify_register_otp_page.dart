@@ -89,9 +89,10 @@ class _VerifyRegisterOtpPageState
     setState(() => _isLoading = false);
 
     if (ok) {
-      // Reset registration state and navigate to pending
-      ref.read(registrationProvider.notifier).reset();
+      // Navigate first so pending_page can read registration data if auth state not yet updated
       context.go(Routes.pending);
+      // Reset registration state after navigation
+      ref.read(registrationProvider.notifier).reset();
     } else {
       final err = ref.read(registrationProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(

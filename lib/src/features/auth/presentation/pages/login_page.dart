@@ -112,10 +112,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         context.go(Routes.pending);
       } else if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.message),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(next.message), backgroundColor: Colors.red),
         );
         ref.read(authProvider.notifier).clearError();
         // On OTP error, stay on OTP step so user can retry
@@ -305,9 +302,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(
-                            color: Colors.white.withOpacity(0.3),
-                          ),
+                          child: Divider(color: Colors.white.withOpacity(0.3)),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -319,9 +314,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
                         Expanded(
-                          child: Divider(
-                            color: Colors.white.withOpacity(0.3),
-                          ),
+                          child: Divider(color: Colors.white.withOpacity(0.3)),
                         ),
                       ],
                     ),
@@ -358,34 +351,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             .fadeIn(duration: 600.ms)
             .slideY(begin: 0.1, end: 0),
 
-        const SizedBox(height: 40),
-
-        GlassContainer(
-          padding: const EdgeInsets.all(16),
-          opacity: 0.08,
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: Colors.white.withOpacity(0.7),
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Demo: ahmad@email.com / 123456',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 40),
+        const SizedBox(height: 60),
       ],
     );
   }
@@ -427,154 +393,150 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         const SizedBox(height: 40),
 
         GlassContainer(
-              padding: const EdgeInsets.all(28),
-              borderRadius: 28,
-              child: Column(
+          padding: const EdgeInsets.all(28),
+          borderRadius: 28,
+          child: Column(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: const Icon(
+                  Icons.mark_email_unread_rounded,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                'Verifikasi Email',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kode OTP telah dikirim ke',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                email,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              // OTP boxes
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(6, (i) {
+                  return SizedBox(
+                    width: 48,
+                    child: Focus(
+                      onKeyEvent: (node, event) {
+                        if (event is KeyDownEvent &&
+                            event.logicalKey == LogicalKeyboardKey.backspace &&
+                            _otpControllers[i].text.isEmpty &&
+                            i > 0) {
+                          _otpFocusNodes[i - 1].requestFocus();
+                          return KeyEventResult.handled;
+                        }
+                        return KeyEventResult.ignored;
+                      },
+                      child: TextField(
+                        controller: _otpControllers[i],
+                        focusNode: _otpFocusNodes[i],
+                        maxLength: 1,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: InputDecoration(
+                          counterText: '',
+                          contentPadding: EdgeInsets.zero,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.blue,
+                              width: 2,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.08),
+                        ),
+                        onChanged: (v) {
+                          if (v.isNotEmpty && i < 5) {
+                            _otpFocusNodes[i + 1].requestFocus();
+                          }
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 36),
+
+              GlassButton(
+                text: 'Verifikasi',
+                icon: Icons.verified_user_rounded,
+                isLoading: isLoading,
+                onPressed: _handleOtpVerify,
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: const Icon(
-                      Icons.mark_email_unread_rounded,
-                      color: Colors.blue,
-                      size: 40,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'Verifikasi Email',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
                   Text(
-                    'Kode OTP telah dikirim ke',
+                    'Belum menerima kode? ',
                     style: TextStyle(
+                      color: Colors.white.withOpacity(0.55),
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    email,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  GestureDetector(
+                    onTap: _handleResendOtp,
+                    child: const Text(
+                      'Kirim Ulang',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 36),
-
-                  // OTP boxes
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(6, (i) {
-                      return SizedBox(
-                        width: 48,
-                        child: Focus(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent &&
-                                event.logicalKey ==
-                                    LogicalKeyboardKey.backspace &&
-                                _otpControllers[i].text.isEmpty &&
-                                i > 0) {
-                              _otpFocusNodes[i - 1].requestFocus();
-                              return KeyEventResult.handled;
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: TextField(
-                            controller: _otpControllers[i],
-                            focusNode: _otpFocusNodes[i],
-                            maxLength: 1,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              contentPadding: EdgeInsets.zero,
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withOpacity(0.3),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Colors.blue,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.08),
-                            ),
-                            onChanged: (v) {
-                              if (v.isNotEmpty && i < 5) {
-                                _otpFocusNodes[i + 1].requestFocus();
-                              }
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-
-                  const SizedBox(height: 36),
-
-                  GlassButton(
-                    text: 'Verifikasi',
-                    icon: Icons.verified_user_rounded,
-                    isLoading: isLoading,
-                    onPressed: _handleOtpVerify,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Belum menerima kode? ',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.55),
-                          fontSize: 13,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: _handleResendOtp,
-                        child: const Text(
-                          'Kirim Ulang',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            )
-            .animate()
-            .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.08, end: 0),
+            ],
+          ),
+        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.08, end: 0),
 
         const SizedBox(height: 20),
 

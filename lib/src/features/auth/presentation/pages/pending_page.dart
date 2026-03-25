@@ -46,9 +46,23 @@ class PendingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
     final regState = ref.watch(registrationProvider);
-    final email = regState.data.email;
-    final fullName = regState.data.fullName;
+
+    // Email priority: authenticated user > pending user > registration form data
+    String email = '';
+    String fullName = '';
+    if (authState is AuthPending) {
+      email = authState.user.email;
+      fullName = authState.user.name;
+    } else if (authState is AuthAuthenticated) {
+      email = authState.user.email;
+      fullName = authState.user.name;
+    } else {
+      // Came from registration flow — registrationProvider still has data
+      email = regState.data.email;
+      fullName = regState.data.fullName;
+    }
 
     return GradientBackground(
       child: SafeArea(
