@@ -17,6 +17,14 @@ class ApiEndpoints {
   static const String user = '/user';
   static const String userStats = '/user/stats';
 
+  // Wallet
+  static const String wallet = '/wallet';
+  static const String walletTransactions = '/wallet/transactions';
+  static const String walletTopup = '/wallet/topup';
+
+  // Transactions
+  static const String transactions = '/transactions';
+
   // Password reset
   static const String forgotPassword = '/password/forgot';
   static const String resetPassword = '/password/reset';

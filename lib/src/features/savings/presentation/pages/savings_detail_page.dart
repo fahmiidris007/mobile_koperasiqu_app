@@ -9,48 +9,43 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/services/hive_transaction_storage.dart' as hive_tx;
-import '../providers/transaction_provider.dart';
-import '../../domain/entities/savings_account.dart';
-import '../../data/datasources/mock_savings_datasource.dart';
+import '../providers/wallet_provider.dart';
+import '../../domain/entities/wallet_info.dart';
+import '../../domain/entities/wallet_transaction.dart';
 
-/// Savings provider
-final savingsProvider = FutureProvider<SavingsAccount>((ref) async {
-  final datasource = MockSavingsDatasource();
-  return datasource.getPrimarySavings();
-});
-
-/// Monthly summary provider
-final monthlySummaryProvider = FutureProvider<List<MonthlySummary>>((
-  ref,
-) async {
-  final datasource = MockSavingsDatasource();
-  final savings = await ref.watch(savingsProvider.future);
-  return datasource.getMonthlySummary(savings.id);
-});
-
-/// Savings detail page with chart
+/// Savings detail page - shows wallet balance + wallet transactions
 class SavingsDetailPage extends ConsumerWidget {
   const SavingsDetailPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final savingsAsync = ref.watch(savingsProvider);
-    final summaryAsync = ref.watch(monthlySummaryProvider);
-    final txState = ref.watch(transactionProvider);
+    final walletAsync = ref.watch(walletProvider);
+    final walletTxAsync = ref.watch(walletTransactionsProvider);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 100), // Space for nav bar
-      child: savingsAsync.when(
+      padding: const EdgeInsets.only(bottom: 100),
+      child: walletAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: Colors.white)),
         error: (e, _) => Center(
-          child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.wifi_off, color: Colors.white.withOpacity(0.4), size: 48),
+              const SizedBox(height: 12),
+              Text('Gagal memuat data', style: TextStyle(color: Colors.white.withOpacity(0.7))),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => ref.invalidate(walletProvider),
+                child: const Text('Coba Lagi', style: TextStyle(color: AppColors.teal)),
+              ),
+            ],
+          ),
         ),
-        data: (savings) => _SavingsContent(
-          savings: savings,
-          monthlySummary: summaryAsync.valueOrNull ?? [],
-          txState: txState,
+        data: (wallet) => _SavingsContent(
+          wallet: wallet,
+          transactions: walletTxAsync.valueOrNull ?? [],
+          isLoadingTx: walletTxAsync.isLoading,
         ),
       ),
     );
@@ -59,14 +54,14 @@ class SavingsDetailPage extends ConsumerWidget {
 
 class _SavingsContent extends StatelessWidget {
   const _SavingsContent({
-    required this.savings,
-    required this.monthlySummary,
-    required this.txState,
+    required this.wallet,
+    required this.transactions,
+    required this.isLoadingTx,
   });
 
-  final SavingsAccount savings;
-  final List<MonthlySummary> monthlySummary;
-  final TransactionState txState;
+  final WalletInfo wallet;
+  final List<WalletTransaction> transactions;
+  final bool isLoadingTx;
 
   @override
   Widget build(BuildContext context) {
@@ -78,19 +73,6 @@ class _SavingsContent extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(
               children: [
-                // GestureDetector(
-                //   onTap: () => context.go('/dashboard'),
-                //   child: Container(
-                //     width: 44,
-                //     height: 44,
-                //     decoration: BoxDecoration(
-                //       color: Colors.white.withOpacity(0.15),
-                //       borderRadius: BorderRadius.circular(12),
-                //     ),
-                //     child: const Icon(Icons.arrow_back, color: Colors.white),
-                //   ),
-                // ),
-                // const SizedBox(width: 16),
                 const Expanded(
                   child: Text(
                     'Tabungan',
@@ -119,20 +101,21 @@ class _SavingsContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: _buildBalanceCard(
-              context,
-            ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
+            child: _buildBalanceCard(context)
+                .animate()
+                .fadeIn(duration: 500.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
         ),
 
-        // Chart
-        if (monthlySummary.isNotEmpty)
+        // Chart (balance history from transactions)
+        if (transactions.length >= 2)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: _buildChart(
-                context,
-              ).animate(delay: 200.ms).fadeIn(duration: 500.ms),
+              child: _buildChart(context)
+                  .animate(delay: 200.ms)
+                  .fadeIn(duration: 500.ms),
             ),
           ),
 
@@ -144,7 +127,7 @@ class _SavingsContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: GlassButton(
-                    text: 'Setor',
+                    text: 'Top Up',
                     icon: Icons.add,
                     onPressed: () => context.push(Routes.deposit),
                   ),
@@ -189,75 +172,91 @@ class _SavingsContent extends StatelessWidget {
           ),
         ),
 
-        // Transaction list — limited to 5 items
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              if (txState.transactions.isNotEmpty) {
-                final tx = txState.transactions[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  child: _HiveTransactionItem(transaction: tx)
-                      .animate(delay: (400 + index * 80).ms)
-                      .fadeIn(duration: 400.ms),
-                );
-              }
-              final tx = savings.transactions[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 4,
-                ),
-                child: _TransactionItem(transaction: tx)
-                    .animate(delay: (400 + index * 80).ms)
-                    .fadeIn(duration: 400.ms),
-              );
-            },
-            childCount: txState.transactions.isNotEmpty
-                ? txState.transactions.length.clamp(0, 5)
-                : savings.transactions.length.clamp(0, 5),
-          ),
-        ),
-
-        // Lihat Semua button footer
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: GestureDetector(
-              onTap: () => context.push(Routes.transactionHistory),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.12)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        // Transaction list
+        if (isLoadingTx)
+          const SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(color: Colors.white38),
+              ),
+            ),
+          )
+        else if (transactions.isEmpty)
+          SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
                   children: [
+                    Icon(Icons.receipt_long_outlined,
+                        size: 48, color: Colors.white.withOpacity(0.3)),
+                    const SizedBox(height: 12),
                     Text(
-                      'Tampilkan Semua Transaksi',
+                      'Belum ada transaksi',
                       style: TextStyle(
-                        color: AppColors.teal,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 13,
-                      color: AppColors.teal,
+                          color: Colors.white.withOpacity(0.5), fontSize: 14),
                     ),
                   ],
                 ),
               ),
             ),
+          )
+        else
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final tx = transactions.take(5).toList()[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 4),
+                  child: _WalletTxItem(transaction: tx)
+                      .animate(delay: (400 + index * 80).ms)
+                      .fadeIn(duration: 400.ms),
+                );
+              },
+              childCount: transactions.take(5).length,
+            ),
           ),
-        ),
+
+        // Show all button
+        if (transactions.isNotEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: GestureDetector(
+                onTap: () => context.push(Routes.transactionHistory),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(14),
+                    border:
+                        Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Tampilkan Semua Transaksi',
+                        style: TextStyle(
+                          color: AppColors.teal,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(Icons.arrow_forward_ios,
+                          size: 13, color: AppColors.teal),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
       ],
     );
   }
@@ -283,53 +282,32 @@ class _SavingsContent extends StatelessWidget {
                 child: const Icon(Icons.savings, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 16),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      savings.name,
-                      style: const TextStyle(
+                      'KoperasiQu Wallet',
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
-                      Formatters.maskAccountNumber(savings.accountNumber),
+                      'Tabungan Utama',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white.withOpacity(0.6),
-                        letterSpacing: 1,
+                        color: Colors.white54,
                       ),
                     ),
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${savings.interestRate}% p.a.',
-                  style: const TextStyle(
-                    color: AppColors.success,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
-
           const SizedBox(height: 24),
-
           Text(
             'Saldo Tersedia',
             style: TextStyle(
@@ -338,11 +316,8 @@ class _SavingsContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          // Use real balance from Hive if available, fallback to mock data
           Text(
-            Formatters.formatCurrency(
-              txState.balance > 0 ? txState.balance : savings.balance,
-            ),
+            wallet.balanceFormatted,
             style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
@@ -356,15 +331,14 @@ class _SavingsContent extends StatelessWidget {
   }
 
   Widget _buildChart(BuildContext context) {
-    // Use real data from Hive if available, otherwise use mock data
-    final hasRealData = txState.monthlyBalanceData.isNotEmpty;
-    final chartData = hasRealData
-        ? txState.monthlyBalanceData
-        : monthlySummary
-              .map((e) => (month: '', balance: e.endBalance))
-              .toList();
+    // Build simple amount-over-time chart from approved topups
+    final approved = transactions
+        .where((t) => t.status == 'approved')
+        .toList()
+        .reversed
+        .toList();
 
-    if (chartData.isEmpty) return const SizedBox.shrink();
+    if (approved.length < 2) return const SizedBox.shrink();
 
     return GlassContainer(
       padding: const EdgeInsets.all(20),
@@ -373,7 +347,7 @@ class _SavingsContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Perkembangan Saldo',
+            'Riwayat Top Up',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -382,79 +356,50 @@ class _SavingsContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 180,
+            height: 160,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 5000000,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: Colors.white.withOpacity(0.1),
-                      strokeWidth: 1,
-                    );
-                  },
+                  horizontalInterval: 500000,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.white.withOpacity(0.1),
+                    strokeWidth: 1,
+                  ),
                 ),
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
-                      interval: 1,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= chartData.length) {
-                          return const Text('');
-                        }
-                        // Use real month labels from txState
-                        final label = hasRealData
-                            ? chartData[index].month
-                            : ['Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'][index];
-                        return Text(
-                          label,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 11,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                titlesData: const FlTitlesData(
+                  leftTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: chartData.asMap().entries.map((e) {
+                    spots: approved.asMap().entries.map((e) {
                       return FlSpot(
                         e.key.toDouble(),
-                        e.value.balance / 1000000,
+                        e.value.amount / 1000,
                       );
                     }).toList(),
                     isCurved: true,
-                    curveSmoothness: 0.3,
                     gradient: AppColors.primaryGradient,
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
-                      getDotPainter: (spot, percent, bar, index) {
-                        return FlDotCirclePainter(
-                          radius: 4,
-                          color: Colors.white,
-                          strokeColor: AppColors.primary,
-                          strokeWidth: 2,
-                        );
-                      },
+                      getDotPainter: (spot, percent, bar, index) =>
+                          FlDotCirclePainter(
+                        radius: 4,
+                        color: Colors.white,
+                        strokeColor: AppColors.primary,
+                        strokeWidth: 2,
+                      ),
                     ),
                     belowBarData: BarAreaData(
                       show: true,
@@ -478,46 +423,41 @@ class _SavingsContent extends StatelessWidget {
   }
 }
 
-class _TransactionItem extends StatelessWidget {
-  const _TransactionItem({required this.transaction});
-
-  final SavingsTransaction transaction;
+/// Transaction item for WalletTransaction
+class _WalletTxItem extends StatelessWidget {
+  const _WalletTxItem({required this.transaction});
+  final WalletTransaction transaction;
 
   @override
   Widget build(BuildContext context) {
+    final isCredit = transaction.isCredit;
     return GlassContainer(
       padding: const EdgeInsets.all(14),
       borderRadius: 14,
       opacity: 0.1,
       child: Row(
         children: [
-          // Icon
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color:
-                  (transaction.isCredit ? AppColors.success : AppColors.expense)
-                      .withOpacity(0.2),
+              color: (isCredit ? AppColors.success : AppColors.expense)
+                  .withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               _getIcon(),
-              color: transaction.isCredit
-                  ? AppColors.success
-                  : AppColors.expense,
+              color: isCredit ? AppColors.success : AppColors.expense,
               size: 20,
             ),
           ),
           const SizedBox(width: 12),
-
-          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.description,
+                  transaction.typeLabel,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -526,7 +466,7 @@ class _TransactionItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  Formatters.formatDateTime(transaction.date),
+                  Formatters.formatDateTime(transaction.createdAt),
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.white.withOpacity(0.5),
@@ -535,106 +475,38 @@ class _TransactionItem extends StatelessWidget {
               ],
             ),
           ),
-
-          // Amount
-          Text(
-            '${transaction.isCredit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: transaction.isCredit ? AppColors.success : Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getIcon() {
-    switch (transaction.type) {
-      case SavingsTransactionType.deposit:
-        return Icons.arrow_downward_rounded;
-      case SavingsTransactionType.withdrawal:
-        return Icons.arrow_upward_rounded;
-      case SavingsTransactionType.transfer:
-        return Icons.swap_horiz_rounded;
-      case SavingsTransactionType.interest:
-        return Icons.trending_up_rounded;
-      case SavingsTransactionType.cashback:
-        return Icons.card_giftcard_rounded;
-      case SavingsTransactionType.fee:
-        return Icons.remove_circle_outline;
-    }
-  }
-}
-
-/// Transaction item for Hive TransactionModel
-class _HiveTransactionItem extends StatelessWidget {
-  const _HiveTransactionItem({required this.transaction});
-
-  final hive_tx.TransactionModel transaction;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(14),
-      borderRadius: 14,
-      opacity: 0.1,
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color:
-                  (transaction.isCredit ? AppColors.success : AppColors.expense)
-                      .withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              _getIcon(),
-              color: transaction.isCredit
-                  ? AppColors.success
-                  : AppColors.expense,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.description,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${isCredit ? '+' : ''}${transaction.amountFormatted}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: isCredit ? AppColors.success : Colors.white,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  Formatters.formatDateTime(transaction.date),
+              ),
+              const SizedBox(height: 2),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: transaction.isPending
+                      ? Colors.orange.withOpacity(0.2)
+                      : AppColors.success.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  transaction.status,
                   style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 10,
+                    color: transaction.isPending
+                        ? Colors.orange
+                        : AppColors.success,
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Amount
-          Text(
-            '${transaction.isCredit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: transaction.isCredit ? AppColors.success : Colors.white,
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -643,18 +515,14 @@ class _HiveTransactionItem extends StatelessWidget {
 
   IconData _getIcon() {
     switch (transaction.type) {
-      case hive_tx.TransactionType.deposit:
+      case 'topup':
         return Icons.arrow_downward_rounded;
-      case hive_tx.TransactionType.withdrawal:
-        return Icons.arrow_upward_rounded;
-      case hive_tx.TransactionType.transfer:
-        return Icons.swap_horiz_rounded;
-      case hive_tx.TransactionType.interest:
-        return Icons.trending_up_rounded;
-      case hive_tx.TransactionType.cashback:
-        return Icons.card_giftcard_rounded;
-      case hive_tx.TransactionType.purchase:
+      case 'payment':
         return Icons.shopping_bag_outlined;
+      case 'transfer':
+        return Icons.swap_horiz_rounded;
+      default:
+        return Icons.receipt_outlined;
     }
   }
 }

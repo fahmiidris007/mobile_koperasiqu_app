@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +13,8 @@ import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/validators.dart';
-import '../providers/deposit_provider.dart';
-import '../providers/transaction_provider.dart';
+import '../providers/wallet_provider.dart';
+import '../../domain/entities/wallet_transaction.dart';
 
 /// Deposit page with CRUD operations
 class DepositPage extends ConsumerStatefulWidget {
@@ -55,53 +57,45 @@ class _DepositPageState extends ConsumerState<DepositPage> {
         _amountController.text.replaceAll(RegExp(r'\D'), ''),
       ).toDouble();
 
-      final success = await ref
-          .read(depositProvider.notifier)
-          .createDeposit(
-            amount: amount,
-            description: _noteController.text.isEmpty
-                ? 'Setoran'
-                : _noteController.text,
-          );
+      final result = await ref
+          .read(topupNotifierProvider.notifier)
+          .topup(amount: amount);
 
       if (!mounted) return;
 
-      if (success) {
-        // Refresh transaction provider to sync data across pages
-        await ref.read(transactionProvider.notifier).refresh();
-
-        // Show success dialog
+      if (result != null) {
+        // Show success dialog with topup details
         await showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => _SuccessDialog(amount: amount.toInt()),
+          builder: (ctx) => _TopupSuccessDialog(result: result),
         );
 
         if (!mounted) return;
         context.go(Routes.savings);
       } else {
-        final error = ref.read(depositProvider).error;
+        final error = ref.read(topupNotifierProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? 'Gagal menyimpan setoran'),
+            content: Text(error ?? 'Gagal melakukan top up'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e) {
+      log('error top up $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final depositState = ref.watch(depositProvider);
+    // Keep provider alive while page is mounted (fixes autoDispose bad-state during async topup)
+    ref.watch(topupNotifierProvider);
 
     return SimpleGradientBackground(
       child: SafeArea(
@@ -172,21 +166,26 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Tabungan Utama',
+                                    'KoperasiQu Wallet',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
                                   ),
-                                  Text(
-                                    Formatters.formatCurrency(
-                                      depositState.balance,
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white.withOpacity(0.6),
-                                    ),
+                                  Consumer(
+                                    builder: (context, ref, _) {
+                                      final wallet = ref
+                                          .watch(walletProvider)
+                                          .valueOrNull;
+                                      return Text(
+                                        wallet?.balanceFormatted ?? '-',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white.withOpacity(0.6),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -336,17 +335,18 @@ class _DepositPageState extends ConsumerState<DepositPage> {
 
                       // Submit button
                       GlassButton(
-                        text: 'Konfirmasi Setoran',
+                        text: 'Konfirmasi Top Up',
                         isLoading: _isLoading,
                         onPressed: _handleDeposit,
                       ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
 
                       const SizedBox(height: 24),
 
-                      // Transaction history link
+                      // History link
                       Center(
                         child: TextButton.icon(
-                          onPressed: () => _showTransactionHistory(context),
+                          onPressed: () =>
+                              context.push(Routes.transactionHistory),
                           icon: const Icon(
                             Icons.history,
                             color: Colors.white70,
@@ -369,335 +369,6 @@ class _DepositPageState extends ConsumerState<DepositPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showTransactionHistory(BuildContext context) {
-    final transactions = ref.read(depositProvider).transactions;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A1A2E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Riwayat Transaksi',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-
-              // List
-              Expanded(
-                child: transactions.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              size: 64,
-                              color: Colors.white.withOpacity(0.3),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Belum ada transaksi',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: transactions.length,
-                        itemBuilder: (ctx, index) {
-                          final tx = transactions[index];
-                          return _TransactionItem(
-                            transaction: tx,
-                            onEdit: () => _showEditDialog(context, tx),
-                            onDelete: () => _confirmDelete(context, tx.id),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showEditDialog(BuildContext context, dynamic tx) {
-    final amountController = TextEditingController(
-      text: tx.amount.toInt().toString(),
-    );
-    final descController = TextEditingController(text: tx.description);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Edit Transaksi',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Jumlah',
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                prefixText: 'Rp ',
-                prefixStyle: const TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Keterangan',
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final amount = double.tryParse(
-                amountController.text.replaceAll(RegExp(r'\D'), ''),
-              );
-              if (amount != null) {
-                await ref
-                    .read(depositProvider.notifier)
-                    .updateDeposit(
-                      id: tx.id,
-                      amount: amount,
-                      description: descController.text,
-                    );
-                // Refresh transaction provider to sync data
-                await ref.read(transactionProvider.notifier).refresh();
-                if (mounted) {
-                  Navigator.pop(context); // Close bottom sheet
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Transaksi berhasil diupdate'),
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text(
-              'Simpan',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, String id) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Hapus Transaksi',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus transaksi ini?',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(depositProvider.notifier).deleteDeposit(id);
-              // Refresh transaction provider to sync data
-              await ref.read(transactionProvider.notifier).refresh();
-              if (mounted) {
-                Navigator.pop(context); // Close bottom sheet
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Transaksi berhasil dihapus')),
-                );
-              }
-            },
-            child: const Text(
-              'Hapus',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Transaction item widget
-class _TransactionItem extends StatelessWidget {
-  const _TransactionItem({
-    required this.transaction,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  final dynamic transaction;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDeposit = transaction.type.toString().contains('deposit');
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: (isDeposit ? AppColors.success : AppColors.error)
-                  .withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              isDeposit ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isDeposit ? AppColors.success : AppColors.error,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  Formatters.formatDateTime(transaction.date),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.5),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isDeposit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDeposit ? AppColors.success : AppColors.error,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: onEdit,
-                    child: const Icon(
-                      Icons.edit,
-                      size: 18,
-                      color: Colors.white54,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: onDelete,
-                    child: const Icon(
-                      Icons.delete,
-                      size: 18,
-                      color: Colors.white54,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -727,11 +398,11 @@ class _ThousandSeparatorFormatter extends TextInputFormatter {
   }
 }
 
-/// Success dialog
-class _SuccessDialog extends StatelessWidget {
-  const _SuccessDialog({required this.amount});
+/// Top Up success dialog — shows real topup result from API
+class _TopupSuccessDialog extends StatelessWidget {
+  const _TopupSuccessDialog({required this.result});
 
-  final int amount;
+  final TopupResult result;
 
   @override
   Widget build(BuildContext context) {
@@ -747,12 +418,12 @@ class _SuccessDialog extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.2),
+                    color: AppColors.teal.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.check_circle,
-                    color: AppColors.success,
+                    Icons.pending_actions,
+                    color: AppColors.teal,
                     size: 48,
                   ),
                 )
@@ -763,7 +434,7 @@ class _SuccessDialog extends StatelessWidget {
             const SizedBox(height: 24),
 
             const Text(
-              'Setoran Berhasil!',
+              'Top Up Berhasil Dibuat!',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -771,26 +442,62 @@ class _SuccessDialog extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            Text(
-              Formatters.formatCurrency(amount),
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.success,
+            // Detail card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  _DetailRow(
+                    label: 'Jumlah Top Up',
+                    value: result.amountFormatted,
+                  ),
+                  const Divider(color: Colors.white12, height: 16),
+                  _DetailRow(
+                    label: 'Biaya Admin',
+                    value: result.serviceFeeFormatted,
+                  ),
+                  const Divider(color: Colors.white12, height: 16),
+                  _DetailRow(
+                    label: 'Total Transfer',
+                    value: result.totalAmountFormatted,
+                    bold: true,
+                    valueColor: AppColors.success,
+                  ),
+                  const Divider(color: Colors.white12, height: 16),
+                  _DetailRow(
+                    label: 'Kode Unik',
+                    value: result.uniqueCode.toString(),
+                    bold: true,
+                    valueColor: Colors.orangeAccent,
+                  ),
+                  const Divider(color: Colors.white12, height: 16),
+                  _DetailRow(
+                    label: 'Status',
+                    value: result.status.toUpperCase(),
+                    valueColor: Colors.orange,
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             Text(
-              'Telah ditambahkan ke Tabungan Utama',
+              'Lakukan transfer sesuai jumlah total di atas termasuk kode unik ke rekening tujuan.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withOpacity(0.6),
+              ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             GlassButton(
               text: 'Selesai',
@@ -799,6 +506,41 @@ class _SuccessDialog extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({
+    required this.label,
+    required this.value,
+    this.bold = false,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final bool bold;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.6)),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: bold ? FontWeight.bold : FontWeight.w500,
+            color: valueColor ?? Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }
