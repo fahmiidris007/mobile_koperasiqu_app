@@ -62,9 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (isLoggedIn) {
         final user = await _repository.getCurrentUser();
         if (user != null) {
-          state = user.isApproved
-              ? AuthAuthenticated(user)
-              : AuthPending(user);
+          state = user.isApproved ? AuthAuthenticated(user) : AuthPending(user);
           return;
         }
       }
@@ -92,11 +90,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> verifyLoginOtp(String email, String code) async {
     state = const AuthLoading();
     try {
-      final user = await _repository.verifyLoginOtp(
-        email: email,
-        code: code,
-      );
-      state = user.isApproved ? AuthAuthenticated(user) : AuthPending(user);
+      final user = await _repository.verifyLoginOtp(email: email, code: code);
+      // state = user.isApproved ? AuthAuthenticated(user) : AuthPending(user);
+      state = AuthAuthenticated(user);
     } on AuthException catch (e) {
       state = AuthError(e.message);
     } catch (_) {
@@ -239,10 +235,7 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (_) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Kode OTP tidak valid.',
-      );
+      state = state.copyWith(isLoading: false, error: 'Kode OTP tidak valid.');
       return false;
     }
   }

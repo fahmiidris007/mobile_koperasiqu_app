@@ -108,8 +108,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         setState(() => _step = 1);
       } else if (next is AuthAuthenticated) {
         context.go(Routes.dashboard);
-      } else if (next is AuthPending) {
-        context.go(Routes.pending);
       } else if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.message), backgroundColor: Colors.red),

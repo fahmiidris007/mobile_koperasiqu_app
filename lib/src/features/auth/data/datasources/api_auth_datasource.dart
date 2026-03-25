@@ -27,9 +27,7 @@ class ApiAuthDatasource {
         data: {'email': email, 'password': password},
         options: Options(contentType: 'application/json'),
       );
-      return LoginResponseModel.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      return LoginResponseModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw AuthException(_parseError(e));
     }
