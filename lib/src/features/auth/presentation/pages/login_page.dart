@@ -11,7 +11,7 @@ import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
 
-/// Login page — 2-step flow: credentials → email OTP verification
+/// Login page — 2-step flow: credentials → email OTP verification (real API)
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -33,9 +33,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _otpControllers = List.generate(6, (_) => TextEditingController());
   final _otpFocusNodes = List.generate(6, (_) => FocusNode());
 
-  // Cached user after auth (pending OTP)
-  AuthState? _pendingAuthState;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -49,18 +46,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  // ── Step 0: validate credentials and move to OTP step ──────────────────────
+  // Step 1: triggers OTP email via real API
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
-
     await ref
         .read(authProvider.notifier)
         .login(_emailController.text.trim(), _passwordController.text);
-    // Navigation / OTP step transition handled in ref.listen below
   }
 
-  // ── Step 1: verify OTP (demo: any 6 digits accepted) ──────────────────────
-  void _handleOtpVerify() {
+  // Step 2: verifies OTP via real API
+  Future<void> _handleOtpVerify() async {
     final otp = _otpControllers.map((c) => c.text).join();
     if (otp.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,13 +66,35 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
       return;
     }
+    await ref
+        .read(authProvider.notifier)
+        .verifyLoginOtp(_emailController.text.trim(), otp);
+  }
 
-    // OTP accepted — navigate based on cached auth state
-    final pending = _pendingAuthState;
-    if (pending is AuthAuthenticated) {
-      context.go(Routes.dashboard);
-    } else if (pending is AuthPending) {
-      context.go(Routes.pending);
+  // Resend OTP
+  Future<void> _handleResendOtp() async {
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .resendOtp(email: _emailController.text.trim());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kode OTP telah dikirim ulang'),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal mengirim ulang OTP'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -86,14 +103,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authState = ref.watch(authProvider);
 
     ref.listen<AuthState>(authProvider, (previous, next) {
-      if (next is AuthAuthenticated || next is AuthPending) {
-        // Credentials valid → cache state and show OTP step
-        setState(() {
-          _pendingAuthState = next;
-          _step = 1;
-        });
-        // Reset auth provider so it doesn't immediately navigate
-        ref.read(authProvider.notifier).clearError();
+      if (next is AuthOtpRequired) {
+        // Credentials accepted — backend sent OTP — show OTP step
+        setState(() => _step = 1);
+      } else if (next is AuthAuthenticated) {
+        context.go(Routes.dashboard);
+      } else if (next is AuthPending) {
+        context.go(Routes.pending);
       } else if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -102,13 +118,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         );
         ref.read(authProvider.notifier).clearError();
+        // On OTP error, stay on OTP step so user can retry
       }
     });
 
     final isLoading = authState is AuthLoading;
 
     return PopScope(
-      // Allow back only when in OTP step — go back to credentials
       canPop: _step == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _step == 1) {
@@ -137,21 +153,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             child: _step == 0
                 ? _buildCredentialsStep(isLoading)
-                : _buildOtpStep(),
+                : _buildOtpStep(isLoading),
           ),
         ),
       ),
     );
   }
 
-  // ── Credentials step ───────────────────────────────────────────────────────
+  // ── Credentials step ────────────────────────────────────────────────────────
   Widget _buildCredentialsStep(bool isLoading) {
     return Column(
       key: const ValueKey('credentials'),
       children: [
         const SizedBox(height: 16),
 
-        // Back button
         Align(
           alignment: Alignment.centerLeft,
           child: GestureDetector(
@@ -170,7 +185,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
         const SizedBox(height: 16),
 
-        // Logo
         Container(
               width: 80,
               height: 80,
@@ -195,7 +209,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
         const SizedBox(height: 40),
 
-        // Form card
         GlassContainer(
               padding: const EdgeInsets.all(24),
               borderRadius: 28,
@@ -218,14 +231,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Center(
                       child: Text(
                         'Masuk ke akun KoperasiQu Anda',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                        ),
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
                       ),
                     ),
                     const SizedBox(height: 32),
 
-                    // Email
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -242,7 +252,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                     const SizedBox(height: 20),
 
-                    // Password
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
@@ -270,7 +279,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                     const SizedBox(height: 12),
 
-                    // Forgot password
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -297,7 +305,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.3)),
+                          child: Divider(
+                            color: Colors.white.withOpacity(0.3),
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -309,7 +319,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.3)),
+                          child: Divider(
+                            color: Colors.white.withOpacity(0.3),
+                          ),
                         ),
                       ],
                     ),
@@ -378,8 +390,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  // ── OTP step ───────────────────────────────────────────────────────────────
-  Widget _buildOtpStep() {
+  // ── OTP step ─────────────────────────────────────────────────────────────
+  Widget _buildOtpStep(bool isLoading) {
     final email = _emailController.text.isNotEmpty
         ? _emailController.text
         : 'email Anda';
@@ -389,7 +401,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       children: [
         const SizedBox(height: 16),
 
-        // Back → credentials
         Align(
           alignment: Alignment.centerLeft,
           child: GestureDetector(
@@ -420,7 +431,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               borderRadius: 28,
               child: Column(
                 children: [
-                  // Icon
                   Container(
                     width: 80,
                     height: 80,
@@ -527,16 +537,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                   const SizedBox(height: 36),
 
-                  // Verify button
                   GlassButton(
                     text: 'Verifikasi',
                     icon: Icons.verified_user_rounded,
+                    isLoading: isLoading,
                     onPressed: _handleOtpVerify,
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Resend
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -548,15 +557,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Kode OTP telah dikirim ulang'),
-                              backgroundColor: Colors.blue,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+                        onTap: _handleResendOtp,
                         child: const Text(
                           'Kirim Ulang',
                           style: TextStyle(
@@ -587,7 +588,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Mode demo: masukkan kode OTP apa saja (6 digit)',
+                  'OTP dikirim ke email — masukkan kode yang diterima',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.5),

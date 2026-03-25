@@ -129,21 +129,38 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
     setState(() => _isVerifying = true);
 
-    final success = await ref
-        .read(registrationProvider.notifier)
-        .verifyEkyc(_ktpImage!.path, _selfieImage!.path);
+    // Update photo paths in registration data
+    final currentData = ref.read(registrationProvider).data;
+    ref.read(registrationProvider.notifier).updateData(
+      currentData.copyWith(
+        ktpPhotoPath: _ktpImage!.path,
+        selfiePhotoPath: _selfieImage!.path,
+      ),
+    );
+
+    // Call real POST /register API (multipart with KTP + selfie)
+    final user = await ref.read(registrationProvider.notifier).submit();
 
     if (!mounted) return;
-
     setState(() => _isVerifying = false);
 
-    if (success) {
-      final user = await ref.read(registrationProvider.notifier).submit();
-      if (user != null && mounted) {
-        context.go(Routes.pending);
+    if (user != null) {
+      // Navigate to OTP verification page — email is needed for /otp/verify
+      final email = ref.read(registrationProvider).data.email;
+      context.pushReplacement(
+        Routes.verifyRegisterOtp,
+        extra: email,
+      );
+    } else {
+      final err = ref.read(registrationProvider).error;
+      if (err != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err), backgroundColor: Colors.red),
+        );
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

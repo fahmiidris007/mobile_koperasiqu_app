@@ -3,9 +3,11 @@ import '../entities/registration_data.dart';
 
 /// Abstract repository for authentication operations
 abstract class AuthRepository {
-  /// Login with email and password
-  /// Returns User on success, throws on failure
-  Future<User> login({required String email, required String password});
+  /// Login with email and password — triggers OTP sent to email
+  Future<void> login({required String email, required String password});
+
+  /// Verify OTP after login — returns authenticated User + saves token
+  Future<User> verifyLoginOtp({required String email, required String code});
 
   /// Register a new member
   /// Returns User with pending status on success
@@ -28,4 +30,18 @@ abstract class AuthRepository {
 
   /// Check registration status
   Future<UserStatus> checkRegistrationStatus(String userId);
+
+  // ── OTP for registration verification ─────────────────────────────────────
+
+  /// Send OTP email for registration verification
+  Future<void> sendRegisterOtp({required String email});
+
+  /// Verify registration OTP
+  Future<void> verifyRegisterOtp({
+    required String email,
+    required String code,
+  });
+
+  /// Resend registration OTP
+  Future<void> resendOtp({required String email});
 }
