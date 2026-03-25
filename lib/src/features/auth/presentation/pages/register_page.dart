@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,13 +38,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   DateTime? _birthDate;
   Gender? _gender;
 
-  // Step 2 controllers
+  // Step 2 – OTP controllers & focus nodes
+  final _otpControllers = List.generate(6, (_) => TextEditingController());
+  final _otpFocusNodes = List.generate(6, (_) => FocusNode());
+
+  // Step 3 controllers
   final _occupationController = TextEditingController();
   final _companyController = TextEditingController();
   final _positionController = TextEditingController();
   int _monthlyIncome = 0;
 
-  // Step 3 controllers
+  // Step 4 controllers
   MaritalStatus? _maritalStatus;
   final _spouseNameController = TextEditingController();
   int _numberOfChildren = 0;
@@ -59,7 +64,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _occupationController.dispose();
+    for (final c in _otpControllers) {
+      c.dispose();
+    }
+    for (final f in _otpFocusNodes) {
+      f.dispose();
+    }
     _companyController.dispose();
     _positionController.dispose();
     _spouseNameController.dispose();
@@ -95,13 +105,33 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   void _nextStep() {
-    if (!_formKey.currentState!.validate()) return;
-
-    _updateRegistrationData();
-
     final currentStep = ref.read(registrationProvider).data.currentStep;
 
-    if (currentStep < 2) {
+    // OTP step: skip form validation, just check all 6 boxes filled
+    if (currentStep == 1) {
+      final otp = _otpControllers.map((c) => c.text).join();
+      if (otp.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Masukkan kode OTP 6 digit terlebih dahulu'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+      _updateRegistrationData();
+      ref.read(registrationProvider.notifier).nextStep();
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
+    _updateRegistrationData();
+
+    if (currentStep < 3) {
       ref.read(registrationProvider.notifier).nextStep();
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -199,7 +229,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: StepIndicator(
               currentStep: currentStep,
-              steps: const ['Data Diri', 'Pekerjaan', 'Keluarga'],
+              steps: const [
+                'Data Diri',
+                'Verifikasi Email',
+                'Pekerjaan',
+                'Keluarga',
+              ],
             ),
           ),
 
@@ -212,7 +247,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [_buildStep1(), _buildStep2(), _buildStep3()],
+                children: [
+                  _buildStep1(),
+                  _buildStep2Otp(),
+                  _buildStep3(),
+                  _buildStep4(),
+                ],
               ),
             ),
           ),
@@ -221,8 +261,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           Padding(
             padding: const EdgeInsets.all(24),
             child: GlassButton(
-              text: currentStep < 2 ? 'Lanjut' : 'Verifikasi Identitas',
-              icon: currentStep < 2 ? Icons.arrow_forward : Icons.verified_user,
+              text: currentStep < 3 ? 'Lanjut' : 'Verifikasi Identitas',
+              icon: currentStep < 3 ? Icons.arrow_forward : Icons.verified_user,
               onPressed: _nextStep,
             ),
           ),
@@ -397,7 +437,194 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep2() {
+  Widget _buildStep2Otp() {
+    final email = _emailController.text.isNotEmpty
+        ? _emailController.text
+        : 'email Anda';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          GlassContainer(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Icon
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.mark_email_unread_rounded,
+                    color: Colors.blue,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Verifikasi Email',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Kode OTP telah dikirim ke',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // OTP input boxes
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(6, (i) {
+                    return SizedBox(
+                      width: 48,
+                      child: Focus(
+                        onKeyEvent: (node, event) {
+                          // Detect backspace on empty field → move to previous
+                          if (event is KeyDownEvent &&
+                              event.logicalKey ==
+                                  LogicalKeyboardKey.backspace &&
+                              _otpControllers[i].text.isEmpty &&
+                              i > 0) {
+                            _otpFocusNodes[i - 1].requestFocus();
+                            return KeyEventResult.handled;
+                          }
+                          return KeyEventResult.ignored;
+                        },
+                        child: TextField(
+                          controller: _otpControllers[i],
+                          focusNode: _otpFocusNodes[i],
+                          maxLength: 1,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          decoration: InputDecoration(
+                            counterText: '',
+                            contentPadding: EdgeInsets.zero,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Colors.blue,
+                                width: 2,
+                              ),
+                            ),
+                            // Override global theme: use dark fill so white text is readable
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.08),
+                          ),
+                          onChanged: (v) {
+                            // Auto-advance to next when a digit is entered
+                            if (v.isNotEmpty && i < 5) {
+                              _otpFocusNodes[i + 1].requestFocus();
+                            }
+                            // If field was cleared via typing (not backspace),
+                            // stay on the current field
+                            setState(() {}); // Rebuild to update "Lanjut" state
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
+                const SizedBox(height: 28),
+
+                // Resend
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Belum menerima kode? ',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 13,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Kode OTP telah dikirim ulang'),
+                            backgroundColor: Colors.blue,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Kirim Ulang',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          GlassContainer(
+            padding: const EdgeInsets.all(16),
+            opacity: 0.08,
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.white54, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Mode demo: masukkan kode OTP apa saja (6 digit)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep3() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GlassContainer(
@@ -488,7 +715,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep3() {
+  Widget _buildStep4() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GlassContainer(
