@@ -7,237 +7,387 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 
-/// Profile page with account settings and logout
+/// Profile page with real user data from GET /user and GET /user/stats
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final statsAsync = ref.watch(userStatsProvider);
+
     return GradientBackground(
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 100),
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: const Text(
-                    'Profil Saya',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ).animate().fadeIn(duration: 400.ms),
+          child: userAsync.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+            error: (e, _) => _buildError(context, ref, e.toString()),
+            data: (user) => CustomScrollView(
+              slivers: [
+                // Header
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: const Text(
+                      'Profil Saya',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ).animate().fadeIn(duration: 400.ms),
+                  ),
                 ),
-              ),
 
-              // Profile card
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  child:
-                      GlassContainer(
-                            padding: const EdgeInsets.all(24),
-                            borderRadius: 24,
-                            child: Column(
-                              children: [
-                                // Avatar
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    gradient: AppColors.primaryGradient,
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'AF',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 28,
+                // Profile card
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                    child:
+                        GlassContainer(
+                              padding: const EdgeInsets.all(24),
+                              borderRadius: 24,
+                              child: Column(
+                                children: [
+                                  // Avatar
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        _initials(user.name),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 28,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 16),
+                                  const SizedBox(height: 16),
 
-                                // Name
-                                const Text(
-                                  'Ahmad Fahmi',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                  // Name
+                                  Text(
+                                    user.name,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
+                                  const SizedBox(height: 8),
 
-                                // Member ID
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
+                                  // Role badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.verified,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Anggota Koperasi',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    gradient: AppColors.primaryGradient,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
+
+                                  const SizedBox(height: 16),
+
+                                  // Contact info
+                                  if (user.phone.isNotEmpty)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.phone_outlined,
+                                          size: 14,
+                                          color: Colors.white.withOpacity(0.5),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          user.phone,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.white.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        Icons.verified,
+                                        Icons.email_outlined,
                                         size: 14,
-                                        color: Colors.white,
+                                        color: Colors.white.withOpacity(0.5),
                                       ),
-                                      SizedBox(width: 6),
+                                      const SizedBox(width: 6),
                                       Text(
-                                        'KQ-2024-001',
+                                        user.email,
                                         style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: Colors.white.withOpacity(0.7),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
+                                ],
+                              ),
+                            )
+                            .animate(delay: 100.ms)
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.1, end: 0),
+                  ),
+                ),
 
-                                const SizedBox(height: 16),
-
-                                // Contact info
-                                Text(
-                                  '081234567890',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
+                // Stats card from GET /user/stats
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: statsAsync.when(
+                      loading: () => const SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white38,
+                          ),
+                        ),
+                      ),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (stats) => GlassContainer(
+                        padding: const EdgeInsets.all(20),
+                        borderRadius: 20,
+                        opacity: 0.12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Statistik Akun',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                _StatItem(
+                                  label: 'Total Transaksi',
+                                  value: '${stats.totalTransactions}x',
+                                  icon: Icons.receipt_long_outlined,
                                 ),
+                                _StatDivider(),
+                                _StatItem(
+                                  label: 'Bulan Ini',
+                                  value: '${stats.transactionsThisMonth}x',
+                                  icon: Icons.calendar_month_outlined,
+                                ),
+                                _StatDivider(),
+                                _StatItem(
+                                  label: 'Hari Bergabung',
+                                  value: '${stats.memberDaysInt} hari',
+                                  icon: Icons.person_outline,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Member since
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 14,
+                                  color: Colors.white.withOpacity(0.5),
+                                ),
+                                const SizedBox(width: 6),
                                 Text(
-                                  'ahmad@email.com',
+                                  'Bergabung sejak ${Formatters.formatDate(stats.memberSince)}',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.5),
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                          .animate(delay: 100.ms)
-                          .fadeIn(duration: 400.ms)
-                          .slideY(begin: 0.1, end: 0),
-                ),
-              ),
-
-              // Menu items
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                  child: GlassContainer(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    borderRadius: 20,
-                    opacity: 0.1,
-                    child: Column(
-                      children: [
-                        _MenuItem(
-                          icon: Icons.person_outline,
-                          title: 'Edit Profil',
-                          onTap: () => context.push(Routes.editProfile),
+                          ],
                         ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.security_outlined,
-                          title: 'Keamanan Akun',
-                          onTap: () => context.push(Routes.accountSecurity),
-                        ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.notifications_outlined,
-                          title: 'Notifikasi',
-                          onTap: () => context.push(Routes.notifications),
-                        ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.history,
-                          title: 'Riwayat Transaksi',
-                          onTap: () => context.push(Routes.transactionHistory),
-                        ),
-                      ],
+                      ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
                     ),
-                  ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                  ),
                 ),
-              ),
 
-              // Support menu
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: GlassContainer(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    borderRadius: 20,
-                    opacity: 0.1,
-                    child: Column(
-                      children: [
-                        _MenuItem(
-                          icon: Icons.help_outline,
-                          title: 'Pusat Bantuan',
-                          onTap: () {},
-                        ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.description_outlined,
-                          title: 'Syarat & Ketentuan',
-                          onTap: () {},
-                        ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.privacy_tip_outlined,
-                          title: 'Kebijakan Privasi',
-                          onTap: () {},
-                        ),
-                        _MenuDivider(),
-                        _MenuItem(
-                          icon: Icons.info_outline,
-                          title: 'Tentang Aplikasi',
-                          subtitle: 'Versi 1.0.0',
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
-                  ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+                // Account menu
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      borderRadius: 20,
+                      opacity: 0.1,
+                      child: Column(
+                        children: [
+                          _MenuItem(
+                            icon: Icons.person_outline,
+                            title: 'Edit Profil',
+                            onTap: () => context.push(Routes.editProfile),
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.security_outlined,
+                            title: 'Keamanan Akun',
+                            onTap: () => context.push(Routes.accountSecurity),
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.notifications_outlined,
+                            title: 'Notifikasi',
+                            onTap: () => context.push(Routes.notifications),
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.history,
+                            title: 'Riwayat Transaksi',
+                            onTap: () =>
+                                context.push(Routes.transactionHistory),
+                          ),
+                        ],
+                      ),
+                    ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                  ),
                 ),
-              ),
 
-              // Logout button
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: GlassContainer(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    borderRadius: 20,
-                    opacity: 0.1,
-                    child: _MenuItem(
-                      icon: Icons.logout,
-                      title: 'Keluar',
-                      iconColor: AppColors.error,
-                      titleColor: AppColors.error,
-                      showArrow: false,
-                      onTap: () => _showLogoutDialog(context, ref),
-                    ),
-                  ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
+                // Support menu
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      borderRadius: 20,
+                      opacity: 0.1,
+                      child: Column(
+                        children: [
+                          _MenuItem(
+                            icon: Icons.help_outline,
+                            title: 'Pusat Bantuan',
+                            onTap: () {},
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.description_outlined,
+                            title: 'Syarat & Ketentuan',
+                            onTap: () {},
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.privacy_tip_outlined,
+                            title: 'Kebijakan Privasi',
+                            onTap: () {},
+                          ),
+                          _MenuDivider(),
+                          _MenuItem(
+                            icon: Icons.info_outline,
+                            title: 'Tentang Aplikasi',
+                            subtitle: 'Versi 1.0.0',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+                  ),
                 ),
-              ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            ],
+                // Logout
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      borderRadius: 20,
+                      opacity: 0.1,
+                      child: _MenuItem(
+                        icon: Icons.logout,
+                        title: 'Keluar',
+                        iconColor: AppColors.error,
+                        titleColor: AppColors.error,
+                        showArrow: false,
+                        onTap: () => _showLogoutDialog(context, ref),
+                      ),
+                    ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
+                  ),
+                ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  String _initials(String name) {
+    final parts = name.trim().split(' ').where((w) => w.isNotEmpty).toList();
+    if (parts.isEmpty) return 'K';
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  Widget _buildError(BuildContext context, WidgetRef ref, String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.wifi_off, color: Colors.white.withOpacity(0.4), size: 48),
+          const SizedBox(height: 12),
+          Text(
+            'Gagal memuat profil',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => ref.invalidate(userProvider),
+            child: const Text(
+              'Coba Lagi',
+              style: TextStyle(color: AppColors.teal),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -280,6 +430,62 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 }
+
+// ── Stat item widget ───────────────────────────────────────────────────────
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: AppColors.teal),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withOpacity(0.55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 48,
+      color: Colors.white.withOpacity(0.1),
+    );
+  }
+}
+
+// ── Menu item widgets ──────────────────────────────────────────────────────
 
 class _MenuItem extends StatelessWidget {
   const _MenuItem({
