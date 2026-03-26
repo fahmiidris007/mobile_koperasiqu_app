@@ -5,6 +5,7 @@ import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/ekyc_page.dart';
+import '../../features/auth/presentation/pages/verify_register_otp_page.dart';
 import '../../features/auth/presentation/pages/pending_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell.dart';
@@ -31,6 +32,7 @@ class Routes {
   static const String login = '/login';
   static const String register = '/register';
   static const String ekyc = '/ekyc';
+  static const String verifyRegisterOtp = '/verify-register-otp';
   static const String pending = '/pending';
 
   static const String dashboard = '/dashboard';
@@ -76,6 +78,13 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(path: Routes.ekyc, builder: (context, state) => const EkycPage()),
+      GoRoute(
+        path: Routes.verifyRegisterOtp,
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyRegisterOtpPage(email: email);
+        },
+      ),
       GoRoute(
         path: Routes.pending,
         builder: (context, state) => const PendingPage(),

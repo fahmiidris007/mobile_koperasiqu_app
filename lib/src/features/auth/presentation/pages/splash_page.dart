@@ -5,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
-import '../providers/auth_provider.dart';
 
 /// Splash screen with animated logo
 class SplashPage extends ConsumerStatefulWidget {
@@ -23,25 +22,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   Future<void> _initializeApp() async {
-    // Check auth state after splash animation
+    // Show splash animation then always go to welcome
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
-
-    final authNotifier = ref.read(authProvider.notifier);
-    await authNotifier.checkAuthState();
-
-    if (!mounted) return;
-
-    final authState = ref.read(authProvider);
-
-    if (authState is AuthAuthenticated) {
-      context.go(Routes.dashboard);
-    } else if (authState is AuthPending) {
-      context.go(Routes.pending);
-    } else {
-      context.go(Routes.welcome);
-    }
+    context.go(Routes.welcome);
   }
 
   @override
@@ -64,19 +48,19 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        blurRadius: 30,
-                        spreadRadius: 5,
+                        color: Colors.blue.withOpacity(0.4),
+                        blurRadius: 40,
+                        spreadRadius: 8,
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Text(
-                      'K',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(33),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Image.asset(
+                        'assets/images/koperasiqu_logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

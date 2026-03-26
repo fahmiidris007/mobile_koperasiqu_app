@@ -3,13 +3,13 @@ import '../../domain/entities/registration_data.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/mock_auth_datasource.dart';
 
-/// Implementation of AuthRepository using mock data source with local persistence
+/// Mock implementation of AuthRepository using local persistence
+/// Kept for reference/testing — replaced by ApiAuthRepositoryImpl in production
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl._internal(this._datasource);
 
   static AuthRepositoryImpl? _instance;
 
-  /// Initialize the repository (must be called before use)
   static Future<AuthRepositoryImpl> getInstance() async {
     if (_instance == null) {
       final datasource = await MockAuthDatasource.getInstance();
@@ -18,7 +18,6 @@ class AuthRepositoryImpl implements AuthRepository {
     return _instance!;
   }
 
-  /// Get the singleton instance synchronously (after initialization)
   static AuthRepositoryImpl get instance {
     if (_instance == null) {
       throw StateError(
@@ -31,8 +30,20 @@ class AuthRepositoryImpl implements AuthRepository {
   final MockAuthDatasource _datasource;
 
   @override
-  Future<User> login({required String phone, required String password}) {
-    return _datasource.login(phone: phone, password: password);
+  Future<void> login({required String email, required String password}) async {
+    // Mock: just validate credentials without OTP flow
+    await _datasource.login(email: email, password: password);
+  }
+
+  @override
+  Future<User> verifyLoginOtp({
+    required String email,
+    required String code,
+  }) async {
+    // Mock: OTP always succeeds — return current user
+    final user = await _datasource.getCurrentUser();
+    if (user == null) throw AuthException('User tidak ditemukan');
+    return user;
   }
 
   @override
@@ -69,5 +80,23 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserStatus> checkRegistrationStatus(String userId) {
     return _datasource.checkRegistrationStatus(userId);
+  }
+
+  @override
+  Future<void> sendRegisterOtp({required String email}) async {
+    // Mock: no-op
+  }
+
+  @override
+  Future<void> verifyRegisterOtp({
+    required String email,
+    required String code,
+  }) async {
+    // Mock: always succeeds
+  }
+
+  @override
+  Future<void> resendOtp({required String email}) async {
+    // Mock: no-op
   }
 }

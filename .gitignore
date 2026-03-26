@@ -46,3 +46,7 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# file project
+Startup Projects.drawio
+Basic API Koperasi-Store.postman_collection.json

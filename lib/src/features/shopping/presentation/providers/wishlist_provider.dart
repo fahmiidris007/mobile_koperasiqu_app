@@ -14,6 +14,9 @@ class WishlistState {
 
   bool contains(String productId) => productIds.contains(productId);
 
+  /// For ApiProduct (int-based IDs)
+  bool containsApiId(int id) => productIds.contains(id.toString());
+
   WishlistState copyWith({List<WishlistItem>? items, bool? isLoading}) {
     return WishlistState(
       items: items ?? this.items,
@@ -63,6 +66,30 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
 
   /// Check if product is in wishlist
   bool isWishlisted(String productId) => state.contains(productId);
+
+  /// Toggle wishlist for an ApiProduct
+  void toggleApiProduct(ApiProduct product) {
+    if (state.containsApiId(product.id)) {
+      remove(product.id.toString());
+    } else {
+      _addApiProduct(product);
+    }
+  }
+
+  Future<void> _addApiProduct(ApiProduct product) async {
+    _storage ??= await HiveWishlistStorage.getInstance();
+    final item = WishlistItem(
+      productId: product.id.toString(),
+      productName: product.name,
+      price: product.price,
+      originalPrice: null,
+      imageUrl: product.thumbnailUrl ?? '',
+      category: product.category.name,
+      addedAt: DateTime.now(),
+    );
+    await _storage!.toggle(item);
+    state = state.copyWith(items: _storage!.getAll());
+  }
 
   /// Remove from wishlist
   Future<void> remove(String productId) async {

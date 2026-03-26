@@ -50,6 +50,10 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
+  # Networking
+  dio: ^5.7.0
+  flutter_secure_storage: ^9.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -60,6 +64,23 @@ dev_dependencies:
   freezed: ^2.5.8
   json_serializable: ^6.9.4
   riverpod_generator: ^2.6.4
+
+  # App Icon Generator
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/koperasiqu_logo.png"
+  adaptive_icon_background: "#0A2463"
+  adaptive_icon_foreground: "assets/images/koperasiqu_logo.png"
+  remove_alpha_ios: true
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
 
 flutter:
   uses-material-design: true

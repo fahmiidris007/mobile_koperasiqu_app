@@ -9,17 +9,10 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/services/hive_transaction_storage.dart' as hive_tx;
-import '../../../savings/presentation/providers/transaction_provider.dart';
-import '../../domain/entities/dashboard_data.dart';
-import '../../data/datasources/mock_dashboard_datasource.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-
-/// Dashboard data provider
-final dashboardProvider = FutureProvider<DashboardData>((ref) async {
-  final datasource = MockDashboardDatasource();
-  return datasource.getDashboardData();
-});
+import '../../../savings/domain/entities/wallet_info.dart';
+import '../../../savings/domain/entities/wallet_transaction.dart';
+import '../../../savings/presentation/providers/wallet_provider.dart';
 
 /// Main dashboard page
 class DashboardPage extends ConsumerWidget {
@@ -27,22 +20,31 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardProvider);
-    final txState = ref.watch(transactionProvider);
-    final fullName = ref.watch(
-      registrationProvider.select((s) => s.data.fullName),
-    );
+    final walletAsync = ref.watch(walletProvider);
+    final walletTxAsync = ref.watch(walletTransactionsProvider);
+    final authState = ref.watch(authProvider);
+
+    // Resolve user name from auth state
+    String userName = '';
+    if (authState is AuthAuthenticated) {
+      userName = authState.user.name;
+    } else if (authState is AuthPending) {
+      userName = authState.user.name;
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 100),
-      child: dashboardAsync.when(
+      child: walletAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: Colors.white)),
         error: (e, _) => Center(
           child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
         ),
-        data: (data) =>
-            _DashboardContent(data: data, txState: txState, fullName: fullName),
+        data: (wallet) => _DashboardContent(
+          wallet: wallet,
+          transactions: walletTxAsync.valueOrNull ?? [],
+          userName: userName,
+        ),
       ),
     );
   }
@@ -50,14 +52,14 @@ class DashboardPage extends ConsumerWidget {
 
 class _DashboardContent extends StatelessWidget {
   const _DashboardContent({
-    required this.data,
-    required this.txState,
-    required this.fullName,
+    required this.wallet,
+    required this.transactions,
+    required this.userName,
   });
 
-  final DashboardData data;
-  final TransactionState txState;
-  final String fullName;
+  final WalletInfo wallet;
+  final List<WalletTransaction> transactions;
+  final String userName;
 
   @override
   Widget build(BuildContext context) {
@@ -129,40 +131,23 @@ class _DashboardContent extends StatelessWidget {
           ),
         ),
 
-        // Transaction list - use real data from Hive if available
+        // Transaction list from wallet API
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              // Use real transactions from Hive
-              if (txState.transactions.isNotEmpty) {
-                final tx = txState.recentTransactions[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  child: _HiveTransactionItem(transaction: tx)
-                      .animate(delay: (400 + index * 100).ms)
-                      .fadeIn(duration: 400.ms)
-                      .slideX(begin: 0.05, end: 0),
-                );
-              }
-              // Fallback to mock data
-              final tx = data.recentTransactions[index];
+              final tx = transactions.take(5).toList()[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 4,
                 ),
-                child: _TransactionItem(transaction: tx)
+                child: _WalletTransactionItem(transaction: tx)
                     .animate(delay: (400 + index * 100).ms)
                     .fadeIn(duration: 400.ms)
                     .slideX(begin: 0.05, end: 0),
               );
             },
-            childCount: txState.transactions.isNotEmpty
-                ? txState.recentTransactions.length
-                : data.recentTransactions.length,
+            childCount: transactions.take(5).length,
           ),
         ),
 
@@ -173,6 +158,9 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final initial = userName.isNotEmpty
+        ? userName.trim().split(' ').map((w) => w[0]).take(2).join().toUpperCase()
+        : 'K';
     return Row(
       children: [
         // Avatar - tap to go to profile
@@ -185,10 +173,10 @@ class _DashboardContent extends StatelessWidget {
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'AF',
-                style: TextStyle(
+                initial,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -205,15 +193,15 @@ class _DashboardContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Selamat Pagi,',
+                'Selamat Datang,',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.white.withOpacity(0.7),
                 ),
               ),
-              const Text(
-                'Ahmad Fahmi',
-                style: TextStyle(
+              Text(
+                userName.isNotEmpty ? userName : 'Anggota',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -266,9 +254,9 @@ class _DashboardContent extends StatelessWidget {
                   children: [
                     const Icon(Icons.diamond, size: 14, color: Colors.white),
                     const SizedBox(width: 4),
-                    Text(
-                      data.memberTier.displayName,
-                      style: const TextStyle(
+                    const Text(
+                      'Member',
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -280,11 +268,8 @@ class _DashboardContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Use real balance from Hive if available, fallback to mock data
           Text(
-            Formatters.formatCurrency(
-              txState.balance > 0 ? txState.balance : data.totalSavings,
-            ),
+            wallet.balanceFormatted,
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -298,35 +283,27 @@ class _DashboardContent extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.2),
+                  color: AppColors.teal.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.trending_up,
+                    Icon(
+                      Icons.account_balance_wallet,
                       size: 14,
-                      color: AppColors.success,
+                      color: AppColors.teal,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
-                      Formatters.formatPercentage(data.savingsGrowth),
-                      style: const TextStyle(
-                        color: AppColors.success,
+                      'Saldo Wallet',
+                      style: TextStyle(
+                        color: AppColors.teal,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'bulan ini',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.5),
                 ),
               ),
             ],
@@ -547,13 +524,15 @@ class _QuickActionButton extends StatelessWidget {
   }
 }
 
-class _TransactionItem extends StatelessWidget {
-  const _TransactionItem({required this.transaction});
+/// Transaction item for WalletTransaction (real API)
+class _WalletTransactionItem extends StatelessWidget {
+  const _WalletTransactionItem({required this.transaction});
 
-  final RecentTransaction transaction;
+  final WalletTransaction transaction;
 
   @override
   Widget build(BuildContext context) {
+    final isCredit = transaction.isCredit;
     return GlassContainer(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
@@ -565,16 +544,13 @@ class _TransactionItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color:
-                  (transaction.isCredit ? AppColors.success : AppColors.expense)
-                      .withOpacity(0.2),
+              color: (isCredit ? AppColors.success : AppColors.expense)
+                  .withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              _getTransactionIcon(),
-              color: transaction.isCredit
-                  ? AppColors.success
-                  : AppColors.expense,
+              _getIcon(),
+              color: isCredit ? AppColors.success : AppColors.expense,
               size: 22,
             ),
           ),
@@ -586,7 +562,7 @@ class _TransactionItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.title,
+                  transaction.typeLabel,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -595,10 +571,12 @@ class _TransactionItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  transaction.subtitle,
+                  transaction.status,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.6),
+                    color: transaction.isPending
+                        ? Colors.orange
+                        : Colors.white.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -610,18 +588,16 @@ class _TransactionItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${transaction.isCredit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
+                '${isCredit ? '+' : ''}${transaction.amountFormatted}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: transaction.isCredit
-                      ? AppColors.success
-                      : Colors.white,
+                  color: isCredit ? AppColors.success : Colors.white,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                _formatRelativeDate(transaction.date),
+                _formatRelativeDate(transaction.createdAt),
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.white.withOpacity(0.5),
@@ -634,175 +610,26 @@ class _TransactionItem extends StatelessWidget {
     );
   }
 
-  IconData _getTransactionIcon() {
+  IconData _getIcon() {
     switch (transaction.type) {
-      case TransactionType.deposit:
+      case 'topup':
         return Icons.arrow_downward_rounded;
-      case TransactionType.withdrawal:
-        return Icons.arrow_upward_rounded;
-      case TransactionType.purchase:
+      case 'payment':
         return Icons.shopping_bag_outlined;
-      case TransactionType.cashback:
-        return Icons.card_giftcard;
-      case TransactionType.transfer:
+      case 'transfer':
         return Icons.swap_horiz;
+      default:
+        return Icons.receipt_outlined;
     }
   }
 
   String _formatRelativeDate(DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
-
-    if (diff.inHours < 1) {
-      return '${diff.inMinutes} menit lalu';
-    } else if (diff.inHours < 24) {
-      return '${diff.inHours} jam lalu';
-    } else if (diff.inDays == 1) {
-      return 'Kemarin';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays} hari lalu';
-    } else {
-      return Formatters.formatDate(date);
-    }
-  }
-}
-
-/// Transaction item for Hive TransactionModel
-class _HiveTransactionItem extends StatelessWidget {
-  const _HiveTransactionItem({required this.transaction});
-
-  final hive_tx.TransactionModel transaction;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
-      opacity: 0.1,
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color:
-                  (transaction.isCredit ? AppColors.success : AppColors.expense)
-                      .withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              _getTransactionIcon(),
-              color: transaction.isCredit
-                  ? AppColors.success
-                  : AppColors.expense,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _getTypeName(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Amount
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${transaction.isCredit ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: transaction.isCredit
-                      ? AppColors.success
-                      : Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatRelativeDate(transaction.date),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.white.withOpacity(0.5),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getTransactionIcon() {
-    switch (transaction.type) {
-      case hive_tx.TransactionType.deposit:
-        return Icons.arrow_downward_rounded;
-      case hive_tx.TransactionType.withdrawal:
-        return Icons.arrow_upward_rounded;
-      case hive_tx.TransactionType.purchase:
-        return Icons.shopping_bag_outlined;
-      case hive_tx.TransactionType.cashback:
-        return Icons.card_giftcard;
-      case hive_tx.TransactionType.transfer:
-        return Icons.swap_horiz;
-      case hive_tx.TransactionType.interest:
-        return Icons.percent;
-    }
-  }
-
-  String _getTypeName() {
-    switch (transaction.type) {
-      case hive_tx.TransactionType.deposit:
-        return 'Setoran';
-      case hive_tx.TransactionType.withdrawal:
-        return 'Penarikan';
-      case hive_tx.TransactionType.purchase:
-        return 'Pembelian';
-      case hive_tx.TransactionType.cashback:
-        return 'Cashback';
-      case hive_tx.TransactionType.transfer:
-        return 'Transfer';
-      case hive_tx.TransactionType.interest:
-        return 'Bunga';
-    }
-  }
-
-  String _formatRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inHours < 1) {
-      return '${diff.inMinutes} menit lalu';
-    } else if (diff.inHours < 24) {
-      return '${diff.inHours} jam lalu';
-    } else if (diff.inDays == 1) {
-      return 'Kemarin';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays} hari lalu';
-    } else {
-      return Formatters.formatDate(date);
-    }
+    if (diff.inHours < 1) return '${diff.inMinutes} menit lalu';
+    if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+    if (diff.inDays == 1) return 'Kemarin';
+    if (diff.inDays < 7) return '${diff.inDays} hari lalu';
+    return Formatters.formatDate(date);
   }
 }

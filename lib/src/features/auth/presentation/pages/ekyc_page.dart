@@ -1,15 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
+import '../../../../core/theme/colors.dart';
 import '../providers/auth_provider.dart';
 
-/// EKYC / Identity verification page (UI simulation)
+/// EKYC / Identity verification page with real camera integration
 class EkycPage extends ConsumerStatefulWidget {
   const EkycPage({super.key});
 
@@ -18,28 +22,105 @@ class EkycPage extends ConsumerStatefulWidget {
 }
 
 class _EkycPageState extends ConsumerState<EkycPage> {
-  bool _ktpUploaded = false;
-  bool _selfieUploaded = false;
+  File? _ktpImage;
+  File? _selfieImage;
   bool _isVerifying = false;
 
-  Future<void> _simulateUpload(bool isKtp) async {
-    // Simulate image picking and upload
-    await Future.delayed(const Duration(milliseconds: 500));
+  final _picker = ImagePicker();
 
-    setState(() {
-      if (isKtp) {
-        _ktpUploaded = true;
-      } else {
-        _selfieUploaded = true;
-      }
-    });
+  // Pick image from camera or gallery
+  Future<void> _pickImage({required bool isKtp, required ImageSource source}) async {
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+
+      if (picked == null) return;
+
+      setState(() {
+        if (isKtp) {
+          _ktpImage = File(picked.path);
+        } else {
+          _selfieImage = File(picked.path);
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengambil foto: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Show bottom sheet to choose camera or gallery
+  void _showImageSourceSheet({required bool isKtp}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A2B4A),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isKtp ? 'Foto KTP' : 'Foto Selfie',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _SourceOption(
+              icon: Icons.camera_alt_rounded,
+              label: 'Buka Kamera',
+              color: AppColors.teal,
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(isKtp: isKtp, source: ImageSource.camera);
+              },
+            ),
+            const SizedBox(height: 8),
+            _SourceOption(
+              icon: Icons.photo_library_rounded,
+              label: 'Pilih dari Galeri',
+              color: Colors.purple,
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(isKtp: isKtp, source: ImageSource.gallery);
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _handleVerification() async {
-    if (!_ktpUploaded || !_selfieUploaded) {
+    if (_ktpImage == null || _selfieImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Mohon upload foto KTP dan Selfie'),
+          content: Text('Mohon ambil foto KTP dan Selfie terlebih dahulu'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -48,24 +129,38 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
     setState(() => _isVerifying = true);
 
-    // Simulate EKYC verification
-    final success = await ref
-        .read(registrationProvider.notifier)
-        .verifyEkyc('mock_ktp_path.jpg', 'mock_selfie_path.jpg');
+    // Update photo paths in registration data
+    final currentData = ref.read(registrationProvider).data;
+    ref.read(registrationProvider.notifier).updateData(
+      currentData.copyWith(
+        ktpPhotoPath: _ktpImage!.path,
+        selfiePhotoPath: _selfieImage!.path,
+      ),
+    );
+
+    // Call real POST /register API (multipart with KTP + selfie)
+    final user = await ref.read(registrationProvider.notifier).submit();
 
     if (!mounted) return;
-
     setState(() => _isVerifying = false);
 
-    if (success) {
-      // Submit registration
-      final user = await ref.read(registrationProvider.notifier).submit();
-
-      if (user != null && mounted) {
-        context.go(Routes.pending);
+    if (user != null) {
+      // Navigate to OTP verification page — email is needed for /otp/verify
+      final email = ref.read(registrationProvider).data.email;
+      context.pushReplacement(
+        Routes.verifyRegisterOtp,
+        extra: email,
+      );
+    } else {
+      final err = ref.read(registrationProvider).error;
+      if (err != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err), backgroundColor: Colors.red),
+        );
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +215,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Upload foto KTP dan Selfie untuk verifikasi identitas Anda',
+                      'Ambil foto KTP dan foto selfie untuk verifikasi identitas Anda',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 13,
@@ -133,28 +228,28 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
             const SizedBox(height: 24),
 
-            // KTP upload
-            _UploadCard(
-                  title: 'Foto KTP',
-                  subtitle: 'Foto KTP dengan jelas dan tidak buram',
-                  icon: Icons.badge_outlined,
-                  isUploaded: _ktpUploaded,
-                  onTap: () => _simulateUpload(true),
-                )
+            // KTP upload card
+            _PhotoCard(
+              title: 'Foto KTP',
+              subtitle: 'Foto KTP dengan jelas dan tidak buram',
+              icon: Icons.badge_outlined,
+              image: _ktpImage,
+              onTap: () => _showImageSourceSheet(isKtp: true),
+            )
                 .animate(delay: 100.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.1, end: 0),
 
             const SizedBox(height: 16),
 
-            // Selfie upload
-            _UploadCard(
-                  title: 'Foto Selfie',
-                  subtitle: 'Foto wajah Anda dengan pencahayaan baik',
-                  icon: Icons.face_outlined,
-                  isUploaded: _selfieUploaded,
-                  onTap: () => _simulateUpload(false),
-                )
+            // Selfie upload card
+            _PhotoCard(
+              title: 'Foto Selfie',
+              subtitle: 'Foto wajah Anda dengan pencahayaan baik',
+              icon: Icons.face_outlined,
+              image: _selfieImage,
+              onTap: () => _showImageSourceSheet(isKtp: false),
+            )
                 .animate(delay: 200.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.1, end: 0),
@@ -213,7 +308,6 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
             const SizedBox(height: 16),
 
-            // VIDA branding
             Text(
               'Powered by VIDA',
               style: TextStyle(
@@ -230,93 +324,194 @@ class _EkycPageState extends ConsumerState<EkycPage> {
   }
 }
 
-class _UploadCard extends StatelessWidget {
-  const _UploadCard({
+// --------------------------------------------------
+// Photo card — shows thumbnail if captured, else prompt
+// --------------------------------------------------
+class _PhotoCard extends StatelessWidget {
+  const _PhotoCard({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.isUploaded,
+    required this.image,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
-  final bool isUploaded;
+  final File? image;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
+    final hasImage = image != null;
+
+    return GestureDetector(
       onTap: onTap,
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: isUploaded
-                  ? Colors.green.withOpacity(0.2)
-                  : Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isUploaded
-                    ? Colors.green
-                    : Colors.white.withOpacity(0.3),
-                style: isUploaded ? BorderStyle.solid : BorderStyle.none,
+      child: GlassContainer(
+        padding: EdgeInsets.zero,
+        borderRadius: 20,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail or placeholder
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              child: hasImage
+                  ? Image.file(
+                      image!,
+                      width: double.infinity,
+                      height: 160,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: 160,
+                      color: Colors.white.withOpacity(0.06),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: Colors.white30),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Ketuk untuk mengambil foto',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.4),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+
+            // Footer row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: hasImage
+                          ? Colors.green.withOpacity(0.2)
+                          : Colors.blue.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      hasImage ? Icons.check_rounded : Icons.camera_alt_rounded,
+                      color: hasImage ? Colors.green : Colors.blue,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          hasImage ? 'Foto berhasil diambil ✓' : subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: hasImage
+                                ? Colors.green
+                                : Colors.white.withOpacity(0.55),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    hasImage ? 'Ubah' : 'Ambil',
+                    style: const TextStyle(
+                      color: AppColors.teal,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Icon(
-              isUploaded ? Icons.check : icon,
-              color: isUploaded ? Colors.green : Colors.white70,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isUploaded ? 'Berhasil diupload ✓' : subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isUploaded
-                        ? Colors.green
-                        : Colors.white.withOpacity(0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (!isUploaded)
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.camera_alt, color: Colors.blue, size: 20),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
+// --------------------------------------------------
+// Source option button in bottom sheet
+// --------------------------------------------------
+class _SourceOption extends StatelessWidget {
+  const _SourceOption({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right, color: color, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --------------------------------------------------
+// Tip item
+// --------------------------------------------------
 class _TipItem extends StatelessWidget {
   const _TipItem(this.text);
-
   final String text;
 
   @override

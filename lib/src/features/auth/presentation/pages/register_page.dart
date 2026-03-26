@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +11,8 @@ import '../../domain/entities/registration_data.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/step_indicator.dart';
 
-/// Multi-step registration page
+/// Multi-step registration page — 3 steps:
+/// 0: Data Diri, 1: Pekerjaan, 2: Keluarga → EKYC → POST /register → OTP
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
@@ -25,22 +24,25 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _pageController = PageController();
 
-  // Step 1 controllers
+  // Step 0 – Data Diri
   final _nameController = TextEditingController();
   final _nikController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   DateTime? _birthDate;
   Gender? _gender;
 
-  // Step 2 controllers
+  // Step 1 – Pekerjaan
   final _occupationController = TextEditingController();
   final _companyController = TextEditingController();
   final _positionController = TextEditingController();
   int _monthlyIncome = 0;
 
-  // Step 3 controllers
+  // Step 2 – Keluarga
   MaritalStatus? _maritalStatus;
   final _spouseNameController = TextEditingController();
   int _numberOfChildren = 0;
@@ -55,6 +57,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _occupationController.dispose();
     _companyController.dispose();
     _positionController.dispose();
@@ -66,33 +69,30 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   void _updateRegistrationData() {
     final currentData = ref.read(registrationProvider).data;
-    ref
-        .read(registrationProvider.notifier)
-        .updateData(
-          currentData.copyWith(
-            fullName: _nameController.text,
-            nik: _nikController.text,
-            birthDate: _birthDate,
-            gender: _gender,
-            email: _emailController.text,
-            phone: _phoneController.text,
-            password: _passwordController.text,
-            occupation: _occupationController.text,
-            companyName: _companyController.text,
-            jobPosition: _positionController.text,
-            monthlyIncome: _monthlyIncome,
-            maritalStatus: _maritalStatus,
-            spouseName: _spouseNameController.text,
-            numberOfChildren: _numberOfChildren,
-            emergencyContactName: _emergencyContactNameController.text,
-            emergencyContactPhone: _emergencyContactPhoneController.text,
-          ),
-        );
+    ref.read(registrationProvider.notifier).updateData(
+      currentData.copyWith(
+        fullName: _nameController.text,
+        nik: _nikController.text,
+        birthDate: _birthDate,
+        gender: _gender,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        password: _passwordController.text,
+        occupation: _occupationController.text,
+        companyName: _companyController.text,
+        jobPosition: _positionController.text,
+        monthlyIncome: _monthlyIncome,
+        maritalStatus: _maritalStatus,
+        spouseName: _spouseNameController.text,
+        numberOfChildren: _numberOfChildren,
+        emergencyContactName: _emergencyContactNameController.text,
+        emergencyContactPhone: _emergencyContactPhoneController.text,
+      ),
+    );
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (!_formKey.currentState!.validate()) return;
-
     _updateRegistrationData();
 
     final currentStep = ref.read(registrationProvider).data.currentStep;
@@ -104,14 +104,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Last step, go to EKYC
+      // Last step → go to EKYC (upload photos → submit register → OTP)
       context.push(Routes.ekyc);
     }
   }
 
   void _previousStep() {
     final currentStep = ref.read(registrationProvider).data.currentStep;
-
     if (currentStep > 0) {
       ref.read(registrationProvider.notifier).previousStep();
       _pageController.previousPage(
@@ -141,10 +140,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         );
       },
     );
-
-    if (date != null) {
-      setState(() => _birthDate = date);
-    }
+    if (date != null) setState(() => _birthDate = date);
   }
 
   @override
@@ -190,7 +186,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
           const SizedBox(height: 24),
 
-          // Step indicator
+          // Step indicator — 3 steps
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: StepIndicator(
@@ -208,7 +204,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [_buildStep1(), _buildStep2(), _buildStep3()],
+                children: [
+                  _buildStep0(),
+                  _buildStep1(),
+                  _buildStep2(),
+                ],
               ),
             ),
           ),
@@ -218,7 +218,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             padding: const EdgeInsets.all(24),
             child: GlassButton(
               text: currentStep < 2 ? 'Lanjut' : 'Verifikasi Identitas',
-              icon: currentStep < 2 ? Icons.arrow_forward : Icons.verified_user,
+              icon:
+                  currentStep < 2 ? Icons.arrow_forward : Icons.verified_user,
+              isLoading: regState.isLoading,
               onPressed: _nextStep,
             ),
           ),
@@ -227,7 +229,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep1() {
+  // ── Step 0: Data Diri ────────────────────────────────────────────────────
+  Widget _buildStep0() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GlassContainer(
@@ -270,7 +273,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            // Birth date picker
             GestureDetector(
               onTap: _selectBirthDate,
               child: AbsorbPointer(
@@ -291,14 +293,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
                         : '',
                   ),
-                  validator: (v) =>
+                  validator: (_) =>
                       _birthDate == null ? 'Tanggal lahir wajib diisi' : null,
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Gender dropdown
             DropdownButtonFormField<Gender>(
               initialValue: _gender,
               dropdownColor: const Color(0xFF1E3A5F),
@@ -342,13 +343,50 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             TextFormField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: _obscurePassword,
               style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
-                prefixIcon: Icon(Icons.lock, color: Colors.white70),
+                prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
               validator: Validators.password,
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Konfirmasi Password',
+                prefixIcon: const Icon(
+                  Icons.lock_outline,
+                  color: Colors.white70,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
+                  onPressed: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  ),
+                ),
+              ),
+              validator: (v) =>
+                  Validators.confirmPassword(v, _passwordController.text),
             ),
           ],
         ),
@@ -356,7 +394,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep2() {
+  // ── Step 1: Pekerjaan ────────────────────────────────────────────────────
+  Widget _buildStep1() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GlassContainer(
@@ -405,7 +444,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            // Income selector
             const Text(
               'Pendapatan Bulanan',
               style: TextStyle(color: Colors.white70, fontSize: 14),
@@ -447,7 +485,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep3() {
+  // ── Step 2: Keluarga ────────────────────────────────────────────────────
+  Widget _buildStep2() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GlassContainer(
@@ -471,10 +510,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 labelText: 'Status Pernikahan',
-                prefixIcon: Icon(Icons.family_restroom, color: Colors.white70),
+                prefixIcon:
+                    Icon(Icons.family_restroom, color: Colors.white70),
               ),
               items: MaritalStatus.values.map((s) {
-                return DropdownMenuItem(value: s, child: Text(s.displayName));
+                return DropdownMenuItem(
+                  value: s,
+                  child: Text(s.displayName),
+                );
               }).toList(),
               onChanged: (v) => setState(() => _maritalStatus = v),
               validator: (v) =>
@@ -494,7 +537,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: 16),
             ],
 
-            // Number of children - sembunyikan jika belum menikah
             if (_maritalStatus != null &&
                 _maritalStatus != MaritalStatus.single) ...[
               Row(
@@ -567,6 +609,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 }
 
+// ── Income chip ──────────────────────────────────────────────────────────────
 class _IncomeChip extends StatelessWidget {
   const _IncomeChip({
     required this.label,

@@ -6,7 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
-import 'src/features/auth/data/repositories/auth_repository_impl.dart';
+import 'src/features/auth/data/repositories/api_auth_repository_impl.dart';
 import 'src/features/auth/presentation/providers/auth_provider.dart';
 import 'src/core/services/hive_transaction_storage.dart';
 
@@ -20,8 +20,8 @@ void main() async {
   await Hive.initFlutter();
   await HiveTransactionStorage.getInstance();
 
-  // Initialize auth repository with local storage
-  final authRepository = await AuthRepositoryImpl.getInstance();
+  // Real API auth repository
+  final authRepository = ApiAuthRepositoryImpl();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
