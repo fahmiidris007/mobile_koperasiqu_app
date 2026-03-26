@@ -7,18 +7,19 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/product.dart';
-import '../../data/datasources/mock_shopping_datasource.dart';
+import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
 
-/// Product by ID provider
-final productByIdProvider = FutureProvider.family<Product?, String>((
-  ref,
-  id,
-) async {
-  final datasource = MockShoppingDatasource();
-  return datasource.getProductById(id);
+/// Product detail by ID from pre-loaded products list
+final productDetailProvider =
+    FutureProvider.autoDispose.family<ApiProduct?, String>((ref, id) async {
+  final products = await ref.watch(productsApiProvider.future);
+  try {
+    return products.firstWhere((p) => p.idStr == id);
+  } catch (_) {
+    return null;
+  }
 });
 
 /// Product detail page
@@ -29,7 +30,7 @@ class ProductDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productAsync = ref.watch(productByIdProvider(productId));
+    final productAsync = ref.watch(productDetailProvider(productId));
 
     return SimpleGradientBackground(
       child: productAsync.when(
@@ -57,7 +58,7 @@ class ProductDetailPage extends ConsumerWidget {
 class _ProductDetailContent extends ConsumerStatefulWidget {
   const _ProductDetailContent({required this.product});
 
-  final Product product;
+  final ApiProduct product;
 
   @override
   ConsumerState<_ProductDetailContent> createState() =>
@@ -67,17 +68,14 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
   static const String _waNumber = '6288294392767';
 
-  Future<void> _openWhatsApp(BuildContext context, dynamic product) async {
-    final productName = product.name as String;
-    final price = Formatters.formatCurrency(product.price as double);
-    final category = (product.category.displayName) as String;
-
+  Future<void> _openWhatsApp(BuildContext context) async {
+    final product = widget.product;
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya tertarik untuk membeli produk berikut:\n'
-        '📦 *$productName*\n'
-        '🏷️ Kategori: $category\n'
-        '💰 Harga: $price\n\n'
+        '📦 *${product.name}*\n'
+        '🏷️ Kategori: ${product.category.name}\n'
+        '💰 Harga: ${product.priceFormatted}\n\n'
         'Apakah produk ini masih tersedia? Mohon informasi lebih lanjut. Terima kasih! 🙏';
 
     final encodedMessage = Uri.encodeComponent(message);
@@ -95,11 +93,28 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
     }
   }
 
+  IconData _resolveIcon(String name) {
+    switch (name) {
+      case 'coffee':
+        return Icons.coffee;
+      case 'fastfood':
+        return Icons.fastfood;
+      case 'local_drink':
+        return Icons.local_drink;
+      case 'shopping_basket':
+        return Icons.shopping_basket;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      default:
+        return Icons.category;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
     final isWishlisted = ref.watch(
-      wishlistProvider.select((s) => s.contains(product.id)),
+      wishlistProvider.select((s) => s.containsApiId(product.id)),
     );
 
     return Column(
@@ -132,25 +147,24 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                 child: const Icon(Icons.share, color: Colors.white),
               ),
               const SizedBox(width: 8),
-              // Wishlist toggle button
+              // Wishlist toggle
               GestureDetector(
-                onTap: () async {
-                  final added = await ref
+                onTap: () {
+                  ref
                       .read(wishlistProvider.notifier)
-                      .toggle(product);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          added
-                              ? 'Ditambahkan ke wishlist'
-                              : 'Dihapus dari wishlist',
-                        ),
-                        duration: const Duration(seconds: 2),
-                        backgroundColor: added ? Colors.green : Colors.grey,
+                      .toggleApiProduct(product);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isWishlisted
+                            ? 'Dihapus dari wishlist'
+                            : 'Ditambahkan ke wishlist',
                       ),
-                    );
-                  }
+                      duration: const Duration(seconds: 2),
+                      backgroundColor:
+                          isWishlisted ? Colors.grey : Colors.green,
+                    ),
+                  );
                 },
                 child: Container(
                   width: 44,
@@ -171,13 +185,13 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
           ),
         ),
 
-        // Content
+        // Scrollable content
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product image
+                // Product image / placeholder
                 Container(
                   width: double.infinity,
                   height: 280,
@@ -188,14 +202,31 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   ),
                   child: Stack(
                     children: [
-                      Center(
-                        child: Icon(
-                          Icons.image,
-                          size: 80,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: product.thumbnailUrl != null
+                            ? Image.network(
+                                product.thumbnailUrl!,
+                                width: double.infinity,
+                                height: 280,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Icon(
+                                    _resolveIcon(product.category.iconName),
+                                    size: 80,
+                                    color: Colors.white.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  _resolveIcon(product.category.iconName),
+                                  size: 80,
+                                  color: Colors.white.withOpacity(0.3),
+                                ),
+                              ),
                       ),
-                      if (product.discountPercent != null)
+                      if (product.isFeatured)
                         Positioned(
                           top: 16,
                           left: 16,
@@ -205,14 +236,14 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              gradient: AppColors.primaryGradient,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(
-                              '-${product.discountPercent!.toStringAsFixed(0)}%',
-                              style: const TextStyle(
+                            child: const Text(
+                              'Unggulan',
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -224,7 +255,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
 
                 const SizedBox(height: 24),
 
-                // Product info
+                // Product info card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: GlassContainer(
@@ -243,7 +274,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            product.category.displayName,
+                            product.category.name,
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 12,
@@ -266,25 +297,26 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
 
                         const SizedBox(height: 12),
 
-                        // Rating and sold count
+                        // Rating + service time
                         Row(
                           children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 18,
-                            ),
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 18),
                             const SizedBox(width: 4),
                             Text(
-                              product.rating.toStringAsFixed(1),
+                              product.rate.toStringAsFixed(1),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(width: 16),
+                            Icon(Icons.schedule,
+                                size: 16,
+                                color: Colors.white.withOpacity(0.5)),
+                            const SizedBox(width: 4),
                             Text(
-                              '${product.soldCount} terjual',
+                              '~${product.serviceTime} menit',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.6),
                               ),
@@ -295,51 +327,34 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                         const SizedBox(height: 16),
 
                         // Price
-                        Row(
-                          children: [
-                            Text(
-                              Formatters.formatCurrency(product.price),
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.teal,
-                              ),
-                            ),
-                            if (product.originalPrice != null) ...[
-                              const SizedBox(width: 12),
-                              Text(
-                                Formatters.formatCurrency(
-                                  product.originalPrice!,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white.withOpacity(0.5),
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                            ],
-                          ],
+                        Text(
+                          product.priceFormatted,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.teal,
+                          ),
                         ),
 
                         const Divider(color: Colors.white24, height: 32),
 
-                        // Description
-                        const Text(
-                          'Deskripsi',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                        // Info rows
+                        _InfoRow(
+                          icon: Icons.category_outlined,
+                          label: 'Kategori',
+                          value: product.category.name,
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          product.description,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: Colors.white.withOpacity(0.7),
-                          ),
+                        _InfoRow(
+                          icon: Icons.schedule,
+                          label: 'Waktu Layanan',
+                          value: '${product.serviceTime} menit',
+                        ),
+                        const SizedBox(height: 8),
+                        _InfoRow(
+                          icon: Icons.verified_outlined,
+                          label: 'Status',
+                          value: product.isFeatured ? 'Produk Unggulan' : 'Reguler',
                         ),
                       ],
                     ),
@@ -352,77 +367,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
           ),
         ),
 
-        // Bottom bar
-        // Container(
-        //   padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        //   decoration: BoxDecoration(
-        //     color: Colors.black.withOpacity(0.3),
-        //     border: Border(
-        //       top: BorderSide(color: Colors.white.withOpacity(0.1)),
-        //     ),
-        //   ),
-        //   child: Row(
-        //     children: [
-        //       // Quantity selector
-        //       Container(
-        //         decoration: BoxDecoration(
-        //           color: Colors.white.withOpacity(0.1),
-        //           borderRadius: BorderRadius.circular(12),
-        //         ),
-        //         child: Row(
-        //           children: [
-        //             IconButton(
-        //               icon: const Icon(
-        //                 Icons.remove,
-        //                 color: Colors.white,
-        //                 size: 18,
-        //               ),
-        //               onPressed: _quantity > 1
-        //                   ? () => setState(() => _quantity--)
-        //                   : null,
-        //             ),
-        //             SizedBox(
-        //               width: 32,
-        //               child: Center(
-        //                 child: Text(
-        //                   '$_quantity',
-        //                   style: const TextStyle(
-        //                     color: Colors.white,
-        //                     fontWeight: FontWeight.bold,
-        //                   ),
-        //                 ),
-        //               ),
-        //             ),
-        //             IconButton(
-        //               icon: const Icon(
-        //                 Icons.add,
-        //                 color: Colors.white,
-        //                 size: 18,
-        //               ),
-        //               onPressed: () => setState(() => _quantity++),
-        //             ),
-        //           ],
-        //         ),
-        //       ),
-        //       const SizedBox(width: 12),
-
-        //       // Add to cart button
-        //       Expanded(
-        //         child: GlassButton(
-        //           text: 'Tambah ke Keranjang',
-        //           icon: Icons.shopping_cart,
-        //           onPressed: _addToCart,
-        //           textStyle: const TextStyle(
-        //             fontSize: 12,
-        //             fontWeight: FontWeight.w600,
-        //             color: Colors.white,
-        //           ),
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ),
-        // Bottom bar - Beli di WhatsApp
+        // Bottom bar: Beli via WhatsApp
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           decoration: BoxDecoration(
@@ -432,7 +377,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
             ),
           ),
           child: GestureDetector(
-            onTap: () => _openWhatsApp(context, product),
+            onTap: () => _openWhatsApp(context),
             child: Container(
               width: double.infinity,
               height: 52,
@@ -451,21 +396,12 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg',
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.chat_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
+                  Icon(Icons.chat_rounded, color: Colors.white, size: 24),
+                  SizedBox(width: 10),
+                  Text(
                     'Beli di WhatsApp',
                     style: TextStyle(
                       color: Colors.white,
@@ -477,6 +413,44 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                 ],
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.white.withOpacity(0.5)),
+        const SizedBox(width: 8),
+        Text(
+          '$label:',
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.white.withOpacity(0.5),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
           ),
         ),
       ],

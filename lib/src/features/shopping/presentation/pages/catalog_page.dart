@@ -6,19 +6,27 @@ import 'package:mobile_koperasiqu_app/src/core/router/app_router.dart';
 
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/product.dart';
-import '../../data/datasources/mock_shopping_datasource.dart';
+import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
 
-/// Products provider
-final productsProvider = FutureProvider<List<Product>>((ref) async {
-  final datasource = MockShoppingDatasource();
-  return datasource.getProducts();
-});
-
-/// Selected category provider
-final selectedCategoryProvider = StateProvider<ProductCategory?>((ref) => null);
+/// Helper: resolve icon from category iconName string
+IconData _resolveIcon(String name) {
+  switch (name) {
+    case 'coffee':
+      return Icons.coffee;
+    case 'fastfood':
+      return Icons.fastfood;
+    case 'local_drink':
+      return Icons.local_drink;
+    case 'shopping_basket':
+      return Icons.shopping_basket;
+    case 'card_giftcard':
+      return Icons.card_giftcard;
+    default:
+      return Icons.category;
+  }
+}
 
 /// Shopping catalog page
 class CatalogPage extends ConsumerWidget {
@@ -26,15 +34,16 @@ class CatalogPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(productsProvider);
-    final selectedCategory = ref.watch(selectedCategoryProvider);
+    final productsAsync = ref.watch(productsApiProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final selectedSlug = ref.watch(selectedCategorySlugProvider);
     final wishlist = ref.watch(wishlistProvider);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 100),
       child: CustomScrollView(
         slivers: [
-          // Header
+          // Header: search + wishlist
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -71,7 +80,6 @@ class CatalogPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Wishlist button
                   GestureDetector(
                     onTap: () => context.push(Routes.wishlist),
                     child: Container(
@@ -122,33 +130,46 @@ class CatalogPage extends ConsumerWidget {
             ),
           ),
 
-          // Categories
+          // Category chips from API
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
               child: SizedBox(
                 height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _CategoryChip(
-                      label: 'Semua',
-                      isSelected: selectedCategory == null,
-                      onTap: () =>
-                          ref.read(selectedCategoryProvider.notifier).state =
-                              null,
+                child: categoriesAsync.when(
+                  loading: () => const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white38,
+                        strokeWidth: 2,
+                      ),
                     ),
-                    ...ProductCategory.values.map((cat) {
-                      return _CategoryChip(
-                        label: cat.displayName,
-                        isSelected: selectedCategory == cat,
-                        onTap: () =>
-                            ref.read(selectedCategoryProvider.notifier).state =
-                                cat,
-                      );
-                    }),
-                  ],
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (categories) => ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    children: [
+                      _CategoryChip(
+                        label: 'Semua',
+                        icon: Icons.grid_view,
+                        isSelected: selectedSlug == null,
+                        onTap: () => ref
+                            .read(selectedCategorySlugProvider.notifier)
+                            .state = null,
+                      ),
+                      ...categories.map((cat) => _CategoryChip(
+                            label: cat.name,
+                            icon: _resolveIcon(cat.iconName),
+                            isSelected: selectedSlug == cat.slug,
+                            onTap: () => ref
+                                .read(selectedCategorySlugProvider.notifier)
+                                .state = cat.slug,
+                          )),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -158,40 +179,76 @@ class CatalogPage extends ConsumerWidget {
           productsAsync.when(
             loading: () => const SliverToBoxAdapter(
               child: Center(
-                child: CircularProgressIndicator(color: Colors.white),
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
               ),
             ),
             error: (e, _) => SliverToBoxAdapter(
-              child: Center(
-                child: Text(
-                  'Error: $e',
-                  style: const TextStyle(color: Colors.white),
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    Icon(Icons.error_outline,
+                        color: Colors.white38, size: 48),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Gagal memuat produk',
+                      style:
+                          TextStyle(color: Colors.white.withOpacity(0.7)),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => ref.invalidate(productsApiProvider),
+                      child: const Text('Coba Lagi',
+                          style: TextStyle(color: AppColors.teal)),
+                    ),
+                  ],
                 ),
               ),
             ),
             data: (products) {
-              final filtered = selectedCategory == null
-                  ? products
-                  : products
-                        .where((p) => p.category == selectedCategory)
-                        .toList();
-
+              if (products.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.shopping_bag_outlined,
+                            size: 64,
+                            color: Colors.white.withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tidak ada produk',
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.6)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
               return SliverPadding(
                 padding: const EdgeInsets.all(20),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 14,
                     crossAxisSpacing: 14,
                     childAspectRatio: 0.7,
                   ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final product = filtered[index];
-                    return _ProductCard(product: product)
-                        .animate(delay: (index * 50).ms)
-                        .fadeIn(duration: 400.ms)
-                        .scale(begin: const Offset(0.95, 0.95));
-                  }, childCount: filtered.length),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final product = products[index];
+                      return _ProductCard(product: product)
+                          .animate(delay: (index * 50).ms)
+                          .fadeIn(duration: 400.ms)
+                          .scale(begin: const Offset(0.95, 0.95));
+                    },
+                    childCount: products.length,
+                  ),
                 ),
               );
             },
@@ -207,11 +264,13 @@ class CatalogPage extends ConsumerWidget {
 class _CategoryChip extends StatelessWidget {
   const _CategoryChip({
     required this.label,
+    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
 
   final String label;
+  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -221,7 +280,7 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
@@ -231,15 +290,20 @@ class _CategoryChip extends StatelessWidget {
                 : Colors.white.withOpacity(0.2),
           ),
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -249,16 +313,16 @@ class _CategoryChip extends StatelessWidget {
 class _ProductCard extends ConsumerWidget {
   const _ProductCard({required this.product});
 
-  final Product product;
+  final ApiProduct product;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isWishlisted = ref.watch(
-      wishlistProvider.select((s) => s.contains(product.id)),
+      wishlistProvider.select((s) => s.containsApiId(product.id)),
     );
 
     return GestureDetector(
-      onTap: () => context.push(Routes.productDetail, extra: product.id),
+      onTap: () => context.push(Routes.productDetail, extra: product.idStr),
       child: GlassContainer(
         padding: EdgeInsets.zero,
         borderRadius: 18,
@@ -266,7 +330,7 @@ class _ProductCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
+            // Image / thumbnail
             Expanded(
               flex: 3,
               child: Stack(
@@ -279,30 +343,34 @@ class _ProductCard extends ConsumerWidget {
                         top: Radius.circular(18),
                       ),
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.image,
-                        size: 48,
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                    ),
+                    child: product.thumbnailUrl != null
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(18),
+                            ),
+                            child: Image.network(
+                              product.thumbnailUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _defaultImage(),
+                            ),
+                          )
+                        : _defaultImage(),
                   ),
-                  if (product.discountPercent != null)
+                  // Featured badge
+                  if (product.isFeatured)
                     Positioned(
                       top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.red,
+                          gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          '-${product.discountPercent!.toStringAsFixed(0)}%',
-                          style: const TextStyle(
+                        child: const Text(
+                          'Unggulan',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -316,24 +384,21 @@ class _ProductCard extends ConsumerWidget {
                     right: 6,
                     child: GestureDetector(
                       onTap: () async {
-                        final added = await ref
+                        ref
                             .read(wishlistProvider.notifier)
-                            .toggle(product);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                added
-                                    ? '${product.name} ditambahkan ke wishlist'
-                                    : '${product.name} dihapus dari wishlist',
-                              ),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: added
-                                  ? Colors.green
-                                  : Colors.grey,
+                            .toggleApiProduct(product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isWishlisted
+                                  ? '${product.name} dihapus dari wishlist'
+                                  : '${product.name} ditambahkan ke wishlist',
                             ),
-                          );
-                        }
+                            duration: const Duration(seconds: 2),
+                            backgroundColor:
+                                isWishlisted ? Colors.grey : Colors.green,
+                          ),
+                        );
                       },
                       child: Container(
                         width: 32,
@@ -373,29 +438,53 @@ class _ProductCard extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
+                    // Rating stars
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 12, color: Colors.amber),
+                        const SizedBox(width: 2),
+                        Text(
+                          product.rate.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '~${product.serviceTime}m',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
                     Text(
-                      Formatters.formatCurrency(product.price),
+                      product.priceFormatted,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: AppColors.teal,
                       ),
                     ),
-                    if (product.originalPrice != null)
-                      Text(
-                        Formatters.formatCurrency(product.originalPrice!),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withOpacity(0.5),
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _defaultImage() {
+    return Center(
+      child: Icon(
+        _resolveIcon(product.category.iconName),
+        size: 48,
+        color: Colors.white.withOpacity(0.3),
       ),
     );
   }

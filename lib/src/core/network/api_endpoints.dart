@@ -25,6 +25,13 @@ class ApiEndpoints {
   // Transactions
   static const String transactions = '/transactions';
 
+  // Shopping
+  static const String categories = '/categories';
+  static const String products = '/products';
+  static const String featuredProducts = '/products/featured';
+  static const String popularProducts = '/products/popular';
+  static const String topRatedProducts = '/products/top-rated';
+
   // Password reset
   static const String forgotPassword = '/password/forgot';
   static const String resetPassword = '/password/reset';

@@ -1,5 +1,74 @@
 import 'package:equatable/equatable.dart';
 
+// ── API-backed entities (from GET /categories and GET /products) ─────────────
+
+/// Category from GET /categories
+class ApiCategory extends Equatable {
+  const ApiCategory({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.productsCount = 0,
+  });
+
+  final int id;
+  final String name;
+  final String slug;
+  final int productsCount;
+
+  String get iconName {
+    switch (slug) {
+      case 'coffee':
+        return 'coffee';
+      case 'snack':
+        return 'fastfood';
+      case 'milk':
+        return 'local_drink';
+      case 'sembako':
+        return 'shopping_basket';
+      case 'merchandise':
+        return 'card_giftcard';
+      default:
+        return 'category';
+    }
+  }
+
+  @override
+  List<Object?> get props => [id, slug];
+}
+
+/// Product from GET /products (API-native model)
+class ApiProduct extends Equatable {
+  const ApiProduct({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.price,
+    required this.priceFormatted,
+    required this.rate,
+    this.thumbnailUrl,
+    required this.serviceTime,
+    required this.isFeatured,
+    required this.category,
+  });
+
+  final int id;
+  final String name;
+  final String slug;
+  final double price;
+  final String priceFormatted;
+  final double rate;
+  final String? thumbnailUrl;
+  final int serviceTime;
+  final bool isFeatured;
+  final ApiCategory category;
+
+  String get idStr => id.toString();
+
+  @override
+  List<Object?> get props => [id, slug];
+}
+
 /// Product entity for shopping catalog
 class Product extends Equatable {
   const Product({
