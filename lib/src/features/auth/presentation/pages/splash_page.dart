@@ -48,19 +48,19 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        blurRadius: 30,
-                        spreadRadius: 5,
+                        color: Colors.blue.withOpacity(0.4),
+                        blurRadius: 40,
+                        spreadRadius: 8,
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Text(
-                      'K',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(33),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Image.asset(
+                        'assets/images/koperasiqu_logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

@@ -41,13 +41,13 @@ class WelcomePage extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(28),
                     ),
-                    child: const Center(
-                      child: Text(
-                        'K',
-                        style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Image.asset(
+                          'assets/images/koperasiqu_logo.png',
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
