@@ -15,7 +15,7 @@ import '../providers/auth_provider.dart';
 /// Dummy bank account info
 class _BankInfo {
   static const String accountNumber = '1234-5678-9012-3456';
-  static const String waNumber = '6288294392767';
+  static const String waNumber = '62895627540107';
 }
 
 /// Pending verification status page

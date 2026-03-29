@@ -12,15 +12,15 @@ import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
 
 /// Product detail by ID from pre-loaded products list
-final productDetailProvider =
-    FutureProvider.autoDispose.family<ApiProduct?, String>((ref, id) async {
-  final products = await ref.watch(productsApiProvider.future);
-  try {
-    return products.firstWhere((p) => p.idStr == id);
-  } catch (_) {
-    return null;
-  }
-});
+final productDetailProvider = FutureProvider.autoDispose
+    .family<ApiProduct?, String>((ref, id) async {
+      final products = await ref.watch(productsApiProvider.future);
+      try {
+        return products.firstWhere((p) => p.idStr == id);
+      } catch (_) {
+        return null;
+      }
+    });
 
 /// Product detail page
 class ProductDetailPage extends ConsumerWidget {
@@ -66,7 +66,7 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
-  static const String _waNumber = '6288294392767';
+  static const String _waNumber = '62895627540107';
 
   Future<void> _openWhatsApp(BuildContext context) async {
     final product = widget.product;
@@ -150,9 +150,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
               // Wishlist toggle
               GestureDetector(
                 onTap: () {
-                  ref
-                      .read(wishlistProvider.notifier)
-                      .toggleApiProduct(product);
+                  ref.read(wishlistProvider.notifier).toggleApiProduct(product);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -161,8 +159,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                             : 'Ditambahkan ke wishlist',
                       ),
                       duration: const Duration(seconds: 2),
-                      backgroundColor:
-                          isWishlisted ? Colors.grey : Colors.green,
+                      backgroundColor: isWishlisted
+                          ? Colors.grey
+                          : Colors.green,
                     ),
                   );
                 },
@@ -300,8 +299,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                         // Rating + service time
                         Row(
                           children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 18),
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 18,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               product.rate.toStringAsFixed(1),
@@ -311,9 +313,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            Icon(Icons.schedule,
-                                size: 16,
-                                color: Colors.white.withOpacity(0.5)),
+                            Icon(
+                              Icons.schedule,
+                              size: 16,
+                              color: Colors.white.withOpacity(0.5),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '~${product.serviceTime} menit',
@@ -354,7 +358,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                         _InfoRow(
                           icon: Icons.verified_outlined,
                           label: 'Status',
-                          value: product.isFeatured ? 'Produk Unggulan' : 'Reguler',
+                          value: product.isFeatured
+                              ? 'Produk Unggulan'
+                              : 'Reguler',
                         ),
                       ],
                     ),
@@ -439,10 +445,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.white.withOpacity(0.5),
-          ),
+          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.5)),
         ),
         const SizedBox(width: 6),
         Text(
