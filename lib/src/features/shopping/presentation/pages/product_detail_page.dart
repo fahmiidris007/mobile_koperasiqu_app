@@ -79,17 +79,35 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
         'Apakah produk ini masih tersedia? Mohon informasi lebih lanjut. Terima kasih! 🙏';
 
     final encodedMessage = Uri.encodeComponent(message);
-    final url = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('WhatsApp tidak ditemukan di perangkat ini'),
-          backgroundColor: Colors.red,
-        ),
+    // Prioritaskan deep link WhatsApp app, fallback ke browser
+    final appUrl = Uri.parse('whatsapp://send?phone=$_waNumber&text=$encodedMessage');
+    final webUrl = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
+
+    try {
+      // Coba buka langsung ke app WhatsApp
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
       );
+      if (!launched) {
+        // Jika gagal, fallback ke browser (wa.me)
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      // Fallback ke wa.me di browser
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
