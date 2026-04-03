@@ -81,7 +81,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
     final encodedMessage = Uri.encodeComponent(message);
 
     // Prioritaskan deep link WhatsApp app, fallback ke browser
-    final appUrl = Uri.parse('whatsapp://send?phone=$_waNumber&text=$encodedMessage');
+    final appUrl = Uri.parse(
+      'whatsapp://send?phone=$_waNumber&text=$encodedMessage',
+    );
     final webUrl = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
 
     try {
@@ -102,7 +104,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.'),
+              content: Text(
+                'Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -155,16 +159,16 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.share, color: Colors.white),
-              ),
-              const SizedBox(width: 8),
+              // Container(
+              //   width: 44,
+              //   height: 44,
+              //   decoration: BoxDecoration(
+              //     color: Colors.white.withOpacity(0.15),
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              //   child: const Icon(Icons.share, color: Colors.white),
+              // ),
+              // const SizedBox(width: 8),
               // Wishlist toggle
               GestureDetector(
                 onTap: () {

@@ -1,38 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
+import '../../../../core/theme/colors.dart';
 
-/// Withdrawal page — fitur masih dalam pengembangan
-class WithdrawalPage extends StatefulWidget {
-  const WithdrawalPage({super.key});
+// ── Konstanta cabang (hardcode sementara) ─────────────────────────────────────
 
-  @override
-  State<WithdrawalPage> createState() => _WithdrawalPageState();
+class _BranchInfo {
+  static const String address = 'Jl. Koperasi No. 1, Bandung, Jawa Barat 40110';
+  static const String phone = '022-1234-5678';
+  static const String whatsapp = '62895627540107';
+  static const String hours = 'Senin – Jumat, 08.00 – 16.00 WIB';
 }
 
-class _WithdrawalPageState extends State<WithdrawalPage> {
-  @override
-  void initState() {
-    super.initState();
-    // Tampilkan dialog segera setelah halaman terbuka
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showComingSoonDialog();
-    });
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+/// Halaman penarikan dana — mengarahkan user untuk datang ke cabang
+class WithdrawalPage extends StatelessWidget {
+  const WithdrawalPage({super.key});
+
+  Future<void> _openWhatsApp(BuildContext context) async {
+    const message =
+        'Halo Admin KoperasiQu! 👋\n\n'
+        'Saya ingin melakukan penarikan dana tabungan. '
+        'Mohon informasi lebih lanjut mengenai prosedur penarikan. Terima kasih 🙏';
+
+    final encoded = Uri.encodeComponent(message);
+    final appUrl = Uri.parse(
+      'whatsapp://send?phone=${_BranchInfo.whatsapp}&text=$encoded',
+    );
+    final webUrl = Uri.parse(
+      'https://wa.me/${_BranchInfo.whatsapp}?text=$encoded',
+    );
+
+    try {
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched)
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka WhatsApp.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
-  void _showComingSoonDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const _ComingSoonDialog(),
-    ).then((_) {
-      // Kembali ke halaman sebelumnya setelah dialog ditutup
-      if (mounted) context.pop();
-    });
+  Future<void> _callBranch(BuildContext context) async {
+    final uri = Uri.parse('tel:${_BranchInfo.phone}');
+    try {
+      await launchUrl(uri);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat melakukan panggilan.')),
+        );
+      }
+    }
   }
 
   @override
@@ -41,7 +80,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
       child: SafeArea(
         child: Column(
           children: [
-            // Header minimal
+            // ── Header ──────────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -64,7 +103,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   ),
                   const SizedBox(width: 16),
                   const Text(
-                    'Penarikan',
+                    'Penarikan Dana',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -75,49 +114,261 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
               ),
             ),
 
-            // Placeholder content
+            // ── Body ────────────────────────────────────────────────────────
             Expanded(
-              child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const SizedBox(height: 8),
+
+                    // ── Hero icon + judul ────────────────────────────────────
                     Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.construction_rounded,
-                        color: Colors.orange,
-                        size: 52,
-                      ),
-                    ).animate().scale(
-                      begin: const Offset(0.7, 0.7),
-                      end: const Offset(1, 1),
-                      duration: 500.ms,
-                      curve: Curves.elasticOut,
-                    ),
-                    const SizedBox(height: 24),
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.account_balance_rounded,
+                            color: AppColors.primary,
+                            size: 48,
+                          ),
+                        )
+                        .animate()
+                        .scale(
+                          begin: const Offset(0.7, 0.7),
+                          end: const Offset(1, 1),
+                          duration: 500.ms,
+                          curve: Curves.elasticOut,
+                        )
+                        .fadeIn(duration: 300.ms),
+
+                    const SizedBox(height: 20),
+
                     const Text(
-                      'Fitur Dalam Pengembangan',
+                      'Penarikan Melalui Cabang',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
-                    ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                      textAlign: TextAlign.center,
+                    ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
+
                     const SizedBox(height: 8),
+
                     Text(
-                      'Fitur penarikan sedang dalam\nproses pengembangan.',
+                      'Silakan datang ke kantor cabang KoperasiQu terdekat untuk melakukan penarikan dana tabungan Anda.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.6),
-                        height: 1.5,
+                        color: Colors.white.withOpacity(0.65),
+                        height: 1.6,
                       ),
-                    ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+                    ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+
+                    const SizedBox(height: 28),
+
+                    // ── Card: Info Cabang ─────────────────────────────────────
+                    GlassContainer(
+                          padding: const EdgeInsets.all(20),
+                          borderRadius: 20,
+                          opacity: 0.12,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.teal.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.location_on_rounded,
+                                      color: AppColors.teal,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Kantor Cabang',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _InfoTile(
+                                icon: Icons.place_outlined,
+                                label: 'Alamat',
+                                value: _BranchInfo.address,
+                                onTap: () {
+                                  Clipboard.setData(
+                                    const ClipboardData(
+                                      text: _BranchInfo.address,
+                                    ),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Alamat disalin!'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                tapLabel: 'Salin',
+                              ),
+                              const Divider(color: Colors.white12, height: 20),
+                              _InfoTile(
+                                icon: Icons.access_time_rounded,
+                                label: 'Jam Operasional',
+                                value: _BranchInfo.hours,
+                              ),
+                              const Divider(color: Colors.white12, height: 20),
+                              _InfoTile(
+                                icon: Icons.phone_outlined,
+                                label: 'Telepon',
+                                value: _BranchInfo.phone,
+                                onTap: () => _callBranch(context),
+                                tapLabel: 'Hubungi',
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate(delay: 250.ms)
+                        .fadeIn(duration: 400.ms)
+                        .slideY(begin: 0.06, end: 0),
+
+                    const SizedBox(height: 20),
+
+                    // ── Card: Prosedur ────────────────────────────────────────
+                    GlassContainer(
+                          padding: const EdgeInsets.all(20),
+                          borderRadius: 20,
+                          opacity: 0.10,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.checklist_rounded,
+                                      color: Colors.blue,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Prosedur Penarikan',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _StepItem(
+                                number: '1',
+                                text:
+                                    'Bawa KTP/identitas diri yang masih berlaku',
+                              ),
+                              _StepItem(
+                                number: '2',
+                                text:
+                                    'Datang ke kantor cabang pada jam operasional',
+                              ),
+                              _StepItem(
+                                number: '3',
+                                text:
+                                    'Ambil nomor antrian dan isi formulir penarikan',
+                              ),
+                              _StepItem(
+                                number: '4',
+                                text:
+                                    'Petugas akan memverifikasi data dan memproses penarikan',
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate(delay: 350.ms)
+                        .fadeIn(duration: 400.ms)
+                        .slideY(begin: 0.06, end: 0),
+
+                    const SizedBox(height: 20),
+
+                    // ── Note ─────────────────────────────────────────────────
+                    GlassContainer(
+                      padding: const EdgeInsets.all(14),
+                      borderRadius: 14,
+                      opacity: 0.07,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            color: Colors.white54,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Jika ada pertanyaan sebelum datang ke cabang, '
+                              'Anda dapat menghubungi admin kami melalui WhatsApp di bawah ini.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.5),
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
+
+                    const SizedBox(height: 28),
+
+                    // ── Tombol WhatsApp ───────────────────────────────────────
+                    GlassButton(
+                      text: 'Tanya via WhatsApp',
+                      icon: Icons.chat_bubble_outline_rounded,
+                      onPressed: () => _openWhatsApp(context),
+                    ).animate(delay: 450.ms).fadeIn(duration: 400.ms),
+
+                    const SizedBox(height: 12),
+
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: Text(
+                        'Kembali',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ).animate(delay: 500.ms).fadeIn(duration: 400.ms),
+
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -129,103 +380,136 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
   }
 }
 
-/// Dialog "Coming Soon"
-class _ComingSoonDialog extends StatelessWidget {
-  const _ComingSoonDialog();
+// ── Info Tile ─────────────────────────────────────────────────────────────────
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+    this.tapLabel,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
+  final String? tapLabel;
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: GlassContainer(
-        padding: const EdgeInsets.all(28),
-        borderRadius: 28,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icon
-            Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.construction_rounded,
-                    color: Colors.orange,
-                    size: 48,
-                  ),
-                )
-                .animate()
-                .scale(
-                  begin: const Offset(0.5, 0.5),
-                  end: const Offset(1, 1),
-                  duration: 500.ms,
-                  curve: Curves.elasticOut,
-                )
-                .fadeIn(duration: 300.ms),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              'Segera Hadir!',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: Colors.white38),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.45),
+                ),
               ),
-            ).animate(delay: 150.ms).fadeIn(duration: 300.ms),
-
-            const SizedBox(height: 12),
-
-            Text(
-              'Fitur penarikan dana saat ini masih dalam tahap pengembangan. Kami akan segera menghadirkannya untuk Anda.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.7),
-                height: 1.6,
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ).animate(delay: 250.ms).fadeIn(duration: 300.ms),
-
-            const SizedBox(height: 8),
-
-            // Badge
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            ],
+          ),
+        ),
+        if (onTap != null && tapLabel != null) ...[
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                color: AppColors.teal.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.schedule, size: 14, color: Colors.orange),
-                  SizedBox(width: 6),
-                  Text(
-                    'Coming Soon',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+              child: Text(
+                tapLabel!,
+                style: const TextStyle(
+                  color: AppColors.teal,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ── Step Item ─────────────────────────────────────────────────────────────────
+
+class _StepItem extends StatelessWidget {
+  const _StepItem({
+    required this.number,
+    required this.text,
+    this.isLast = false,
+  });
+
+  final String number;
+  final String text;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+              ),
+              child: Center(
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
-                ],
+                ),
               ),
-            ).animate(delay: 350.ms).fadeIn(duration: 300.ms),
-
-            const SizedBox(height: 28),
-
-            GlassButton(
-              text: 'Mengerti',
-              onPressed: () => Navigator.of(context).pop(),
-            ).animate(delay: 400.ms).fadeIn(duration: 300.ms),
+            ),
+            if (!isLast) Container(width: 1, height: 28, color: Colors.white12),
           ],
         ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withOpacity(0.75),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
