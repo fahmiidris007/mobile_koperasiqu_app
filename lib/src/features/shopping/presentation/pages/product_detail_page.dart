@@ -12,15 +12,15 @@ import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
 
 /// Product detail by ID from pre-loaded products list
-final productDetailProvider =
-    FutureProvider.autoDispose.family<ApiProduct?, String>((ref, id) async {
-  final products = await ref.watch(productsApiProvider.future);
-  try {
-    return products.firstWhere((p) => p.idStr == id);
-  } catch (_) {
-    return null;
-  }
-});
+final productDetailProvider = FutureProvider.autoDispose
+    .family<ApiProduct?, String>((ref, id) async {
+      final products = await ref.watch(productsApiProvider.future);
+      try {
+        return products.firstWhere((p) => p.idStr == id);
+      } catch (_) {
+        return null;
+      }
+    });
 
 /// Product detail page
 class ProductDetailPage extends ConsumerWidget {
@@ -66,7 +66,7 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
-  static const String _waNumber = '6288294392767';
+  static const String _waNumber = '62895627540107';
 
   Future<void> _openWhatsApp(BuildContext context) async {
     final product = widget.product;
@@ -79,17 +79,39 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
         'Apakah produk ini masih tersedia? Mohon informasi lebih lanjut. Terima kasih! 🙏';
 
     final encodedMessage = Uri.encodeComponent(message);
-    final url = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('WhatsApp tidak ditemukan di perangkat ini'),
-          backgroundColor: Colors.red,
-        ),
+    // Prioritaskan deep link WhatsApp app, fallback ke browser
+    final appUrl = Uri.parse(
+      'whatsapp://send?phone=$_waNumber&text=$encodedMessage',
+    );
+    final webUrl = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
+
+    try {
+      // Coba buka langsung ke app WhatsApp
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
       );
+      if (!launched) {
+        // Jika gagal, fallback ke browser (wa.me)
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      // Fallback ke wa.me di browser
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -137,22 +159,20 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.share, color: Colors.white),
-              ),
-              const SizedBox(width: 8),
+              // Container(
+              //   width: 44,
+              //   height: 44,
+              //   decoration: BoxDecoration(
+              //     color: Colors.white.withOpacity(0.15),
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              //   child: const Icon(Icons.share, color: Colors.white),
+              // ),
+              // const SizedBox(width: 8),
               // Wishlist toggle
               GestureDetector(
                 onTap: () {
-                  ref
-                      .read(wishlistProvider.notifier)
-                      .toggleApiProduct(product);
+                  ref.read(wishlistProvider.notifier).toggleApiProduct(product);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -161,8 +181,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                             : 'Ditambahkan ke wishlist',
                       ),
                       duration: const Duration(seconds: 2),
-                      backgroundColor:
-                          isWishlisted ? Colors.grey : Colors.green,
+                      backgroundColor: isWishlisted
+                          ? Colors.grey
+                          : Colors.green,
                     ),
                   );
                 },
@@ -300,8 +321,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                         // Rating + service time
                         Row(
                           children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 18),
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 18,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               product.rate.toStringAsFixed(1),
@@ -311,9 +335,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            Icon(Icons.schedule,
-                                size: 16,
-                                color: Colors.white.withOpacity(0.5)),
+                            Icon(
+                              Icons.schedule,
+                              size: 16,
+                              color: Colors.white.withOpacity(0.5),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '~${product.serviceTime} menit',
@@ -354,7 +380,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                         _InfoRow(
                           icon: Icons.verified_outlined,
                           label: 'Status',
-                          value: product.isFeatured ? 'Produk Unggulan' : 'Reguler',
+                          value: product.isFeatured
+                              ? 'Produk Unggulan'
+                              : 'Reguler',
                         ),
                       ],
                     ),
@@ -439,10 +467,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.white.withOpacity(0.5),
-          ),
+          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.5)),
         ),
         const SizedBox(width: 6),
         Text(

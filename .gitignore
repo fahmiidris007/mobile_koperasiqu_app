@@ -48,5 +48,6 @@ app.*.map.json
 .fvm/
 
 # file project
-Startup Projects.drawio
+Startup-Projects.drawio
 Basic API Koperasi-Store.postman_collection.json
+api-koperasi.json

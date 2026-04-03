@@ -67,67 +67,66 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 child: Column(
                   children: [
                     // Security score card
-                    GlassContainer(
-                      padding: const EdgeInsets.all(20),
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.shield_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Keamanan Sedang',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Aktifkan biometrik untuk keamanan lebih baik',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white.withOpacity(0.6),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: LinearProgressIndicator(
-                                    value: 0.6,
-                                    backgroundColor: Colors.white.withOpacity(
-                                      0.1,
-                                    ),
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.warning,
-                                    ),
-                                    minHeight: 6,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(duration: 400.ms),
-
-                    const SizedBox(height: 20),
+                    // GlassContainer(
+                    //   padding: const EdgeInsets.all(20),
+                    //   borderRadius: 20,
+                    //   child: Row(
+                    //     children: [
+                    //       Container(
+                    //         width: 56,
+                    //         height: 56,
+                    //         decoration: BoxDecoration(
+                    //           gradient: AppColors.primaryGradient,
+                    //           borderRadius: BorderRadius.circular(16),
+                    //         ),
+                    //         child: const Icon(
+                    //           Icons.shield_rounded,
+                    //           color: Colors.white,
+                    //           size: 28,
+                    //         ),
+                    //       ),
+                    //       const SizedBox(width: 16),
+                    //       Expanded(
+                    //         child: Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.start,
+                    //           children: [
+                    //             const Text(
+                    //               'Keamanan Sedang',
+                    //               style: TextStyle(
+                    //                 fontSize: 15,
+                    //                 fontWeight: FontWeight.bold,
+                    //                 color: Colors.white,
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 4),
+                    //             Text(
+                    //               'Aktifkan biometrik untuk keamanan lebih baik',
+                    //               style: TextStyle(
+                    //                 fontSize: 12,
+                    //                 color: Colors.white.withOpacity(0.6),
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 8),
+                    //             ClipRRect(
+                    //               borderRadius: BorderRadius.circular(4),
+                    //               child: LinearProgressIndicator(
+                    //                 value: 0.6,
+                    //                 backgroundColor: Colors.white.withOpacity(
+                    //                   0.1,
+                    //                 ),
+                    //                 valueColor: AlwaysStoppedAnimation<Color>(
+                    //                   AppColors.warning,
+                    //                 ),
+                    //                 minHeight: 6,
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ).animate().fadeIn(duration: 400.ms),
+                    // const SizedBox(height: 20),
 
                     // Password section
                     GlassContainer(
@@ -158,47 +157,47 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                     const SizedBox(height: 16),
 
                     // Biometric & notifications section
-                    GlassContainer(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      borderRadius: 20,
-                      opacity: 0.12,
-                      child: Column(
-                        children: [
-                          _SecurityToggle(
-                            icon: Icons.fingerprint,
-                            iconColor: AppColors.success,
-                            title: 'Login Biometrik',
-                            subtitle: 'Gunakan sidik jari / Face ID',
-                            value: _biometricEnabled,
-                            onChanged: (v) =>
-                                setState(() => _biometricEnabled = v),
-                          ),
-                          _Divider(),
-                          _SecurityToggle(
-                            icon: Icons.notifications_active_outlined,
-                            iconColor: Colors.orange,
-                            title: 'Notif Login Baru',
-                            subtitle:
-                                'Notifikasi saat ada login dari perangkat baru',
-                            value: _loginNotifEnabled,
-                            onChanged: (v) =>
-                                setState(() => _loginNotifEnabled = v),
-                          ),
-                          _Divider(),
-                          _SecurityToggle(
-                            icon: Icons.receipt_long_outlined,
-                            iconColor: Colors.teal,
-                            title: 'Notif Transaksi',
-                            subtitle: 'Notifikasi setiap transaksi berhasil',
-                            value: _transactionNotifEnabled,
-                            onChanged: (v) =>
-                                setState(() => _transactionNotifEnabled = v),
-                          ),
-                        ],
-                      ),
-                    ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
+                    // GlassContainer(
+                    //   padding: const EdgeInsets.symmetric(vertical: 8),
+                    //   borderRadius: 20,
+                    //   opacity: 0.12,
+                    //   child: Column(
+                    //     children: [
+                    //       _SecurityToggle(
+                    //         icon: Icons.fingerprint,
+                    //         iconColor: AppColors.success,
+                    //         title: 'Login Biometrik',
+                    //         subtitle: 'Gunakan sidik jari / Face ID',
+                    //         value: _biometricEnabled,
+                    //         onChanged: (v) =>
+                    //             setState(() => _biometricEnabled = v),
+                    //       ),
+                    //       _Divider(),
+                    //       _SecurityToggle(
+                    //         icon: Icons.notifications_active_outlined,
+                    //         iconColor: Colors.orange,
+                    //         title: 'Notif Login Baru',
+                    //         subtitle:
+                    //             'Notifikasi saat ada login dari perangkat baru',
+                    //         value: _loginNotifEnabled,
+                    //         onChanged: (v) =>
+                    //             setState(() => _loginNotifEnabled = v),
+                    //       ),
+                    //       _Divider(),
+                    //       _SecurityToggle(
+                    //         icon: Icons.receipt_long_outlined,
+                    //         iconColor: Colors.teal,
+                    //         title: 'Notif Transaksi',
+                    //         subtitle: 'Notifikasi setiap transaksi berhasil',
+                    //         value: _transactionNotifEnabled,
+                    //         onChanged: (v) =>
+                    //             setState(() => _transactionNotifEnabled = v),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
 
-                    const SizedBox(height: 16),
+                    // const SizedBox(height: 16),
 
                     // Danger zone
                     GlassContainer(
@@ -207,22 +206,22 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                       opacity: 0.12,
                       child: Column(
                         children: [
-                          _SecurityAction(
-                            icon: Icons.devices_outlined,
-                            iconColor: Colors.blue,
-                            title: 'Kelola Perangkat',
-                            subtitle: '1 perangkat aktif',
-                            onTap: () => _showSnack('Fitur segera hadir'),
-                          ),
-                          _Divider(),
-                          _SecurityAction(
-                            icon: Icons.history_toggle_off,
-                            iconColor: Colors.orange,
-                            title: 'Riwayat Login',
-                            subtitle: 'Lihat aktivitas login terakhir',
-                            onTap: () => _showSnack('Fitur segera hadir'),
-                          ),
-                          _Divider(),
+                          // _SecurityAction(
+                          //   icon: Icons.devices_outlined,
+                          //   iconColor: Colors.blue,
+                          //   title: 'Kelola Perangkat',
+                          //   subtitle: '1 perangkat aktif',
+                          //   onTap: () => _showSnack('Fitur segera hadir'),
+                          // ),
+                          // _Divider(),
+                          // _SecurityAction(
+                          //   icon: Icons.history_toggle_off,
+                          //   iconColor: Colors.orange,
+                          //   title: 'Riwayat Login',
+                          //   subtitle: 'Lihat aktivitas login terakhir',
+                          //   onTap: () => _showSnack('Fitur segera hadir'),
+                          // ),
+                          // _Divider(),
                           _SecurityAction(
                             icon: Icons.block_outlined,
                             iconColor: AppColors.expense,
