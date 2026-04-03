@@ -46,7 +46,7 @@ class WelcomePage extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Image.asset(
-                          'assets/images/koperasiqu_logo.png',
+                          'assets/images/koperasiqu.png',
                           fit: BoxFit.contain,
                         ),
                       ),

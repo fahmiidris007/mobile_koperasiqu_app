@@ -48,7 +48,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
+                        color: Colors.green.withOpacity(0.4),
                         blurRadius: 40,
                         spreadRadius: 8,
                       ),
@@ -59,7 +59,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(
-                        'assets/images/koperasiqu_logo.png',
+                        'assets/images/koperasiqu.png',
                         fit: BoxFit.contain,
                       ),
                     ),
