@@ -136,7 +136,7 @@ class _SavingsContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: GlassButton(
-                    text: 'Top Up',
+                    text: 'Setor',
                     icon: Icons.add,
                     onPressed: () => context.push(Routes.deposit),
                   ),

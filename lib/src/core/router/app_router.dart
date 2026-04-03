@@ -11,6 +11,7 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell.dart';
 import '../../features/savings/presentation/pages/savings_detail_page.dart';
 import '../../features/savings/presentation/pages/deposit_page.dart';
+import '../../features/savings/presentation/pages/upload_payment_proof_page.dart';
 import '../../features/savings/presentation/pages/withdrawal_page.dart';
 import '../../features/shopping/presentation/pages/catalog_page.dart';
 import '../../features/shopping/presentation/pages/product_detail_page.dart';
@@ -38,6 +39,7 @@ class Routes {
   static const String dashboard = '/dashboard';
   static const String savings = '/savings';
   static const String deposit = '/savings/deposit';
+  static const String depositProof = '/savings/deposit/proof';
   static const String withdrawal = '/savings/withdrawal';
   static const String shopping = '/shopping';
   static const String wishlist = '/shopping/wishlist';
@@ -121,6 +123,15 @@ class AppRouter {
       GoRoute(
         path: Routes.deposit,
         builder: (context, state) => const DepositPage(),
+      ),
+
+      // Upload payment proof — step 2 of deposit flow
+      GoRoute(
+        path: Routes.depositProof,
+        builder: (context, state) {
+          final amount = state.extra as int? ?? 0;
+          return UploadPaymentProofPage(amount: amount);
+        },
       ),
 
       // Withdrawal (without bottom navigation)

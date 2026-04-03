@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +12,6 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/wallet_provider.dart';
-import '../../domain/entities/wallet_transaction.dart';
 
 /// Deposit page with CRUD operations
 class DepositPage extends ConsumerStatefulWidget {
@@ -28,7 +25,6 @@ class _DepositPageState extends ConsumerState<DepositPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  bool _isLoading = false;
   int? _selectedPreset;
 
   static const List<int> _presetAmounts = [100000, 250000, 500000, 1000000];
@@ -47,55 +43,19 @@ class _DepositPageState extends ConsumerState<DepositPage> {
     });
   }
 
-  Future<void> _handleDeposit() async {
+  void _handleNext() {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    final amount = int.tryParse(
+      _amountController.text.replaceAll(RegExp(r'\D'), ''),
+    );
+    if (amount == null || amount <= 0) return;
 
-    try {
-      final amount = int.parse(
-        _amountController.text.replaceAll(RegExp(r'\D'), ''),
-      ).toDouble();
-
-      final result = await ref
-          .read(topupNotifierProvider.notifier)
-          .topup(amount: amount);
-
-      if (!mounted) return;
-
-      if (result != null) {
-        // Show success dialog with topup details
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => _TopupSuccessDialog(result: result),
-        );
-
-        if (!mounted) return;
-        context.go(Routes.savings);
-      } else {
-        final error = ref.read(topupNotifierProvider).error;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Gagal melakukan top up'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      log('error top up $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    context.push(Routes.depositProof, extra: amount);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Keep provider alive while page is mounted (fixes autoDispose bad-state during async topup)
-    ref.watch(topupNotifierProvider);
 
     return SimpleGradientBackground(
       child: SafeArea(
@@ -335,9 +295,9 @@ class _DepositPageState extends ConsumerState<DepositPage> {
 
                       // Submit button
                       GlassButton(
-                        text: 'Konfirmasi Top Up',
-                        isLoading: _isLoading,
-                        onPressed: _handleDeposit,
+                        text: 'Lanjutkan',
+                        icon: Icons.arrow_forward_rounded,
+                        onPressed: _handleNext,
                       ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
 
                       const SizedBox(height: 24),
@@ -398,149 +358,3 @@ class _ThousandSeparatorFormatter extends TextInputFormatter {
   }
 }
 
-/// Top Up success dialog — shows real topup result from API
-class _TopupSuccessDialog extends StatelessWidget {
-  const _TopupSuccessDialog({required this.result});
-
-  final TopupResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: GlassContainer(
-        padding: const EdgeInsets.all(28),
-        borderRadius: 28,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.teal.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.pending_actions,
-                    color: AppColors.teal,
-                    size: 48,
-                  ),
-                )
-                .animate()
-                .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1))
-                .fadeIn(),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              'Top Up Berhasil Dibuat!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Detail card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  _DetailRow(
-                    label: 'Jumlah Top Up',
-                    value: result.amountFormatted,
-                  ),
-                  const Divider(color: Colors.white12, height: 16),
-                  _DetailRow(
-                    label: 'Biaya Admin',
-                    value: result.serviceFeeFormatted,
-                  ),
-                  const Divider(color: Colors.white12, height: 16),
-                  _DetailRow(
-                    label: 'Total Transfer',
-                    value: result.totalAmountFormatted,
-                    bold: true,
-                    valueColor: AppColors.success,
-                  ),
-                  const Divider(color: Colors.white12, height: 16),
-                  _DetailRow(
-                    label: 'Kode Unik',
-                    value: result.uniqueCode.toString(),
-                    bold: true,
-                    valueColor: Colors.orangeAccent,
-                  ),
-                  const Divider(color: Colors.white12, height: 16),
-                  _DetailRow(
-                    label: 'Status',
-                    value: result.status.toUpperCase(),
-                    valueColor: Colors.orange,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Text(
-              'Lakukan transfer sesuai jumlah total di atas termasuk kode unik ke rekening tujuan.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white.withOpacity(0.6),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            GlassButton(
-              text: 'Selesai',
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    this.bold = false,
-    this.valueColor,
-  });
-
-  final String label;
-  final String value;
-  final bool bold;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.6)),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-            color: valueColor ?? Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-}
