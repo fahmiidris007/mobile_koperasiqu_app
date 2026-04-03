@@ -107,23 +107,21 @@ class _TransactionHistoryPageState
                   _FilterChip(
                     label: 'Top Up',
                     isSelected: _selectedFilter == 'topup',
-                    onTap: () =>
-                        setState(() => _selectedFilter = 'topup'),
+                    onTap: () => setState(() => _selectedFilter = 'topup'),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
                     label: 'Pembayaran',
                     isSelected: _selectedFilter == 'payment',
-                    onTap: () =>
-                        setState(() => _selectedFilter = 'payment'),
+                    onTap: () => setState(() => _selectedFilter = 'payment'),
                   ),
-                  const SizedBox(width: 8),
-                  _FilterChip(
-                    label: 'Transfer',
-                    isSelected: _selectedFilter == 'transfer',
-                    onTap: () =>
-                        setState(() => _selectedFilter = 'transfer'),
-                  ),
+                  // const SizedBox(width: 8),
+                  // _FilterChip(
+                  //   label: 'Transfer',
+                  //   isSelected: _selectedFilter == 'transfer',
+                  //   onTap: () =>
+                  //       setState(() => _selectedFilter = 'transfer'),
+                  // ),
                 ],
               ),
             ),
@@ -134,23 +132,21 @@ class _TransactionHistoryPageState
             Expanded(
               child: txAsync.isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: Colors.white38))
+                      child: CircularProgressIndicator(color: Colors.white38),
+                    )
                   : filtered.isEmpty
-                      ? _buildEmpty()
-                      : ListView.separated(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            return _HistoryItem(
-                                    transaction: filtered[index])
-                                .animate(delay: (index * 40).ms)
-                                .fadeIn(duration: 300.ms)
-                                .slideX(begin: 0.04, end: 0);
-                          },
-                        ),
+                  ? _buildEmpty()
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        return _HistoryItem(transaction: filtered[index])
+                            .animate(delay: (index * 40).ms)
+                            .fadeIn(duration: 300.ms)
+                            .slideX(begin: 0.04, end: 0);
+                      },
+                    ),
             ),
 
             const SizedBox(height: 16),
@@ -295,8 +291,7 @@ class _HistoryItem extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: transaction.isPending
                       ? Colors.orange.withOpacity(0.18)

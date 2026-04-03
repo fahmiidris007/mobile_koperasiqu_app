@@ -29,7 +29,10 @@ class _EkycPageState extends ConsumerState<EkycPage> {
   final _picker = ImagePicker();
 
   // Pick image from camera or gallery
-  Future<void> _pickImage({required bool isKtp, required ImageSource source}) async {
+  Future<void> _pickImage({
+    required bool isKtp,
+    required ImageSource source,
+  }) async {
     try {
       final picked = await _picker.pickImage(
         source: source,
@@ -131,12 +134,14 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
     // Update photo paths in registration data
     final currentData = ref.read(registrationProvider).data;
-    ref.read(registrationProvider.notifier).updateData(
-      currentData.copyWith(
-        ktpPhotoPath: _ktpImage!.path,
-        selfiePhotoPath: _selfieImage!.path,
-      ),
-    );
+    ref
+        .read(registrationProvider.notifier)
+        .updateData(
+          currentData.copyWith(
+            ktpPhotoPath: _ktpImage!.path,
+            selfiePhotoPath: _selfieImage!.path,
+          ),
+        );
 
     // Call real POST /register API (multipart with KTP + selfie)
     final user = await ref.read(registrationProvider.notifier).submit();
@@ -147,10 +152,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
     if (user != null) {
       // Navigate to OTP verification page — email is needed for /otp/verify
       final email = ref.read(registrationProvider).data.email;
-      context.pushReplacement(
-        Routes.verifyRegisterOtp,
-        extra: email,
-      );
+      context.pushReplacement(Routes.verifyRegisterOtp, extra: email);
     } else {
       final err = ref.read(registrationProvider).error;
       if (err != null) {
@@ -160,7 +162,6 @@ class _EkycPageState extends ConsumerState<EkycPage> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -230,12 +231,12 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
             // KTP upload card
             _PhotoCard(
-              title: 'Foto KTP',
-              subtitle: 'Foto KTP dengan jelas dan tidak buram',
-              icon: Icons.badge_outlined,
-              image: _ktpImage,
-              onTap: () => _showImageSourceSheet(isKtp: true),
-            )
+                  title: 'Foto KTP',
+                  subtitle: 'Foto KTP dengan jelas dan tidak buram',
+                  icon: Icons.badge_outlined,
+                  image: _ktpImage,
+                  onTap: () => _showImageSourceSheet(isKtp: true),
+                )
                 .animate(delay: 100.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.1, end: 0),
@@ -244,12 +245,12 @@ class _EkycPageState extends ConsumerState<EkycPage> {
 
             // Selfie upload card
             _PhotoCard(
-              title: 'Foto Selfie',
-              subtitle: 'Foto wajah Anda dengan pencahayaan baik',
-              icon: Icons.face_outlined,
-              image: _selfieImage,
-              onTap: () => _showImageSourceSheet(isKtp: false),
-            )
+                  title: 'Foto Selfie',
+                  subtitle: 'Foto wajah Anda dengan pencahayaan baik',
+                  icon: Icons.face_outlined,
+                  image: _selfieImage,
+                  onTap: () => _showImageSourceSheet(isKtp: false),
+                )
                 .animate(delay: 200.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.1, end: 0),
@@ -306,17 +307,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
               onPressed: _handleVerification,
             ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
 
-            const SizedBox(height: 16),
-
-            Text(
-              'Powered by VIDA',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontSize: 12,
-              ),
-            ),
-
-            const SizedBox(height: 40),
+            const SizedBox(height: 60),
           ],
         ),
       ),
@@ -356,7 +347,9 @@ class _PhotoCard extends StatelessWidget {
           children: [
             // Thumbnail or placeholder
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: hasImage
                   ? Image.file(
                       image!,

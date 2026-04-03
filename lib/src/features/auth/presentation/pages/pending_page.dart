@@ -30,11 +30,18 @@ class PendingPage extends ConsumerWidget {
         'Mohon bantuannya untuk mempercepat proses verifikasi akun saya. Terima kasih! 🙏';
 
     final encoded = Uri.encodeComponent(message);
-    final appUrl = Uri.parse('whatsapp://send?phone=${_BankInfo.waNumber}&text=$encoded');
-    final webUrl = Uri.parse('https://wa.me/${_BankInfo.waNumber}?text=$encoded');
+    final appUrl = Uri.parse(
+      'whatsapp://send?phone=${_BankInfo.waNumber}&text=$encoded',
+    );
+    final webUrl = Uri.parse(
+      'https://wa.me/${_BankInfo.waNumber}?text=$encoded',
+    );
 
     try {
-      final launched = await launchUrl(appUrl, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched) {
         await launchUrl(webUrl, mode: LaunchMode.externalApplication);
       }
@@ -45,7 +52,9 @@ class PendingPage extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.'),
+              content: Text(
+                'Tidak dapat membuka WhatsApp. Pastikan WhatsApp terinstall.',
+              ),
               backgroundColor: Colors.red,
             ),
           );

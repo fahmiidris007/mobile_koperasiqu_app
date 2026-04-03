@@ -31,13 +31,23 @@ class SavingsDetailPage extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.wifi_off, color: Colors.white.withOpacity(0.4), size: 48),
+              Icon(
+                Icons.wifi_off,
+                color: Colors.white.withOpacity(0.4),
+                size: 48,
+              ),
               const SizedBox(height: 12),
-              Text('Gagal memuat data', style: TextStyle(color: Colors.white.withOpacity(0.7))),
+              Text(
+                'Gagal memuat data',
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => ref.invalidate(walletProvider),
-                child: const Text('Coba Lagi', style: TextStyle(color: AppColors.teal)),
+                child: const Text(
+                  'Coba Lagi',
+                  style: TextStyle(color: AppColors.teal),
+                ),
               ),
             ],
           ),
@@ -83,15 +93,15 @@ class _SavingsContent extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.more_vert, color: Colors.white),
-                ),
+                // Container(
+                //   width: 44,
+                //   height: 44,
+                //   decoration: BoxDecoration(
+                //     color: Colors.white.withOpacity(0.15),
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: const Icon(Icons.more_vert, color: Colors.white),
+                // ),
               ],
             ),
           ),
@@ -101,10 +111,9 @@ class _SavingsContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: _buildBalanceCard(context)
-                .animate()
-                .fadeIn(duration: 500.ms)
-                .slideY(begin: 0.1, end: 0),
+            child: _buildBalanceCard(
+              context,
+            ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
           ),
         ),
 
@@ -113,9 +122,9 @@ class _SavingsContent extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: _buildChart(context)
-                  .animate(delay: 200.ms)
-                  .fadeIn(duration: 500.ms),
+              child: _buildChart(
+                context,
+              ).animate(delay: 200.ms).fadeIn(duration: 500.ms),
             ),
           ),
 
@@ -189,13 +198,18 @@ class _SavingsContent extends StatelessWidget {
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   children: [
-                    Icon(Icons.receipt_long_outlined,
-                        size: 48, color: Colors.white.withOpacity(0.3)),
+                    Icon(
+                      Icons.receipt_long_outlined,
+                      size: 48,
+                      color: Colors.white.withOpacity(0.3),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Belum ada transaksi',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.5), fontSize: 14),
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -204,27 +218,25 @@ class _SavingsContent extends StatelessWidget {
           )
         else
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final tx = transactions.take(5).toList()[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 4),
-                  child: _WalletTxItem(transaction: tx)
-                      .animate(delay: (400 + index * 80).ms)
-                      .fadeIn(duration: 400.ms),
-                );
-              },
-              childCount: transactions.take(5).length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final tx = transactions.take(5).toList()[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                child: _WalletTxItem(transaction: tx)
+                    .animate(delay: (400 + index * 80).ms)
+                    .fadeIn(duration: 400.ms),
+              );
+            }, childCount: transactions.take(5).length),
           ),
 
         // Show all button
         if (transactions.isNotEmpty)
           SliverToBoxAdapter(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: GestureDetector(
                 onTap: () => context.push(Routes.transactionHistory),
                 child: Container(
@@ -232,8 +244,7 @@ class _SavingsContent extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(14),
-                    border:
-                        Border.all(color: Colors.white.withOpacity(0.12)),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -247,8 +258,11 @@ class _SavingsContent extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 6),
-                      Icon(Icons.arrow_forward_ios,
-                          size: 13, color: AppColors.teal),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 13,
+                        color: AppColors.teal,
+                      ),
                     ],
                   ),
                 ),
@@ -297,10 +311,7 @@ class _SavingsContent extends StatelessWidget {
                     SizedBox(height: 4),
                     Text(
                       'Tabungan Utama',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white54,
-                      ),
+                      style: TextStyle(fontSize: 13, color: Colors.white54),
                     ),
                   ],
                 ),
@@ -369,23 +380,24 @@ class _SavingsContent extends StatelessWidget {
                   ),
                 ),
                 titlesData: const FlTitlesData(
-                  leftTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: approved.asMap().entries.map((e) {
-                      return FlSpot(
-                        e.key.toDouble(),
-                        e.value.amount / 1000,
-                      );
+                      return FlSpot(e.key.toDouble(), e.value.amount / 1000);
                     }).toList(),
                     isCurved: true,
                     gradient: AppColors.primaryGradient,
@@ -395,11 +407,11 @@ class _SavingsContent extends StatelessWidget {
                       show: true,
                       getDotPainter: (spot, percent, bar, index) =>
                           FlDotCirclePainter(
-                        radius: 4,
-                        color: Colors.white,
-                        strokeColor: AppColors.primary,
-                        strokeWidth: 2,
-                      ),
+                            radius: 4,
+                            color: Colors.white,
+                            strokeColor: AppColors.primary,
+                            strokeWidth: 2,
+                          ),
                     ),
                     belowBarData: BarAreaData(
                       show: true,
@@ -488,8 +500,7 @@ class _WalletTxItem extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: transaction.isPending
                       ? Colors.orange.withOpacity(0.2)

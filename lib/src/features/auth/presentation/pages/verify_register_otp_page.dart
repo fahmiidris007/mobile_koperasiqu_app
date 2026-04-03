@@ -89,10 +89,9 @@ class _VerifyRegisterOtpPageState
     setState(() => _isLoading = false);
 
     if (ok) {
-      // Navigate first so pending_page can read registration data if auth state not yet updated
+      // Navigate — PendingPage will read email from registrationProvider.
+      // Reset is handled by PendingPage itself when the user leaves.
       context.go(Routes.pending);
-      // Reset registration state after navigation
-      ref.read(registrationProvider.notifier).reset();
     } else {
       final err = ref.read(registrationProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(

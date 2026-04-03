@@ -270,19 +270,19 @@ class ProfilePage extends ConsumerWidget {
                             title: 'Keamanan Akun',
                             onTap: () => context.push(Routes.accountSecurity),
                           ),
-                          _MenuDivider(),
-                          _MenuItem(
-                            icon: Icons.notifications_outlined,
-                            title: 'Notifikasi',
-                            onTap: () => context.push(Routes.notifications),
-                          ),
-                          _MenuDivider(),
-                          _MenuItem(
-                            icon: Icons.history,
-                            title: 'Riwayat Transaksi',
-                            onTap: () =>
-                                context.push(Routes.transactionHistory),
-                          ),
+                          // _MenuDivider(),
+                          // _MenuItem(
+                          //   icon: Icons.notifications_outlined,
+                          //   title: 'Notifikasi',
+                          //   onTap: () => context.push(Routes.notifications),
+                          // ),
+                          // _MenuDivider(),
+                          // _MenuItem(
+                          //   icon: Icons.history,
+                          //   title: 'Riwayat Transaksi',
+                          //   onTap: () =>
+                          //       context.push(Routes.transactionHistory),
+                          // ),
                         ],
                       ),
                     ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
@@ -305,18 +305,18 @@ class ProfilePage extends ConsumerWidget {
                             onTap: () {},
                           ),
                           _MenuDivider(),
-                          _MenuItem(
-                            icon: Icons.description_outlined,
-                            title: 'Syarat & Ketentuan',
-                            onTap: () {},
-                          ),
-                          _MenuDivider(),
-                          _MenuItem(
-                            icon: Icons.privacy_tip_outlined,
-                            title: 'Kebijakan Privasi',
-                            onTap: () {},
-                          ),
-                          _MenuDivider(),
+                          // _MenuItem(
+                          //   icon: Icons.description_outlined,
+                          //   title: 'Syarat & Ketentuan',
+                          //   onTap: () {},
+                          // ),
+                          // _MenuDivider(),
+                          // _MenuItem(
+                          //   icon: Icons.privacy_tip_outlined,
+                          //   title: 'Kebijakan Privasi',
+                          //   onTap: () {},
+                          // ),
+                          // _MenuDivider(),
                           _MenuItem(
                             icon: Icons.info_outline,
                             title: 'Tentang Aplikasi',
