@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
@@ -69,26 +70,28 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   void _updateRegistrationData() {
     final currentData = ref.read(registrationProvider).data;
-    ref.read(registrationProvider.notifier).updateData(
-      currentData.copyWith(
-        fullName: _nameController.text,
-        nik: _nikController.text,
-        birthDate: _birthDate,
-        gender: _gender,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        password: _passwordController.text,
-        occupation: _occupationController.text,
-        companyName: _companyController.text,
-        jobPosition: _positionController.text,
-        monthlyIncome: _monthlyIncome,
-        maritalStatus: _maritalStatus,
-        spouseName: _spouseNameController.text,
-        numberOfChildren: _numberOfChildren,
-        emergencyContactName: _emergencyContactNameController.text,
-        emergencyContactPhone: _emergencyContactPhoneController.text,
-      ),
-    );
+    ref
+        .read(registrationProvider.notifier)
+        .updateData(
+          currentData.copyWith(
+            fullName: _nameController.text,
+            nik: _nikController.text,
+            birthDate: _birthDate,
+            gender: _gender,
+            email: _emailController.text,
+            phone: _phoneController.text,
+            password: _passwordController.text,
+            occupation: _occupationController.text,
+            companyName: _companyController.text,
+            jobPosition: _positionController.text,
+            monthlyIncome: _monthlyIncome,
+            maritalStatus: _maritalStatus,
+            spouseName: _spouseNameController.text,
+            numberOfChildren: _numberOfChildren,
+            emergencyContactName: _emergencyContactNameController.text,
+            emergencyContactPhone: _emergencyContactPhoneController.text,
+          ),
+        );
   }
 
   Future<void> _nextStep() async {
@@ -131,9 +134,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.blue,
-              surface: Color(0xFF1E3A8A),
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              surface: AppColors.surface,
+              onSurface: AppColors.textPrimary,
             ),
           ),
           child: child!,
@@ -163,10 +167,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: AppColors.primary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primaryLight.withOpacity(0.3),
+                      ),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -176,7 +186,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -204,11 +214,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildStep0(),
-                  _buildStep1(),
-                  _buildStep2(),
-                ],
+                children: [_buildStep0(), _buildStep1(), _buildStep2()],
               ),
             ),
           ),
@@ -218,8 +224,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             padding: const EdgeInsets.all(24),
             child: GlassButton(
               text: currentStep < 2 ? 'Lanjut' : 'Verifikasi Identitas',
-              icon:
-                  currentStep < 2 ? Icons.arrow_forward : Icons.verified_user,
+              icon: currentStep < 2 ? Icons.arrow_forward : Icons.verified_user,
               isLoading: regState.isLoading,
               onPressed: _nextStep,
             ),
@@ -243,17 +248,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
 
             TextFormField(
               controller: _nameController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Nama Lengkap',
-                prefixIcon: Icon(Icons.person, color: Colors.white70),
+                prefixIcon: Icon(Icons.person, color: AppColors.textSecondary),
               ),
               validator: Validators.name,
             ),
@@ -263,10 +268,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               controller: _nikController,
               keyboardType: TextInputType.number,
               maxLength: 16,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'NIK',
-                prefixIcon: Icon(Icons.badge, color: Colors.white70),
+                prefixIcon: Icon(Icons.badge, color: AppColors.textSecondary),
                 counterText: '',
               ),
               validator: Validators.nik,
@@ -277,12 +282,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onTap: _selectBirthDate,
               child: AbsorbPointer(
                 child: TextFormField(
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Tanggal Lahir',
                     prefixIcon: const Icon(
                       Icons.calendar_today,
-                      color: Colors.white70,
+                      color: AppColors.textSecondary,
                     ),
                     hintText: _birthDate != null
                         ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
@@ -302,11 +307,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             DropdownButtonFormField<Gender>(
               initialValue: _gender,
-              dropdownColor: const Color(0xFF1E3A5F),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: AppColors.surface,
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Jenis Kelamin',
-                prefixIcon: Icon(Icons.wc, color: Colors.white70),
+                prefixIcon: Icon(Icons.wc, color: AppColors.textSecondary),
               ),
               items: Gender.values.map((g) {
                 return DropdownMenuItem(value: g, child: Text(g.displayName));
@@ -320,10 +325,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Email',
-                prefixIcon: Icon(Icons.email, color: Colors.white70),
+                prefixIcon: Icon(Icons.email, color: AppColors.textSecondary),
               ),
               validator: Validators.email,
             ),
@@ -332,10 +337,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Nomor HP',
-                prefixIcon: Icon(Icons.phone, color: Colors.white70),
+                prefixIcon: Icon(Icons.phone, color: AppColors.textSecondary),
               ),
               validator: Validators.phoneNumber,
             ),
@@ -344,14 +349,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Password',
-                prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                prefixIcon: const Icon(
+                  Icons.lock,
+                  color: AppColors.textSecondary,
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white54,
+                    color: AppColors.textMuted,
                     size: 20,
                   ),
                   onPressed: () =>
@@ -365,19 +373,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Konfirmasi Password',
                 prefixIcon: const Icon(
                   Icons.lock_outline,
-                  color: Colors.white70,
+                  color: AppColors.textSecondary,
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscureConfirmPassword
                         ? Icons.visibility_off
                         : Icons.visibility,
-                    color: Colors.white54,
+                    color: AppColors.textMuted,
                     size: 20,
                   ),
                   onPressed: () => setState(
@@ -408,17 +416,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
 
             TextFormField(
               controller: _occupationController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Pekerjaan',
-                prefixIcon: Icon(Icons.work, color: Colors.white70),
+                prefixIcon: Icon(Icons.work, color: AppColors.textSecondary),
               ),
               validator: (v) => Validators.required(v, 'Pekerjaan'),
             ),
@@ -426,27 +434,33 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             TextFormField(
               controller: _companyController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Nama Perusahaan (opsional)',
-                prefixIcon: Icon(Icons.business, color: Colors.white70),
+                prefixIcon: Icon(
+                  Icons.business,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _positionController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Jabatan (opsional)',
-                prefixIcon: Icon(Icons.assignment_ind, color: Colors.white70),
+                prefixIcon: Icon(
+                  Icons.assignment_ind,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             const SizedBox(height: 16),
 
             const Text(
               'Pendapatan Bulanan',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -499,25 +513,24 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
 
             DropdownButtonFormField<MaritalStatus>(
               initialValue: _maritalStatus,
-              dropdownColor: const Color(0xFF1E3A5F),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: AppColors.surface,
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Status Pernikahan',
-                prefixIcon:
-                    Icon(Icons.family_restroom, color: Colors.white70),
+                prefixIcon: Icon(
+                  Icons.family_restroom,
+                  color: AppColors.textSecondary,
+                ),
               ),
               items: MaritalStatus.values.map((s) {
-                return DropdownMenuItem(
-                  value: s,
-                  child: Text(s.displayName),
-                );
+                return DropdownMenuItem(value: s, child: Text(s.displayName));
               }).toList(),
               onChanged: (v) => setState(() => _maritalStatus = v),
               validator: (v) =>
@@ -528,10 +541,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             if (_maritalStatus == MaritalStatus.married) ...[
               TextFormField(
                 controller: _spouseNameController,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.textPrimary),
                 decoration: const InputDecoration(
                   labelText: 'Nama Pasangan',
-                  prefixIcon: Icon(Icons.person, color: Colors.white70),
+                  prefixIcon: Icon(
+                    Icons.person,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -541,17 +557,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 _maritalStatus != MaritalStatus.single) ...[
               Row(
                 children: [
-                  const Icon(Icons.child_care, color: Colors.white70),
+                  const Icon(Icons.child_care, color: AppColors.textSecondary),
                   const SizedBox(width: 12),
                   Text(
                     'Jumlah Anak: $_numberOfChildren',
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.textPrimary),
                   ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(
                       Icons.remove_circle_outline,
-                      color: Colors.white70,
+                      color: AppColors.textSecondary,
                     ),
                     onPressed: _numberOfChildren > 0
                         ? () => setState(() => _numberOfChildren--)
@@ -560,7 +576,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   IconButton(
                     icon: const Icon(
                       Icons.add_circle_outline,
-                      color: Colors.white70,
+                      color: AppColors.primary,
                     ),
                     onPressed: () => setState(() => _numberOfChildren++),
                   ),
@@ -569,24 +585,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: 8),
             ],
 
-            const Divider(color: Colors.white24, height: 32),
+            const Divider(color: AppColors.accentLight, height: 32),
 
             const Text(
               'Kontak Darurat',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _emergencyContactNameController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'Nama Kontak Darurat',
-                prefixIcon: Icon(Icons.contact_phone, color: Colors.white70),
+                prefixIcon: Icon(
+                  Icons.contact_phone,
+                  color: AppColors.textSecondary,
+                ),
               ),
               validator: (v) => Validators.required(v, 'Kontak darurat'),
             ),
@@ -595,10 +614,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             TextFormField(
               controller: _emergencyContactPhoneController,
               keyboardType: TextInputType.phone,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: const InputDecoration(
                 labelText: 'No. HP Kontak Darurat',
-                prefixIcon: Icon(Icons.phone, color: Colors.white70),
+                prefixIcon: Icon(Icons.phone, color: AppColors.textSecondary),
               ),
               validator: Validators.phoneNumber,
             ),
@@ -630,16 +649,16 @@ class _IncomeChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.1),
+          color: isSelected ? AppColors.primary : AppColors.backgroundAlt,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.white.withOpacity(0.3),
+            color: isSelected ? AppColors.primary : AppColors.accentLight,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),

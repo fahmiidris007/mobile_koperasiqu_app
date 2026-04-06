@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/colors.dart';
 
 /// Step indicator for multi-step forms
 class StepIndicator extends StatelessWidget {
@@ -29,16 +30,16 @@ class StepIndicator extends StatelessWidget {
                   height: 32,
                   decoration: BoxDecoration(
                     color: isActive
-                        ? Colors.blue
-                        : Colors.white.withOpacity(0.2),
+                        ? AppColors.primary
+                        : AppColors.accentLight,
                     shape: BoxShape.circle,
                     border: isCurrent
-                        ? Border.all(color: Colors.white, width: 2)
+                        ? Border.all(color: AppColors.primary, width: 2)
                         : null,
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.4),
+                              color: AppColors.primary.withOpacity(0.25),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -51,7 +52,7 @@ class StepIndicator extends StatelessWidget {
                         : Text(
                             '${stepIndex + 1}',
                             style: TextStyle(
-                              color: isActive ? Colors.white : Colors.white70,
+                              color: isActive ? Colors.white : AppColors.textMuted,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -63,7 +64,7 @@ class StepIndicator extends StatelessWidget {
                   steps[stepIndex],
                   style: TextStyle(
                     fontSize: 10,
-                    color: isActive ? Colors.white : Colors.white54,
+                    color: isActive ? AppColors.primary : AppColors.textMuted,
                     fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                   ),
                   textAlign: TextAlign.center,
@@ -84,9 +85,9 @@ class StepIndicator extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
               gradient: isActive
-                  ? const LinearGradient(colors: [Colors.blue, Colors.blue])
+                  ? AppColors.primaryGradient
                   : null,
-              color: isActive ? null : Colors.white.withOpacity(0.2),
+              color: isActive ? null : AppColors.accentLight,
               borderRadius: BorderRadius.circular(1),
             ),
           );
