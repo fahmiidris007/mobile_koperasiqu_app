@@ -69,7 +69,10 @@ class CatalogPage extends ConsumerWidget {
                         decoration: InputDecoration(
                           hintText: 'Cari produk...',
                           hintStyle: TextStyle(color: AppColors.textMuted),
-                          prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppColors.textMuted,
+                          ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16,
@@ -156,18 +159,24 @@ class CatalogPage extends ConsumerWidget {
                         label: 'Semua',
                         icon: Icons.grid_view,
                         isSelected: selectedSlug == null,
-                        onTap: () => ref
-                            .read(selectedCategorySlugProvider.notifier)
-                            .state = null,
+                        onTap: () =>
+                            ref
+                                    .read(selectedCategorySlugProvider.notifier)
+                                    .state =
+                                null,
                       ),
-                      ...categories.map((cat) => _CategoryChip(
-                            label: cat.name,
-                            icon: _resolveIcon(cat.iconName),
-                            isSelected: selectedSlug == cat.slug,
-                            onTap: () => ref
-                                .read(selectedCategorySlugProvider.notifier)
-                                .state = cat.slug,
-                          )),
+                      ...categories.map(
+                        (cat) => _CategoryChip(
+                          label: cat.name,
+                          icon: _resolveIcon(cat.iconName),
+                          isSelected: selectedSlug == cat.slug,
+                          onTap: () =>
+                              ref
+                                  .read(selectedCategorySlugProvider.notifier)
+                                  .state = cat
+                                  .slug,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -190,8 +199,11 @@ class CatalogPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: AppColors.accentLight, size: 48),
+                    const Icon(
+                      Icons.error_outline,
+                      color: AppColors.accentLight,
+                      size: 48,
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       'Gagal memuat produk',
@@ -200,8 +212,10 @@ class CatalogPage extends ConsumerWidget {
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () => ref.invalidate(productsApiProvider),
-                      child: const Text('Coba Lagi',
-                          style: TextStyle(color: AppColors.primary)),
+                      child: const Text(
+                        'Coba Lagi',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
                     ),
                   ],
                 ),
@@ -214,8 +228,11 @@ class CatalogPage extends ConsumerWidget {
                     padding: EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        Icon(Icons.shopping_bag_outlined,
-                            size: 64, color: AppColors.accentLight),
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 64,
+                          color: AppColors.accentLight,
+                        ),
                         SizedBox(height: 16),
                         Text(
                           'Tidak ada produk',
@@ -229,23 +246,19 @@ class CatalogPage extends ConsumerWidget {
               return SliverPadding(
                 padding: const EdgeInsets.all(20),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 14,
                     crossAxisSpacing: 14,
                     childAspectRatio: 0.7,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final product = products[index];
-                      return _ProductCard(product: product)
-                          .animate(delay: (index * 50).ms)
-                          .fadeIn(duration: 400.ms)
-                          .scale(begin: const Offset(0.95, 0.95));
-                    },
-                    childCount: products.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = products[index];
+                    return _ProductCard(product: product)
+                        .animate(delay: (index * 50).ms)
+                        .fadeIn(duration: 400.ms)
+                        .scale(begin: const Offset(0.95, 0.95));
+                  }, childCount: products.length),
                 ),
               );
             },
@@ -288,8 +301,11 @@ class _CategoryChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14,
-                color: isSelected ? Colors.white : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -359,7 +375,9 @@ class _ProductCard extends ConsumerWidget {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(8),
@@ -391,8 +409,9 @@ class _ProductCard extends ConsumerWidget {
                                   : '${product.name} ditambahkan ke wishlist',
                             ),
                             duration: const Duration(seconds: 2),
-                            backgroundColor:
-                                isWishlisted ? Colors.grey : Colors.green,
+                            backgroundColor: isWishlisted
+                                ? Colors.grey
+                                : Colors.green,
                           ),
                         );
                       },
@@ -405,7 +424,9 @@ class _ProductCard extends ConsumerWidget {
                         ),
                         child: Icon(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
-                          color: isWishlisted ? AppColors.error : AppColors.textMuted,
+                          color: isWishlisted
+                              ? AppColors.error
+                              : AppColors.textMuted,
                           size: 18,
                         ),
                       ),
@@ -441,14 +462,16 @@ class _ProductCard extends ConsumerWidget {
                         Text(
                           product.rate.toStringAsFixed(1),
                           style: const TextStyle(
-                            fontSize: 11, color: AppColors.textMuted,
+                            fontSize: 11,
+                            color: AppColors.textMuted,
                           ),
                         ),
                         const Spacer(),
                         Text(
                           '~${product.serviceTime}m',
                           style: const TextStyle(
-                            fontSize: 11, color: AppColors.textMuted,
+                            fontSize: 11,
+                            color: AppColors.textMuted,
                           ),
                         ),
                       ],

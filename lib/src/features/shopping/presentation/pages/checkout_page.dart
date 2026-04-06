@@ -33,10 +33,10 @@ class CheckoutPage extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: AppColors.primary.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                    child: const Icon(Icons.arrow_back, color: AppColors.primary),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -45,7 +45,7 @@ class CheckoutPage extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -100,9 +100,9 @@ class CheckoutPage extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: AppColors.surface,
                 border: Border(
-                  top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  top: BorderSide(color: AppColors.accentLight),
                 ),
               ),
               child: Column(
@@ -124,7 +124,7 @@ class CheckoutPage extends ConsumerWidget {
                           value: 'Gratis',
                           valueColor: AppColors.success,
                         ),
-                        const Divider(color: Colors.white24, height: 20),
+                        const Divider(color: AppColors.accentLight, height: 20),
                         _SummaryRow(
                           label: 'Total',
                           value: Formatters.formatCurrency(cart.totalAmount),
@@ -157,29 +157,29 @@ class CheckoutPage extends ConsumerWidget {
           Container(
             width: 100,
             height: 100,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+            decoration: const BoxDecoration(
+              color: AppColors.backgroundAlt,
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.shopping_cart_outlined,
               size: 48,
-              color: Colors.white.withOpacity(0.5),
+              color: AppColors.accentLight,
             ),
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'Keranjang Kosong',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withOpacity(0.8),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Yuk mulai belanja!',
-            style: TextStyle(color: Colors.white.withOpacity(0.5)),
+            style: TextStyle(color: AppColors.textMuted),
           ),
           const SizedBox(height: 24),
           GlassOutlineButton(
@@ -226,15 +226,15 @@ class CheckoutPage extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
               const SizedBox(height: 8),
 
-              Text(
+              const Text(
                 'Pesanan Anda sedang diproses',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
 
               const SizedBox(height: 24),
@@ -278,14 +278,14 @@ class _CartItemCard extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: AppColors.backgroundAlt,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.image,
                 size: 28,
-                color: Colors.white.withOpacity(0.3),
+                color: AppColors.accentLight,
               ),
             ),
           ),
@@ -303,7 +303,7 @@ class _CartItemCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -312,7 +312,7 @@ class _CartItemCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.teal,
+                    color: AppColors.primary,
                   ),
                 ),
               ],
@@ -324,16 +324,16 @@ class _CartItemCard extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: onRemove,
-                child: Icon(
+                child: const Icon(
                   Icons.delete_outline,
-                  color: Colors.white.withOpacity(0.5),
+                  color: AppColors.textMuted,
                   size: 20,
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: AppColors.primary.withOpacity(0.10),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -345,7 +345,7 @@ class _CartItemCard extends StatelessWidget {
                         padding: EdgeInsets.all(6),
                         child: Icon(
                           Icons.remove,
-                          color: Colors.white,
+                          color: AppColors.primary,
                           size: 16,
                         ),
                       ),
@@ -355,7 +355,7 @@ class _CartItemCard extends StatelessWidget {
                       child: Text(
                         '${item.quantity}',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -364,7 +364,7 @@ class _CartItemCard extends StatelessWidget {
                       onTap: () => onQuantityChanged(item.quantity + 1),
                       child: const Padding(
                         padding: EdgeInsets.all(6),
-                        child: Icon(Icons.add, color: Colors.white, size: 16),
+                        child: Icon(Icons.add, color: AppColors.primary, size: 16),
                       ),
                     ),
                   ],
@@ -399,14 +399,14 @@ class _SummaryRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: isBold ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: valueColor ?? Colors.white,
+            color: valueColor ?? AppColors.textPrimary,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
             fontSize: isBold ? 18 : 14,
           ),

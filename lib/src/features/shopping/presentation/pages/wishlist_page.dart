@@ -34,10 +34,10 @@ class WishlistPage extends ConsumerWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
+                      child: const Icon(Icons.arrow_back, color: AppColors.primary),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -47,7 +47,7 @@ class WishlistPage extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -60,12 +60,12 @@ class WishlistPage extends ConsumerWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: AppColors.primary.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
                           'Hapus Semua',
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                          style: TextStyle(color: AppColors.primary, fontSize: 13),
                         ),
                       ),
                     ),
@@ -77,7 +77,7 @@ class WishlistPage extends ConsumerWidget {
             Expanded(
               child: wishlistState.isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: CircularProgressIndicator(color: AppColors.primary),
                     )
                   : wishlistState.items.isEmpty
                   ? _EmptyWishlist()
@@ -127,22 +127,22 @@ class WishlistPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Hapus Semua Wishlist',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: AppColors.textPrimary),
         ),
-        content: Text(
+        content: const Text(
           'Apakah Anda yakin ingin menghapus semua item dari wishlist?',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(
+            child: const Text(
               'Batal',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -168,27 +168,27 @@ class _EmptyWishlist extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.favorite_border_rounded,
             size: 80,
-            color: Colors.white.withOpacity(0.3),
+            color: AppColors.accentLight,
           ).animate().scale(begin: const Offset(0.5, 0.5)).fadeIn(),
           const SizedBox(height: 20),
-          Text(
+          const Text(
             'Wishlist Kosong',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.textPrimary,
             ),
           ).animate(delay: 100.ms).fadeIn(),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Tap ikon ❤️ pada produk\nuntuk menambahkan ke wishlist',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.4),
+              color: AppColors.textMuted,
             ),
           ).animate(delay: 150.ms).fadeIn(),
         ],
@@ -225,14 +225,14 @@ class _WishlistCard extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: AppColors.backgroundAlt,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.image_rounded,
                     size: 32,
-                    color: Colors.white.withOpacity(0.3),
+                    color: AppColors.accentLight,
                   ),
                 ),
               ),
@@ -250,7 +250,7 @@ class _WishlistCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -261,14 +261,14 @@ class _WishlistCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         item.category,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: AppColors.teal,
+                          color: AppColors.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -281,16 +281,16 @@ class _WishlistCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.teal,
+                            color: AppColors.primary,
                           ),
                         ),
                         if (item.originalPrice != null) ...[
                           const SizedBox(width: 8),
                           Text(
                             Formatters.formatCurrency(item.originalPrice!),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.white.withOpacity(0.4),
+                              color: AppColors.textMuted,
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
