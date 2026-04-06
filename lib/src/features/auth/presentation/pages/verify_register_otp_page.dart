@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
@@ -135,10 +136,11 @@ class _VerifyRegisterOtpPageState
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
                   ),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
+                  child: const Icon(Icons.arrow_back, color: AppColors.primary),
                 ),
               ),
             ),
@@ -155,12 +157,13 @@ class _VerifyRegisterOtpPageState
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.15),
+                          color: AppColors.primary.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
                         ),
                         child: const Icon(
                           Icons.mark_email_unread_rounded,
-                          color: Colors.blue,
+                          color: AppColors.primary,
                           size: 40,
                         ),
                       ),
@@ -172,18 +175,18 @@ class _VerifyRegisterOtpPageState
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
 
                       const SizedBox(height: 8),
 
-                      Text(
+                      const Text(
                         'Pendaftaran berhasil! Kode OTP telah\ndikirim ke email Anda:',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.6),
+                          color: AppColors.textMuted,
                           height: 1.5,
                         ),
                       ),
@@ -195,7 +198,7 @@ class _VerifyRegisterOtpPageState
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.primary,
                         ),
                       ),
 
@@ -226,7 +229,7 @@ class _VerifyRegisterOtpPageState
                                 keyboardType: TextInputType.number,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -235,20 +238,19 @@ class _VerifyRegisterOtpPageState
                                   contentPadding: EdgeInsets.zero,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withOpacity(0.3),
+                                    borderSide: const BorderSide(
+                                      color: AppColors.accentLight,
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Colors.blue,
+                                      color: AppColors.primary,
                                       width: 2,
                                     ),
                                   ),
                                   filled: true,
-                                  fillColor:
-                                      Colors.white.withOpacity(0.08),
+                                  fillColor: AppColors.surface,
                                 ),
                                 onChanged: (v) {
                                   if (v.isNotEmpty && i < 5) {
@@ -276,10 +278,10 @@ class _VerifyRegisterOtpPageState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
+                          const Text(
                             'Belum menerima kode? ',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.55),
+                              color: AppColors.textMuted,
                               fontSize: 13,
                             ),
                           ),
@@ -288,7 +290,7 @@ class _VerifyRegisterOtpPageState
                             child: const Text(
                               'Kirim Ulang',
                               style: TextStyle(
-                                color: Colors.blue,
+                                color: AppColors.primary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -311,14 +313,14 @@ class _VerifyRegisterOtpPageState
               borderRadius: 14,
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.white54, size: 16),
+                  const Icon(Icons.info_outline, color: AppColors.textMuted, size: 16),
                   const SizedBox(width: 10),
-                  Expanded(
+                  const Expanded(
                     child: Text(
                       'Akun Anda telah dibuat dan menunggu persetujuan admin setelah verifikasi OTP.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.5),
+                        color: AppColors.textMuted,
                       ),
                     ),
                   ),

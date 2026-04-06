@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
@@ -170,10 +171,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white),
+              child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
           ),
         ),
@@ -184,8 +186,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: AppColors.primaryLight.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
               ),
               child: const Center(
                 child: Text(
@@ -193,7 +196,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   style: TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -218,15 +221,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Center(
+                    const Center(
                       child: Text(
                         'Masuk ke akun KoperasiQu Anda',
-                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -234,12 +237,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
                         labelText: 'Email',
                         prefixIcon: Icon(
                           Icons.email_outlined,
-                          color: Colors.white.withOpacity(0.7),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       validator: Validators.email,
@@ -250,19 +253,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.lock,
-                          color: Colors.white.withOpacity(0.7),
+                          color: AppColors.textSecondary,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_off
                                 : Icons.visibility,
-                            color: Colors.white.withOpacity(0.7),
+                            color: AppColors.textSecondary,
                           ),
                           onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword,
@@ -278,10 +281,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
-                        child: Text(
+                        child: const Text(
                           'Lupa Password?',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -299,20 +302,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                     Row(
                       children: [
-                        Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.3)),
+                        const Expanded(
+                          child: Divider(color: AppColors.accentLight),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'atau',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: AppColors.textMuted,
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.3)),
+                        const Expanded(
+                          child: Divider(color: AppColors.accentLight),
                         ),
                       ],
                     ),
@@ -323,16 +326,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: TextButton(
                         onPressed: () => context.push(Routes.register),
                         child: RichText(
-                          text: TextSpan(
+                          text: const TextSpan(
                             text: 'Belum punya akun? ',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: AppColors.textSecondary,
                             ),
-                            children: const [
+                            children: [
                               TextSpan(
                                 text: 'Daftar Sekarang',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -380,10 +383,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white),
+              child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
           ),
         ),
@@ -416,15 +420,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 'Kode OTP telah dikirim ke',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.6),
+                  color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: 4),
@@ -433,7 +437,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.primary,
                 ),
               ),
 
@@ -463,7 +467,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -472,19 +476,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           contentPadding: EdgeInsets.zero,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Colors.white.withOpacity(0.3),
+                            borderSide: const BorderSide(
+                              color: AppColors.accentLight,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Colors.blue,
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.08),
+                          fillColor: AppColors.surface,
                         ),
                         onChanged: (v) {
                           if (v.isNotEmpty && i < 5) {
@@ -512,10 +516,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Belum menerima kode? ',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.55),
+                      color: AppColors.textMuted,
                       fontSize: 13,
                     ),
                   ),
@@ -524,7 +528,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: const Text(
                       'Kirim Ulang',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.primary,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
@@ -544,14 +548,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           borderRadius: 14,
           child: Row(
             children: [
-              const Icon(Icons.info_outline, color: Colors.white54, size: 16),
+              const Icon(Icons.info_outline, color: AppColors.textMuted, size: 16),
               const SizedBox(width: 10),
-              Expanded(
+              const Expanded(
                 child: Text(
                   'OTP dikirim ke email — masukkan kode yang diterima',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.5),
+                    color: AppColors.textMuted,
                   ),
                 ),
               ),
