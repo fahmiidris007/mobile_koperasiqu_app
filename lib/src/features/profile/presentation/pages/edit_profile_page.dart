@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -21,23 +21,27 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   late TextEditingController _emailController;
   late TextEditingController _occupationController;
   bool _isSaving = false;
+  bool _initialized = false;
+
+  /// Dipanggil setelah userProvider selesai load
+  void _initControllers(String name, String phone, String email) {
+    if (_initialized) return;
+    _initialized = true;
+    _nameController = TextEditingController(text: name);
+    _phoneController = TextEditingController(text: phone);
+    _emailController = TextEditingController(text: email);
+    _occupationController = TextEditingController();
+  }
 
   @override
   void initState() {
     super.initState();
-    final data = ref.read(registrationProvider).data;
-    _nameController = TextEditingController(
-      text: data.fullName.isNotEmpty ? data.fullName : 'Ahmad Fahmi',
-    );
-    _phoneController = TextEditingController(
-      text: data.phone.isNotEmpty ? data.phone : '081234567890',
-    );
-    _emailController = TextEditingController(
-      text: data.email.isNotEmpty ? data.email : 'ahmad@email.com',
-    );
-    _occupationController = TextEditingController(
-      text: data.occupation.isNotEmpty ? data.occupation : '',
-    );
+    // Controller diinisialisasi dengan string kosong dulu;
+    // nilai aslinya diisi setelah userProvider load di build().
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _emailController = TextEditingController();
+    _occupationController = TextEditingController();
   }
 
   @override
@@ -66,213 +70,239 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GradientBackground(
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: AppColors.primary,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Text(
-                      'Edit Profil',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    final userAsync = ref.watch(userProvider);
 
-            const SizedBox(height: 24),
+    return userAsync.when(
+      loading: () => const GradientBackground(
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
+      error: (e, _) => GradientBackground(
+        child: Center(
+          child: Text(
+            'Gagal memuat data: $e',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ),
+      data: (user) {
+        // Isi controller dengan data user (hanya pertama kali)
+        _initControllers(user.name, user.phone, user.email);
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
+        return GradientBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Row(
                     children: [
-                      // Avatar
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              borderRadius: BorderRadius.circular(28),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _nameController.text.isNotEmpty
-                                    ? _nameController.text
-                                          .split(' ')
-                                          .take(2)
-                                          .map((w) => w[0])
-                                          .join()
-                                          .toUpperCase()
-                                    : 'AF',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 30,
-                                ),
-                              ),
-                            ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ).animate().fadeIn(duration: 400.ms),
-
-                      const SizedBox(height: 28),
-
-                      // Form fields
-                      GlassContainer(
-                        padding: const EdgeInsets.all(20),
-                        borderRadius: 20,
-                        opacity: 0.12,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _SectionLabel('Informasi Pribadi'),
-                            const SizedBox(height: 16),
-                            _ProfileField(
-                              controller: _nameController,
-                              label: 'Nama Lengkap',
-                              icon: Icons.person_outline,
-                              validator: (v) => v == null || v.isEmpty
-                                  ? 'Nama tidak boleh kosong'
-                                  : null,
-                            ),
-                            const SizedBox(height: 14),
-                            _ProfileField(
-                              controller: _phoneController,
-                              label: 'Nomor HP',
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              validator: (v) => v == null || v.isEmpty
-                                  ? 'Nomor HP tidak boleh kosong'
-                                  : null,
-                            ),
-                            const SizedBox(height: 14),
-                            _ProfileField(
-                              controller: _emailController,
-                              label: 'Email',
-                              icon: Icons.email_outlined,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (v) {
-                                if (v == null || v.isEmpty)
-                                  return 'Email tidak boleh kosong';
-                                if (!v.contains('@'))
-                                  return 'Format email tidak valid';
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ).animate(delay: 100.ms).fadeIn(duration: 400.ms),
-
-                      const SizedBox(height: 16),
-
-                      GlassContainer(
-                        padding: const EdgeInsets.all(20),
-                        borderRadius: 20,
-                        opacity: 0.12,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _SectionLabel('Pekerjaan'),
-                            const SizedBox(height: 16),
-                            _ProfileField(
-                              controller: _occupationController,
-                              label: 'Pekerjaan',
-                              icon: Icons.work_outline,
-                            ),
-                          ],
-                        ),
-                      ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
-
-                      const SizedBox(height: 28),
-
-                      // Save button
-                      SizedBox(
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onTap: _isSaving ? null : _saveChanges,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Center(
-                              child: _isSaving
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Simpan Perubahan',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                            ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: AppColors.primary,
+                            size: 18,
                           ),
                         ),
-                      ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
-
-                      const SizedBox(height: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'Edit Profil',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 24),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Avatar
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              Container(
+                                width: 90,
+                                height: 90,
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _nameController.text.isNotEmpty
+                                        ? _nameController.text
+                                              .split(' ')
+                                              .take(2)
+                                              .map((w) => w[0])
+                                              .join()
+                                              .toUpperCase()
+                                        : user.name.isNotEmpty
+                                        ? user.name[0].toUpperCase()
+                                        : 'U',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 30,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ).animate().fadeIn(duration: 400.ms),
+
+                          const SizedBox(height: 28),
+
+                          // Form fields
+                          GlassContainer(
+                            padding: const EdgeInsets.all(20),
+                            borderRadius: 20,
+                            opacity: 0.12,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _SectionLabel('Informasi Pribadi'),
+                                const SizedBox(height: 16),
+                                _ProfileField(
+                                  controller: _nameController,
+                                  label: 'Nama Lengkap',
+                                  icon: Icons.person_outline,
+                                  validator: (v) => v == null || v.isEmpty
+                                      ? 'Nama tidak boleh kosong'
+                                      : null,
+                                ),
+                                const SizedBox(height: 14),
+                                _ProfileField(
+                                  controller: _phoneController,
+                                  label: 'Nomor HP',
+                                  icon: Icons.phone_outlined,
+                                  keyboardType: TextInputType.phone,
+                                  validator: (v) => v == null || v.isEmpty
+                                      ? 'Nomor HP tidak boleh kosong'
+                                      : null,
+                                ),
+                                const SizedBox(height: 14),
+                                _ProfileField(
+                                  controller: _emailController,
+                                  label: 'Email',
+                                  icon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty)
+                                      return 'Email tidak boleh kosong';
+                                    if (!v.contains('@'))
+                                      return 'Format email tidak valid';
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ).animate(delay: 100.ms).fadeIn(duration: 400.ms),
+
+                          const SizedBox(height: 16),
+
+                          GlassContainer(
+                            padding: const EdgeInsets.all(20),
+                            borderRadius: 20,
+                            opacity: 0.12,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _SectionLabel('Pekerjaan'),
+                                const SizedBox(height: 16),
+                                _ProfileField(
+                                  controller: _occupationController,
+                                  label: 'Pekerjaan',
+                                  icon: Icons.work_outline,
+                                ),
+                              ],
+                            ),
+                          ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
+
+                          const SizedBox(height: 28),
+
+                          // Save button
+                          SizedBox(
+                            width: double.infinity,
+                            child: GestureDetector(
+                              onTap: _isSaving ? null : _saveChanges,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Center(
+                                  child: _isSaving
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Simpan Perubahan',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -319,10 +349,7 @@ class _ProfileField extends StatelessWidget {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
         prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
