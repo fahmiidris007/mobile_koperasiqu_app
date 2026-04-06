@@ -142,10 +142,13 @@ class _UploadPaymentProofPageState
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -154,7 +157,7 @@ class _UploadPaymentProofPageState
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -202,7 +205,7 @@ class _UploadPaymentProofPageState
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                             ],
@@ -230,27 +233,27 @@ class _UploadPaymentProofPageState
                               const Icon(
                                 Icons.credit_card,
                                 size: 16,
-                                color: Colors.white54,
+                                color: AppColors.textMuted,
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'No. Rekening',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.white.withOpacity(0.55),
+                                        color: AppColors.textMuted,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(
+                                    const Text(
                                       _BankInfo.accountNumber,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: AppColors.textPrimary,
                                         letterSpacing: 1.5,
                                       ),
                                     ),
@@ -274,7 +277,7 @@ class _UploadPaymentProofPageState
                                 child: const Icon(
                                   Icons.copy,
                                   size: 20,
-                                  color: AppColors.teal,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ],
@@ -283,7 +286,7 @@ class _UploadPaymentProofPageState
                           const SizedBox(height: 16),
 
                           // Divider
-                          Divider(color: Colors.white.withOpacity(0.12)),
+                          const Divider(color: AppColors.accentLight),
 
                           const SizedBox(height: 16),
 
@@ -291,7 +294,7 @@ class _UploadPaymentProofPageState
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.15),
+                              color: AppColors.glassWhite,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: AppColors.primary.withOpacity(0.4),
@@ -307,7 +310,7 @@ class _UploadPaymentProofPageState
                                       'Jumlah Transfer',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.white.withOpacity(0.6),
+                                        color: AppColors.primary,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -316,7 +319,7 @@ class _UploadPaymentProofPageState
                                       style: const TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: AppColors.primary,
                                       ),
                                     ),
                                   ],
@@ -399,7 +402,7 @@ class _UploadPaymentProofPageState
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppColors.primaryDark,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -439,19 +442,19 @@ class _UploadPaymentProofPageState
                             const SizedBox(height: 12),
                             GestureDetector(
                               onTap: _showImageSourceSheet,
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.refresh,
                                     size: 16,
-                                    color: AppColors.teal,
+                                    color: AppColors.primary,
                                   ),
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6),
                                   Text(
                                     'Ganti foto',
-                                    style: const TextStyle(
-                                      color: AppColors.teal,
+                                    style: TextStyle(
+                                      color: AppColors.primary,
                                       fontSize: 13,
                                     ),
                                   ),
@@ -465,34 +468,34 @@ class _UploadPaymentProofPageState
                                 width: double.infinity,
                                 height: 140,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
+                                  color: AppColors.backgroundAlt,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: AppColors.accentLight,
                                     style: BorderStyle.solid,
                                   ),
                                 ),
-                                child: Column(
+                                child: const Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.add_photo_alternate_outlined,
                                       size: 40,
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: AppColors.accentLight,
                                     ),
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: 10),
                                     Text(
                                       'Tap untuk upload foto bukti transfer',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.5),
+                                        color: AppColors.textMuted,
                                         fontSize: 13,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    SizedBox(height: 4),
                                     Text(
                                       'Foto dari galeri atau kamera',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: AppColors.textMuted,
                                         fontSize: 11,
                                       ),
                                     ),
@@ -517,17 +520,17 @@ class _UploadPaymentProofPageState
                         children: [
                           const Icon(
                             Icons.info_outline,
-                            color: Colors.white54,
+                            color: AppColors.textMuted,
                             size: 16,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
+                            child: const Text(
                               'Pastikan nominal transfer sesuai dengan jumlah di atas. '
                               'Top up akan diproses oleh admin setelah verifikasi.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withOpacity(0.5),
+                                color: AppColors.textMuted,
                                 height: 1.5,
                               ),
                             ),
@@ -582,7 +585,7 @@ class _StepIndicator extends StatelessWidget {
         ? AppColors.success
         : active
         ? AppColors.primary
-        : Colors.white24;
+        : AppColors.accentLight;
 
     return Column(
       children: [
@@ -608,7 +611,7 @@ class _StepIndicator extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: 11,
-            color: active ? Colors.white : Colors.white54,
+            color: active ? AppColors.textPrimary : AppColors.textMuted,
           ),
         ),
       ],
@@ -633,7 +636,11 @@ class _StepIndicator extends StatelessWidget {
 // ── Info Row ──────────────────────────────────────────────────────────────────
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value, required this.icon});
+  const _InfoRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   final String label;
   final String value;
@@ -643,7 +650,7 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white54),
+        Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -651,9 +658,9 @@ class _InfoRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.5),
+                  color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: 2),
@@ -661,7 +668,7 @@ class _InfoRow extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -692,7 +699,7 @@ class _ImageSourceSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: AppColors.accentLight,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -702,7 +709,7 @@ class _ImageSourceSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 20),
@@ -755,9 +762,9 @@ class _SourceOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: AppColors.backgroundAlt,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.15)),
+          border: Border.all(color: AppColors.accentLight),
         ),
         child: Column(
           children: [
@@ -765,7 +772,10 @@ class _SourceOption extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+              ),
             ),
           ],
         ),
@@ -808,16 +818,15 @@ class _TopupResultDialog extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                    isSuccess
+                        ? Icons.check_circle_outline
+                        : Icons.error_outline,
                     color: isSuccess ? AppColors.success : Colors.red,
                     size: 48,
                   ),
                 )
                 .animate()
-                .scale(
-                  begin: const Offset(0.5, 0.5),
-                  end: const Offset(1, 1),
-                )
+                .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1))
                 .fadeIn(),
 
             const SizedBox(height: 24),
@@ -827,7 +836,7 @@ class _TopupResultDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
 
@@ -838,7 +847,7 @@ class _TopupResultDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: AppColors.backgroundAlt,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -847,26 +856,26 @@ class _TopupResultDialog extends StatelessWidget {
                       label: 'Jumlah Top Up',
                       value: result!.amountFormatted,
                     ),
-                    const Divider(color: Colors.white12, height: 16),
+                    const Divider(color: AppColors.accentLight, height: 16),
                     _DialogRow(
                       label: 'Biaya Admin',
                       value: result!.serviceFeeFormatted,
                     ),
-                    const Divider(color: Colors.white12, height: 16),
+                    const Divider(color: AppColors.accentLight, height: 16),
                     _DialogRow(
                       label: 'Total Transfer',
                       value: result!.totalAmountFormatted,
                       bold: true,
                       valueColor: AppColors.success,
                     ),
-                    const Divider(color: Colors.white12, height: 16),
+                    const Divider(color: AppColors.accentLight, height: 16),
                     _DialogRow(
                       label: 'Kode Unik',
                       value: result!.uniqueCode.toString(),
                       bold: true,
                       valueColor: Colors.orangeAccent,
                     ),
-                    const Divider(color: Colors.white12, height: 16),
+                    const Divider(color: AppColors.accentLight, height: 16),
                     _DialogRow(
                       label: 'Status',
                       value: result!.status.toUpperCase(),
@@ -876,12 +885,12 @@ class _TopupResultDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'Top up Anda sedang diproses. Admin akan memverifikasi pembayaran Anda.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.6),
+                  color: AppColors.textMuted,
                   height: 1.5,
                 ),
               ),
@@ -889,9 +898,9 @@ class _TopupResultDialog extends StatelessWidget {
               Text(
                 errorMessage ?? 'Terjadi kesalahan. Silakan coba lagi.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.7),
+                  color: AppColors.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -930,14 +939,14 @@ class _DialogRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.6)),
+          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
         Text(
           value,
           style: TextStyle(
             fontSize: 13,
             fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-            color: valueColor ?? Colors.white,
+            color: valueColor ?? AppColors.textPrimary,
           ),
         ),
       ],
