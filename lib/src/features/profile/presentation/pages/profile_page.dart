@@ -372,10 +372,7 @@ class ProfilePage extends ConsumerWidget {
           const SizedBox(height: 12),
           const Text(
             'Gagal memuat profil',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 8),
           TextButton(
@@ -396,8 +393,10 @@ class ProfilePage extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Keluar',
-            style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(
+          'Keluar',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: const Text(
           'Apakah Anda yakin ingin keluar dari akun?',
           style: TextStyle(color: AppColors.textSecondary),
@@ -462,10 +461,7 @@ class _StatItem extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textMuted,
-            ),
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
           ),
         ],
       ),
@@ -476,11 +472,7 @@ class _StatItem extends StatelessWidget {
 class _StatDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 48,
-      color: AppColors.accentLight,
-    );
+    return Container(width: 1, height: 48, color: AppColors.accentLight);
   }
 }
 
@@ -513,11 +505,7 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: iconColor ?? AppColors.textSecondary,
-              size: 22,
-            ),
+            Icon(icon, color: iconColor ?? AppColors.textSecondary, size: 22),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

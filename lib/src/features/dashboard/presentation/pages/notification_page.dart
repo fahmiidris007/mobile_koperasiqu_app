@@ -39,12 +39,12 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 18,
                       ),
                     ),
@@ -56,7 +56,7 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -69,7 +69,7 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       },
                       child: const Text(
                         'Tandai Semua Dibaca',
-                        style: TextStyle(color: AppColors.teal, fontSize: 12),
+                        style: TextStyle(color: AppColors.primary, fontSize: 12),
                       ),
                     ),
                 ],
@@ -178,16 +178,16 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.notifications_off_outlined,
             size: 64,
-            color: Colors.white.withOpacity(0.3),
+            color: AppColors.accentLight,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Tidak ada notifikasi',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: AppColors.textMuted,
               fontSize: 15,
             ),
           ),
@@ -268,7 +268,7 @@ class _NotifItem extends StatelessWidget {
                             fontWeight: isRead
                                 ? FontWeight.w500
                                 : FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -278,7 +278,7 @@ class _NotifItem extends StatelessWidget {
                           height: 8,
                           margin: const EdgeInsets.only(left: 6, top: 2),
                           decoration: const BoxDecoration(
-                            color: AppColors.teal,
+                            color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -289,7 +289,7 @@ class _NotifItem extends StatelessWidget {
                     notif.body,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(isRead ? 0.45 : 0.7),
+                      color: isRead ? AppColors.textMuted : AppColors.textSecondary,
                       height: 1.4,
                     ),
                   ),
@@ -300,9 +300,9 @@ class _NotifItem extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         _formatRelativeTime(notif.time),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.4),
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],

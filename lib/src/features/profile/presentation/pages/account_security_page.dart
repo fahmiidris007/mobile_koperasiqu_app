@@ -34,12 +34,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 18,
                       ),
                     ),
@@ -51,7 +51,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -299,22 +299,22 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1A2B4A),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Nonaktifkan Akun?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
         ),
-        content: Text(
+        content: const Text(
           'Akun Anda akan dinonaktifkan sementara. Anda tidak dapat melakukan transaksi sampai akun diaktifkan kembali.',
-          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Batal',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -340,7 +340,7 @@ class _Divider extends StatelessWidget {
       height: 1,
       indent: 56,
       endIndent: 20,
-      color: Colors.white.withOpacity(0.1),
+      color: AppColors.accentLight,
     );
   }
 }
@@ -385,7 +385,7 @@ class _SecurityAction extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -393,18 +393,18 @@ class _SecurityAction extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios,
               size: 14,
-              color: Colors.white.withOpacity(0.35),
+              color: AppColors.textMuted,
             ),
           ],
         ),
@@ -453,7 +453,7 @@ class _SecurityToggle extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -461,8 +461,8 @@ class _SecurityToggle extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -472,11 +472,11 @@ class _SecurityToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.teal,
+            activeColor: AppColors.primary,
             trackColor: WidgetStateProperty.resolveWith(
               (s) => s.contains(WidgetState.selected)
-                  ? AppColors.teal.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.1),
+                  ? AppColors.primary.withOpacity(0.3)
+                  : AppColors.accentLight,
             ),
           ),
         ],
@@ -517,7 +517,7 @@ class _PasswordSheetState extends State<_PasswordSheet> {
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A2B4A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -527,7 +527,7 @@ class _PasswordSheetState extends State<_PasswordSheet> {
           Text(
             widget.title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -602,31 +602,31 @@ class _SheetField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.6),
+        labelStyle: const TextStyle(
+          color: AppColors.textMuted,
           fontSize: 13,
         ),
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-            color: Colors.white54,
+            color: AppColors.textMuted,
             size: 20,
           ),
           onPressed: onToggle,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+          borderSide: const BorderSide(color: AppColors.accentLight),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.teal),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: AppColors.backgroundAlt,
       ),
     );
   }
@@ -655,7 +655,7 @@ class _PinSheetState extends State<_PinSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A2B4A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -664,7 +664,7 @@ class _PinSheetState extends State<_PinSheet> {
           Text(
             _step == 0 ? 'Masukkan PIN Saat Ini' : 'Masukkan PIN Baru',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -672,8 +672,8 @@ class _PinSheetState extends State<_PinSheet> {
           const SizedBox(height: 8),
           Text(
             'PIN 6 digit untuk transaksi',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+            style: const TextStyle(
+              color: AppColors.textMuted,
               fontSize: 13,
             ),
           ),
@@ -691,7 +691,7 @@ class _PinSheetState extends State<_PinSheet> {
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -699,16 +699,16 @@ class _PinSheetState extends State<_PinSheet> {
                     counterText: '',
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.2),
+                      borderSide: const BorderSide(
+                        color: AppColors.accentLight,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.teal),
+                      borderSide: const BorderSide(color: AppColors.primary),
                     ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.06),
+                    fillColor: AppColors.backgroundAlt,
                   ),
                 ),
               );

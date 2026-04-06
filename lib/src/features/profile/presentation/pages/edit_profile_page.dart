@@ -81,12 +81,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 18,
                       ),
                     ),
@@ -98,7 +98,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -148,7 +148,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             width: 28,
                             height: 28,
                             decoration: BoxDecoration(
-                              color: AppColors.teal,
+                              color: AppColors.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
@@ -285,10 +285,10 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: Colors.white.withOpacity(0.55),
+        color: AppColors.textMuted,
         letterSpacing: 0.8,
       ),
     );
@@ -314,23 +314,23 @@ class _ProfileField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
       keyboardType: keyboardType,
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.6),
+        labelStyle: const TextStyle(
+          color: AppColors.textMuted,
           fontSize: 13,
         ),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+        prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+          borderSide: const BorderSide(color: AppColors.accentLight),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.teal),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -341,7 +341,7 @@ class _ProfileField extends StatelessWidget {
           borderSide: const BorderSide(color: AppColors.expense),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 14,
