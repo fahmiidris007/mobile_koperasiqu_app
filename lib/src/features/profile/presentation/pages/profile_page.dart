@@ -26,7 +26,7 @@ class ProfilePage extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 100),
           child: userAsync.when(
             loading: () => const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
             error: (e, _) => _buildError(context, ref, e.toString()),
             data: (user) => CustomScrollView(
@@ -40,7 +40,7 @@ class ProfilePage extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ).animate().fadeIn(duration: 400.ms),
                   ),
@@ -83,7 +83,7 @@ class ProfilePage extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -127,19 +127,17 @@ class ProfilePage extends ConsumerWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           Icons.phone_outlined,
                                           size: 14,
-                                          color: Colors.white.withOpacity(0.5),
+                                          color: AppColors.textMuted,
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
                                           user.phone,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
-                                            color: Colors.white.withOpacity(
-                                              0.7,
-                                            ),
+                                            color: AppColors.textSecondary,
                                           ),
                                         ),
                                       ],
@@ -148,17 +146,17 @@ class ProfilePage extends ConsumerWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.email_outlined,
                                         size: 14,
-                                        color: Colors.white.withOpacity(0.5),
+                                        color: AppColors.textMuted,
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
                                         user.email,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                     ],
@@ -193,12 +191,12 @@ class ProfilePage extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Statistik Akun',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withOpacity(0.8),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -227,17 +225,17 @@ class ProfilePage extends ConsumerWidget {
                             // Member since
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.calendar_today_outlined,
                                   size: 14,
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: AppColors.textMuted,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Bergabung sejak ${Formatters.formatDate(stats.memberSince)}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: AppColors.textMuted,
                                   ),
                                 ),
                               ],
@@ -370,12 +368,12 @@ class ProfilePage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.wifi_off, color: Colors.white.withOpacity(0.4), size: 48),
+          const Icon(Icons.wifi_off, color: AppColors.textMuted, size: 48),
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'Gagal memuat profil',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.textSecondary,
               fontSize: 16,
             ),
           ),
@@ -384,7 +382,7 @@ class ProfilePage extends ConsumerWidget {
             onPressed: () => ref.invalidate(userProvider),
             child: const Text(
               'Coba Lagi',
-              style: TextStyle(color: AppColors.teal),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -396,19 +394,20 @@ class ProfilePage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Keluar', style: TextStyle(color: Colors.white)),
-        content: Text(
+        title: const Text('Keluar',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text(
           'Apakah Anda yakin ingin keluar dari akun?',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(
+            child: const Text(
               'Batal',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -449,23 +448,23 @@ class _StatItem extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 20, color: AppColors.teal),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(height: 6),
           Text(
             value,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
-              color: Colors.white.withOpacity(0.55),
+              color: AppColors.textMuted,
             ),
           ),
         ],
@@ -480,7 +479,7 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 48,
-      color: Colors.white.withOpacity(0.1),
+      color: AppColors.accentLight,
     );
   }
 }
@@ -516,7 +515,7 @@ class _MenuItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: iconColor ?? Colors.white.withOpacity(0.8),
+              color: iconColor ?? AppColors.textSecondary,
               size: 22,
             ),
             const SizedBox(width: 16),
@@ -528,7 +527,7 @@ class _MenuItem extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 15,
-                      color: titleColor ?? Colors.white,
+                      color: titleColor ?? AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -536,9 +535,9 @@ class _MenuItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.5),
+                        color: AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -546,9 +545,9 @@ class _MenuItem extends StatelessWidget {
               ),
             ),
             if (showArrow)
-              Icon(
+              const Icon(
                 Icons.chevron_right,
-                color: Colors.white.withOpacity(0.4),
+                color: AppColors.textMuted,
                 size: 20,
               ),
           ],
@@ -563,7 +562,7 @@ class _MenuDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Divider(height: 1, color: Colors.white.withOpacity(0.1)),
+      child: const Divider(height: 1, color: AppColors.accentLight),
     );
   }
 }

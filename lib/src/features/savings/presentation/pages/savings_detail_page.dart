@@ -26,27 +26,27 @@ class SavingsDetailPage extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 100),
       child: walletAsync.when(
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+            const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.wifi_off,
-                color: Colors.white.withOpacity(0.4),
+                color: AppColors.textMuted,
                 size: 48,
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'Gagal memuat data',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => ref.invalidate(walletProvider),
                 child: const Text(
                   'Coba Lagi',
-                  style: TextStyle(color: AppColors.teal),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
             ],
@@ -89,7 +89,7 @@ class _SavingsContent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -166,14 +166,14 @@ class _SavingsContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 TextButton(
                   onPressed: () => context.push(Routes.transactionHistory),
                   child: const Text(
                     'Lihat Semua',
-                    style: TextStyle(color: AppColors.teal),
+                    style: TextStyle(color: AppColors.primary),
                   ),
                 ),
               ],
@@ -187,7 +187,7 @@ class _SavingsContent extends StatelessWidget {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(color: Colors.white38),
+                child: CircularProgressIndicator(color: AppColors.accentLight),
               ),
             ),
           )
@@ -198,16 +198,16 @@ class _SavingsContent extends StatelessWidget {
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.receipt_long_outlined,
                       size: 48,
-                      color: Colors.white.withOpacity(0.3),
+                      color: AppColors.accentLight,
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'Belum ada transaksi',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: AppColors.textMuted,
                         fontSize: 14,
                       ),
                     ),
@@ -242,9 +242,9 @@ class _SavingsContent extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: AppColors.backgroundAlt,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    border: Border.all(color: AppColors.accentLight),
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -252,7 +252,7 @@ class _SavingsContent extends StatelessWidget {
                       Text(
                         'Tampilkan Semua Transaksi',
                         style: TextStyle(
-                          color: AppColors.teal,
+                          color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -261,7 +261,7 @@ class _SavingsContent extends StatelessWidget {
                       Icon(
                         Icons.arrow_forward_ios,
                         size: 13,
-                        color: AppColors.teal,
+                        color: AppColors.primary,
                       ),
                     ],
                   ),
@@ -305,13 +305,16 @@ class _SavingsContent extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
                       'Tabungan Utama',
-                      style: TextStyle(fontSize: 13, color: Colors.white54),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -319,11 +322,11 @@ class _SavingsContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'Saldo Tersedia',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withOpacity(0.6),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -332,7 +335,7 @@ class _SavingsContent extends StatelessWidget {
             style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: -1,
             ),
           ),
@@ -362,7 +365,7 @@ class _SavingsContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 24),
@@ -375,7 +378,7 @@ class _SavingsContent extends StatelessWidget {
                   drawVerticalLine: false,
                   horizontalInterval: 500000,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.1),
+                    color: AppColors.accentLight,
                     strokeWidth: 1,
                   ),
                 ),
@@ -473,15 +476,15 @@ class _WalletTxItem extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   Formatters.formatDateTime(transaction.createdAt),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.5),
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
@@ -495,7 +498,7 @@ class _WalletTxItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: isCredit ? AppColors.success : Colors.white,
+                  color: isCredit ? AppColors.success : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 2),

@@ -35,10 +35,14 @@ class DashboardPage extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 100),
       child: walletAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, _) => Center(
-          child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
+          child: Text(
+            'Error: $e',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
         ),
         data: (wallet) => _DashboardContent(
           wallet: wallet,
@@ -116,14 +120,14 @@ class _DashboardContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 TextButton(
                   onPressed: () => context.push(Routes.transactionHistory),
                   child: const Text(
                     'Lihat Semua',
-                    style: TextStyle(color: AppColors.teal),
+                    style: TextStyle(color: AppColors.primary),
                   ),
                 ),
               ],
@@ -192,19 +196,16 @@ class _DashboardContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Selamat Datang,',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withOpacity(0.7),
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               Text(
                 userName.isNotEmpty ? userName : 'Anggota',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -233,12 +234,9 @@ class _DashboardContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Total Tabungan',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -249,12 +247,12 @@ class _DashboardContent extends StatelessWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.diamond, size: 14, color: Colors.white),
-                    const SizedBox(width: 4),
-                    const Text(
+                    Icon(Icons.diamond, size: 14, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
                       'Member',
                       style: TextStyle(
                         color: Colors.white,
@@ -273,7 +271,7 @@ class _DashboardContent extends StatelessWidget {
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: -1,
             ),
           ),
@@ -283,7 +281,7 @@ class _DashboardContent extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.teal.withOpacity(0.2),
+                  color: AppColors.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(
@@ -292,13 +290,13 @@ class _DashboardContent extends StatelessWidget {
                     Icon(
                       Icons.account_balance_wallet,
                       size: 14,
-                      color: AppColors.teal,
+                      color: AppColors.primary,
                     ),
                     SizedBox(width: 4),
                     Text(
                       'Saldo Wallet',
                       style: TextStyle(
-                        color: AppColors.teal,
+                        color: AppColors.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -350,12 +348,12 @@ class _DashboardContent extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.15),
+              color: AppColors.primary.withOpacity(0.10),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.account_balance,
-              color: Colors.blue,
+              color: AppColors.primary,
               size: 22,
             ),
           ),
@@ -366,9 +364,9 @@ class _DashboardContent extends StatelessWidget {
               children: [
                 Text(
                   rekening,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.6),
+                    color: AppColors.textMuted,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -377,7 +375,7 @@ class _DashboardContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -397,13 +395,13 @@ class _DashboardContent extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.teal.withOpacity(0.15),
+                color: AppColors.primary.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
                 'Salin',
                 style: TextStyle(
-                  color: AppColors.teal,
+                  color: AppColors.primary,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -434,20 +432,20 @@ class _QuickActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: AppColors.primary.withOpacity(0.10),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: AppColors.primaryLight.withOpacity(0.4)),
         ),
         child: Column(
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Icon(icon, color: AppColors.primary, size: 22),
             const SizedBox(height: 6),
             Text(
               label,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.primary,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -499,7 +497,7 @@ class _WalletTransactionItem extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -509,7 +507,7 @@ class _WalletTransactionItem extends StatelessWidget {
                     fontSize: 12,
                     color: transaction.isPending
                         ? Colors.orange
-                        : Colors.white.withOpacity(0.6),
+                        : AppColors.textMuted,
                   ),
                 ),
               ],
@@ -525,15 +523,15 @@ class _WalletTransactionItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: isCredit ? AppColors.success : Colors.white,
+                  color: isCredit ? AppColors.success : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 _formatRelativeDate(transaction.createdAt),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.5),
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
@@ -700,7 +698,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
               width: isActive ? 20 : 6,
               height: 6,
               decoration: BoxDecoration(
-                color: isActive ? Colors.white : Colors.white.withOpacity(0.35),
+                color: isActive ? AppColors.primary : AppColors.accentLight,
                 borderRadius: BorderRadius.circular(3),
               ),
             );
@@ -774,7 +772,7 @@ class _PromoBannerCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -782,9 +780,9 @@ class _PromoBannerCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   promo.subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.6),
+                    color: AppColors.textSecondary,
                     height: 1.3,
                   ),
                   maxLines: 1,
