@@ -15,15 +15,9 @@ import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../domain/entities/wallet_transaction.dart';
+import '../providers/branch_provider.dart';
 import '../providers/wallet_provider.dart';
 
-// ── Konstanta rekening tujuan (hardcode sementara, backend belum siap) ────────
-
-class _BankInfo {
-  static const String bankName = 'Bank KoperasiQu';
-  static const String accountNumber = '1234-5678-9012-3456';
-  static const String accountHolder = 'KoperasiQu Utama';
-}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -124,8 +118,10 @@ class _UploadPaymentProofPageState
   Widget build(BuildContext context) {
     // Keep provider alive
     ref.watch(topupNotifierProvider);
+    final branchAsync = ref.watch(branchProvider);
 
     final amountFormatted = Formatters.formatCurrency(widget.amount);
+
 
     return SimpleGradientBackground(
       child: SafeArea(
@@ -215,73 +211,97 @@ class _UploadPaymentProofPageState
                           // Info rekening
                           _InfoRow(
                             label: 'Bank',
-                            value: _BankInfo.bankName,
+                            value: branchAsync.whenOrNull(
+                                  data: (b) => b.bankName,
+                                ) ??
+                                '—',
                             icon: Icons.domain,
                           ),
                           const SizedBox(height: 12),
                           _InfoRow(
                             label: 'Atas Nama',
-                            value: _BankInfo.accountHolder,
+                            value: branchAsync.whenOrNull(
+                                  data: (b) => b.bankAccountName,
+                                ) ??
+                                '—',
                             icon: Icons.person_outline,
                           ),
                           const SizedBox(height: 12),
 
                           // Nomor rekening + copy
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.credit_card,
-                                size: 16,
-                                color: AppColors.textMuted,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'No. Rekening',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      _BankInfo.accountNumber,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
-                                        letterSpacing: 1.5,
-                                      ),
-                                    ),
-                                  ],
+                          Builder(builder: (context) {
+                            final accountNumber = branchAsync.whenOrNull(
+                                  data: (b) => b.bankAccountNumber,
+                                ) ??
+                                '—';
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.credit_card,
+                                  size: 16,
+                                  color: AppColors.textMuted,
                                 ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Clipboard.setData(
-                                    const ClipboardData(
-                                      text: _BankInfo.accountNumber,
-                                    ),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Nomor rekening disalin!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                child: const Icon(
-                                  Icons.copy,
-                                  size: 20,
-                                  color: AppColors.primary,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'No. Rekening',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textMuted,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      branchAsync.isLoading
+                                          ? const SizedBox(
+                                              width: 120,
+                                              height: 18,
+                                              child: LinearProgressIndicator(
+                                                color: AppColors.primary,
+                                              ),
+                                            )
+                                          : Text(
+                                              accountNumber,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textPrimary,
+                                                letterSpacing: 1.5,
+                                              ),
+                                            ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                GestureDetector(
+                                  onTap: accountNumber == '—'
+                                      ? null
+                                      : () {
+                                          Clipboard.setData(
+                                            ClipboardData(text: accountNumber),
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Nomor rekening disalin!',
+                                              ),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        },
+                                  child: const Icon(
+                                    Icons.copy,
+                                    size: 20,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
 
                           const SizedBox(height: 16),
 

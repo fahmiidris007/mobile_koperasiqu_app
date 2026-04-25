@@ -10,8 +10,10 @@ import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../savings/domain/entities/branch_info.dart';
 import '../../../savings/domain/entities/wallet_info.dart';
 import '../../../savings/domain/entities/wallet_transaction.dart';
+import '../../../savings/presentation/providers/branch_provider.dart';
 import '../../../savings/presentation/providers/wallet_provider.dart';
 
 /// Main dashboard page
@@ -23,6 +25,7 @@ class DashboardPage extends ConsumerWidget {
     final walletAsync = ref.watch(walletProvider);
     final walletTxAsync = ref.watch(walletTransactionsProvider);
     final authState = ref.watch(authProvider);
+    final branchAsync = ref.watch(branchProvider);
 
     // Resolve user name from auth state
     String userName = '';
@@ -48,6 +51,7 @@ class DashboardPage extends ConsumerWidget {
           wallet: wallet,
           transactions: walletTxAsync.valueOrNull ?? [],
           userName: userName,
+          branchAsync: branchAsync,
         ),
       ),
     );
@@ -59,11 +63,13 @@ class _DashboardContent extends StatelessWidget {
     required this.wallet,
     required this.transactions,
     required this.userName,
+    required this.branchAsync,
   });
 
   final WalletInfo wallet;
   final List<WalletTransaction> transactions;
   final String userName;
+  final AsyncValue<BranchInfo> branchAsync;
 
   @override
   Widget build(BuildContext context) {
@@ -335,8 +341,14 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildRekeningCard(BuildContext context) {
-    const accountNumber = '1234-5678-9012-3456';
-    final rekening = 'No. Rekening KoperasiQu';
+    final accountNumber = branchAsync.whenOrNull(
+          data: (b) => b.bankAccountNumber,
+        ) ??
+        '—';
+    final bankLabel = branchAsync.whenOrNull(
+          data: (b) => '${b.bankName} · ${b.bankAccountName}',
+        ) ??
+        'No. Rekening KoperasiQu';
 
     return GlassContainer(
       padding: const EdgeInsets.all(16),
@@ -363,35 +375,45 @@ class _DashboardContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  rekening,
+                  bankLabel,
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textMuted,
                   ),
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  accountNumber,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    letterSpacing: 0.8,
-                  ),
-                ),
+                branchAsync.isLoading
+                    ? const SizedBox(
+                        height: 14,
+                        width: 140,
+                        child: LinearProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Text(
+                        accountNumber,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
               ],
             ),
           ),
           GestureDetector(
-            onTap: () {
-              Clipboard.setData(const ClipboardData(text: accountNumber));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Nomor rekening disalin!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+            onTap: accountNumber == '—'
+                ? null
+                : () {
+                    Clipboard.setData(ClipboardData(text: accountNumber));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Nomor rekening disalin!'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(

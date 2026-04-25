@@ -11,18 +11,19 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../providers/auth_provider.dart';
+import '../../../savings/presentation/providers/branch_provider.dart';
 
-/// Dummy bank account info
-class _BankInfo {
-  static const String accountNumber = '1234-5678-9012-3456';
-  static const String waNumber = '62895627540107';
-}
+
 
 /// Pending verification status page
 class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
 
-  Future<void> _openWhatsApp(BuildContext context, String email) async {
+  Future<void> _openWhatsApp(
+    BuildContext context,
+    String email,
+    String waNumber,
+  ) async {
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya baru saja mendaftarkan diri sebagai anggota KoperasiQu dan sedang menunggu proses verifikasi.\n\n'
@@ -31,10 +32,10 @@ class PendingPage extends ConsumerWidget {
 
     final encoded = Uri.encodeComponent(message);
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=${_BankInfo.waNumber}&text=$encoded',
+      'whatsapp://send?phone=$waNumber&text=$encoded',
     );
     final webUrl = Uri.parse(
-      'https://wa.me/${_BankInfo.waNumber}?text=$encoded',
+      'https://wa.me/$waNumber?text=$encoded',
     );
 
     try {
@@ -67,6 +68,17 @@ class PendingPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final regState = ref.watch(registrationProvider);
+    final branchAsync = ref.watch(branchProvider);
+
+    // Phone/rekening dari API branch
+    final waNumber = branchAsync.whenOrNull(
+          data: (b) => b.whatsappNumber,
+        ) ??
+        '';
+    final accountNumber = branchAsync.whenOrNull(
+          data: (b) => b.bankAccountNumber,
+        ) ??
+        '—';
 
     // Email priority: authenticated user > pending user > registration form data
     String email = '';
@@ -387,35 +399,47 @@ class PendingPage extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                _BankInfo.accountNumber,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  letterSpacing: 1.5,
-                                ),
-                                textAlign: TextAlign.justify,
-                              ),
+                              branchAsync.isLoading
+                                  ? const SizedBox(
+                                      width: 120,
+                                      height: 16,
+                                      child: LinearProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : Text(
+                                      accountNumber,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        letterSpacing: 1.5,
+                                      ),
+                                      textAlign: TextAlign.justify,
+                                    ),
                               const SizedBox(width: 8),
                               GestureDetector(
-                                onTap: () {
-                                  Clipboard.setData(
-                                    const ClipboardData(
-                                      text: _BankInfo.accountNumber,
-                                    ),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Nomor rekening disalin!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
+                                onTap: accountNumber == '—'
+                                    ? null
+                                    : () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: accountNumber),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Nomor rekening disalin!',
+                                            ),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
                                 child: const Icon(
                                   Icons.copy,
                                   size: 18,
-                                  color: AppColors.teal,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ],
@@ -433,7 +457,7 @@ class PendingPage extends ConsumerWidget {
               GlassOutlineButton(
                 text: 'Hubungi Kami via WhatsApp',
                 icon: Icons.chat_bubble_outline,
-                onPressed: () => _openWhatsApp(context, email),
+                onPressed: () => _openWhatsApp(context, email, waNumber),
               ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
 
               const SizedBox(height: 16),

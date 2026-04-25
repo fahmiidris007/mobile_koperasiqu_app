@@ -10,6 +10,7 @@ import '../../../../core/theme/colors.dart';
 import '../../domain/entities/product.dart';
 import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../../../savings/presentation/providers/branch_provider.dart';
 
 /// Product detail by ID from pre-loaded products list
 final productDetailProvider = FutureProvider.autoDispose
@@ -66,9 +67,8 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
-  static const String _waNumber = '62895627540107';
 
-  Future<void> _openWhatsApp(BuildContext context) async {
+  Future<void> _openWhatsApp(BuildContext context, String waNumber) async {
     final product = widget.product;
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
@@ -82,9 +82,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
 
     // Prioritaskan deep link WhatsApp app, fallback ke browser
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=$_waNumber&text=$encodedMessage',
+      'whatsapp://send?phone=$waNumber&text=$encodedMessage',
     );
-    final webUrl = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
+    final webUrl = Uri.parse('https://wa.me/$waNumber?text=$encodedMessage');
 
     try {
       // Coba buka langsung ke app WhatsApp
@@ -138,6 +138,8 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
     final isWishlisted = ref.watch(
       wishlistProvider.select((s) => s.containsApiId(product.id)),
     );
+    final branchAsync = ref.watch(branchProvider);
+    final waNumber = branchAsync.whenOrNull(data: (b) => b.whatsappNumber) ?? '';
 
     return Column(
       children: [
@@ -395,7 +397,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
             ),
           ),
           child: GestureDetector(
-            onTap: () => _openWhatsApp(context),
+            onTap: waNumber.isEmpty
+                ? null
+                : () => _openWhatsApp(context, waNumber),
             child: Container(
               width: double.infinity,
               height: 52,

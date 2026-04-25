@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,23 +9,16 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
+import '../providers/branch_provider.dart';
 
-// ── Konstanta cabang (hardcode sementara) ─────────────────────────────────────
-
-class _BranchInfo {
-  static const String address = 'Jl. Koperasi No. 1, Bandung, Jawa Barat 40110';
-  static const String phone = '022-1234-5678';
-  static const String whatsapp = '62895627540107';
-  static const String hours = 'Senin – Jumat, 08.00 – 16.00 WIB';
-}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 /// Halaman penarikan dana — mengarahkan user untuk datang ke cabang
-class WithdrawalPage extends StatelessWidget {
+class WithdrawalPage extends ConsumerWidget {
   const WithdrawalPage({super.key});
 
-  Future<void> _openWhatsApp(BuildContext context) async {
+  Future<void> _openWhatsApp(BuildContext context, String waNumber) async {
     const message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya ingin melakukan penarikan dana tabungan. '
@@ -32,10 +26,10 @@ class WithdrawalPage extends StatelessWidget {
 
     final encoded = Uri.encodeComponent(message);
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=${_BranchInfo.whatsapp}&text=$encoded',
+      'whatsapp://send?phone=$waNumber&text=$encoded',
     );
     final webUrl = Uri.parse(
-      'https://wa.me/${_BranchInfo.whatsapp}?text=$encoded',
+      'https://wa.me/$waNumber?text=$encoded',
     );
 
     try {
@@ -61,8 +55,8 @@ class WithdrawalPage extends StatelessWidget {
     }
   }
 
-  Future<void> _callBranch(BuildContext context) async {
-    final uri = Uri.parse('tel:${_BranchInfo.phone}');
+  Future<void> _callBranch(BuildContext context, String phone) async {
+    final uri = Uri.parse('tel:$phone');
     try {
       await launchUrl(uri);
     } catch (_) {
@@ -75,7 +69,12 @@ class WithdrawalPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final branchAsync = ref.watch(branchProvider);
+    final waNumber = branchAsync.whenOrNull(data: (b) => b.whatsappNumber) ?? '';
+    final phone = branchAsync.whenOrNull(data: (b) => b.phoneNumber) ?? '—';
+    final branchName = branchAsync.whenOrNull(data: (b) => b.name) ?? 'Kantor Cabang KoperasiQu';
+
     return SimpleGradientBackground(
       child: SafeArea(
         child: Column(
@@ -212,17 +211,15 @@ class WithdrawalPage extends StatelessWidget {
                               const SizedBox(height: 16),
                               _InfoTile(
                                 icon: Icons.place_outlined,
-                                label: 'Alamat',
-                                value: _BranchInfo.address,
+                                label: 'Kantor Cabang',
+                                value: branchName,
                                 onTap: () {
                                   Clipboard.setData(
-                                    const ClipboardData(
-                                      text: _BranchInfo.address,
-                                    ),
+                                    ClipboardData(text: branchName),
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Alamat disalin!'),
+                                      content: Text('Nama cabang disalin!'),
                                       duration: Duration(seconds: 2),
                                     ),
                                   );
@@ -233,14 +230,14 @@ class WithdrawalPage extends StatelessWidget {
                               _InfoTile(
                                 icon: Icons.access_time_rounded,
                                 label: 'Jam Operasional',
-                                value: _BranchInfo.hours,
+                                value: 'Senin – Jumat, 08.00 – 16.00 WIB',
                               ),
                               const Divider(color: AppColors.accentLight, height: 20),
                               _InfoTile(
                                 icon: Icons.phone_outlined,
                                 label: 'Telepon',
-                                value: _BranchInfo.phone,
-                                onTap: () => _callBranch(context),
+                                value: branchAsync.isLoading ? 'Memuat...' : phone,
+                                onTap: phone == '—' ? null : () => _callBranch(context, phone),
                                 tapLabel: 'Hubungi',
                               ),
                             ],
@@ -352,7 +349,9 @@ class WithdrawalPage extends StatelessWidget {
                     GlassButton(
                       text: 'Tanya via WhatsApp',
                       icon: Icons.chat_bubble_outline_rounded,
-                      onPressed: () => _openWhatsApp(context),
+                      onPressed: waNumber.isEmpty
+                          ? null
+                          : () => _openWhatsApp(context, waNumber),
                     ).animate(delay: 450.ms).fadeIn(duration: 400.ms),
 
                     const SizedBox(height: 12),
