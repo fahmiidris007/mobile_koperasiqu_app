@@ -68,6 +68,38 @@ class WithdrawalPage extends ConsumerWidget {
     }
   }
 
+  Future<void> _openMaps(BuildContext context) async {
+    const lat = -6.947160396034162;
+    const lng = 107.5974021491414;
+    final googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+    final geoUrl = Uri.parse('geo:$lat,$lng?q=$lat,$lng');
+
+    try {
+      final launched = await launchUrl(
+        geoUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka Google Maps.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final branchAsync = ref.watch(branchProvider);
@@ -209,22 +241,22 @@ class WithdrawalPage extends ConsumerWidget {
                                 ],
                               ),
                               const SizedBox(height: 16),
+                              // Kantor Cabang — tanpa tombol salin
                               _InfoTile(
-                                icon: Icons.place_outlined,
+                                icon: Icons.store_outlined,
                                 label: 'Kantor Cabang',
                                 value: branchName,
-                                onTap: () {
-                                  Clipboard.setData(
-                                    ClipboardData(text: branchName),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Nama cabang disalin!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                tapLabel: 'Salin',
+                              ),
+                              const Divider(color: AppColors.accentLight, height: 20),
+                              // Alamat — dengan tombol buka Google Maps
+                              _InfoTile(
+                                icon: Icons.place_outlined,
+                                label: 'Alamat',
+                                value:
+                                    'Jl. Soekarno-Hatta No.267, Kb. Lega, Kec. Bojongloa Kidul, Kota Bandung, Jawa Barat 40235',
+                                onTap: () => _openMaps(context),
+                                tapLabel: 'Maps',
+                                tapIcon: Icons.map_outlined,
                               ),
                               const Divider(color: AppColors.accentLight, height: 20),
                               _InfoTile(
@@ -233,12 +265,25 @@ class WithdrawalPage extends ConsumerWidget {
                                 value: 'Senin – Jumat, 08.00 – 16.00 WIB',
                               ),
                               const Divider(color: AppColors.accentLight, height: 20),
+                              // Telepon — tombol Salin (bukan Hubungi)
                               _InfoTile(
                                 icon: Icons.phone_outlined,
                                 label: 'Telepon',
                                 value: branchAsync.isLoading ? 'Memuat...' : phone,
-                                onTap: phone == '—' ? null : () => _callBranch(context, phone),
-                                tapLabel: 'Hubungi',
+                                onTap: phone == '—'
+                                    ? null
+                                    : () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: phone),
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Nomor telepon disalin!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                tapLabel: 'Salin',
                               ),
                             ],
                           ),
@@ -388,6 +433,7 @@ class _InfoTile extends StatelessWidget {
     required this.value,
     this.onTap,
     this.tapLabel,
+    this.tapIcon,
   });
 
   final IconData icon;
@@ -395,6 +441,7 @@ class _InfoTile extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
   final String? tapLabel;
+  final IconData? tapIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -436,13 +483,22 @@ class _InfoTile extends StatelessWidget {
                 color: AppColors.primary.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                tapLabel!,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (tapIcon != null) ...[
+                    Icon(tapIcon, size: 12, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    tapLabel!,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
