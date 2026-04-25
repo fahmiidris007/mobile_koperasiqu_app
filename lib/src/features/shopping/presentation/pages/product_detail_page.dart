@@ -10,6 +10,7 @@ import '../../../../core/theme/colors.dart';
 import '../../domain/entities/product.dart';
 import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../../../savings/presentation/providers/branch_provider.dart';
 
 /// Product detail by ID from pre-loaded products list
 final productDetailProvider = FutureProvider.autoDispose
@@ -35,16 +36,16 @@ class ProductDetailPage extends ConsumerWidget {
     return SimpleGradientBackground(
       child: productAsync.when(
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+            const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(
-          child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
+          child: Text('Error: $e', style: const TextStyle(color: AppColors.textPrimary)),
         ),
         data: (product) {
           if (product == null) {
             return const Center(
               child: Text(
                 'Produk tidak ditemukan',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             );
           }
@@ -66,9 +67,8 @@ class _ProductDetailContent extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
-  static const String _waNumber = '62895627540107';
 
-  Future<void> _openWhatsApp(BuildContext context) async {
+  Future<void> _openWhatsApp(BuildContext context, String waNumber) async {
     final product = widget.product;
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
@@ -82,9 +82,9 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
 
     // Prioritaskan deep link WhatsApp app, fallback ke browser
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=$_waNumber&text=$encodedMessage',
+      'whatsapp://send?phone=$waNumber&text=$encodedMessage',
     );
-    final webUrl = Uri.parse('https://wa.me/$_waNumber?text=$encodedMessage');
+    final webUrl = Uri.parse('https://wa.me/$waNumber?text=$encodedMessage');
 
     try {
       // Coba buka langsung ke app WhatsApp
@@ -138,6 +138,8 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
     final isWishlisted = ref.watch(
       wishlistProvider.select((s) => s.containsApiId(product.id)),
     );
+    final branchAsync = ref.watch(branchProvider);
+    final waNumber = branchAsync.whenOrNull(data: (b) => b.whatsappNumber) ?? '';
 
     return Column(
       children: [
@@ -152,23 +154,13 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: AppColors.primary.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
+                  child: const Icon(Icons.arrow_back, color: AppColors.primary),
                 ),
               ),
               const Spacer(),
-              // Container(
-              //   width: 44,
-              //   height: 44,
-              //   decoration: BoxDecoration(
-              //     color: Colors.white.withOpacity(0.15),
-              //     borderRadius: BorderRadius.circular(12),
-              //   ),
-              //   child: const Icon(Icons.share, color: Colors.white),
-              // ),
-              // const SizedBox(width: 8),
               // Wishlist toggle
               GestureDetector(
                 onTap: () {
@@ -183,7 +175,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                       duration: const Duration(seconds: 2),
                       backgroundColor: isWishlisted
                           ? Colors.grey
-                          : Colors.green,
+                          : AppColors.primary,
                     ),
                   );
                 },
@@ -192,13 +184,13 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   height: 44,
                   decoration: BoxDecoration(
                     color: isWishlisted
-                        ? Colors.red.withOpacity(0.2)
-                        : Colors.white.withOpacity(0.15),
+                        ? Colors.red.withOpacity(0.15)
+                        : AppColors.primary.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     isWishlisted ? Icons.favorite : Icons.favorite_border,
-                    color: isWishlisted ? Colors.red : Colors.white,
+                    color: isWishlisted ? Colors.red : AppColors.primary,
                   ),
                 ),
               ),
@@ -218,7 +210,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                   height: 280,
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: AppColors.backgroundAlt,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Stack(
@@ -235,7 +227,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                                   child: Icon(
                                     _resolveIcon(product.category.iconName),
                                     size: 80,
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: AppColors.accentLight,
                                   ),
                                 ),
                               )
@@ -243,7 +235,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                                 child: Icon(
                                   _resolveIcon(product.category.iconName),
                                   size: 80,
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: AppColors.accentLight,
                                 ),
                               ),
                       ),
@@ -312,7 +304,7 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
 
@@ -330,21 +322,21 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                             Text(
                               product.rate.toStringAsFixed(1),
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(width: 16),
-                            Icon(
+                            const Icon(
                               Icons.schedule,
                               size: 16,
-                              color: Colors.white.withOpacity(0.5),
+                              color: AppColors.textMuted,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '~${product.serviceTime} menit',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -358,11 +350,11 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.teal,
+                            color: AppColors.primary,
                           ),
                         ),
 
-                        const Divider(color: Colors.white24, height: 32),
+                        const Divider(color: AppColors.accentLight, height: 32),
 
                         // Info rows
                         _InfoRow(
@@ -399,13 +391,15 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.1)),
+            color: AppColors.surface,
+            border: const Border(
+              top: BorderSide(color: AppColors.accentLight),
             ),
           ),
           child: GestureDetector(
-            onTap: () => _openWhatsApp(context),
+            onTap: waNumber.isEmpty
+                ? null
+                : () => _openWhatsApp(context, waNumber),
             child: Container(
               width: double.infinity,
               height: 52,
@@ -463,11 +457,11 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white.withOpacity(0.5)),
+        Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.5)),
+          style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
         ),
         const SizedBox(width: 6),
         Text(
@@ -475,7 +469,7 @@ class _InfoRow extends StatelessWidget {
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
       ],

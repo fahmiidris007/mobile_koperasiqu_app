@@ -11,18 +11,19 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../providers/auth_provider.dart';
+import '../../../savings/presentation/providers/branch_provider.dart';
 
-/// Dummy bank account info
-class _BankInfo {
-  static const String accountNumber = '1234-5678-9012-3456';
-  static const String waNumber = '62895627540107';
-}
+
 
 /// Pending verification status page
 class PendingPage extends ConsumerWidget {
   const PendingPage({super.key});
 
-  Future<void> _openWhatsApp(BuildContext context, String email) async {
+  Future<void> _openWhatsApp(
+    BuildContext context,
+    String email,
+    String waNumber,
+  ) async {
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya baru saja mendaftarkan diri sebagai anggota KoperasiQu dan sedang menunggu proses verifikasi.\n\n'
@@ -31,10 +32,10 @@ class PendingPage extends ConsumerWidget {
 
     final encoded = Uri.encodeComponent(message);
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=${_BankInfo.waNumber}&text=$encoded',
+      'whatsapp://send?phone=$waNumber&text=$encoded',
     );
     final webUrl = Uri.parse(
-      'https://wa.me/${_BankInfo.waNumber}?text=$encoded',
+      'https://wa.me/$waNumber?text=$encoded',
     );
 
     try {
@@ -67,6 +68,17 @@ class PendingPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final regState = ref.watch(registrationProvider);
+    final branchAsync = ref.watch(branchProvider);
+
+    // Phone/rekening dari API branch
+    final waNumber = branchAsync.whenOrNull(
+          data: (b) => b.whatsappNumber,
+        ) ??
+        '';
+    final accountNumber = branchAsync.whenOrNull(
+          data: (b) => b.bankAccountNumber,
+        ) ??
+        '—';
 
     // Email priority: authenticated user > pending user > registration form data
     String email = '';
@@ -168,17 +180,17 @@ class PendingPage extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
 
                         const SizedBox(height: 12),
 
-                        Text(
+                        const Text(
                           'Pendaftaran Anda sedang dalam proses verifikasi. Kami akan menghubungi Anda dalam 1-2 hari kerja.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: AppColors.textSecondary,
                             height: 1.5,
                           ),
                         ),
@@ -203,7 +215,7 @@ class PendingPage extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -237,7 +249,7 @@ class PendingPage extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.login,
-                            color: Colors.green.shade300,
+                            color: AppColors.primary,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -246,16 +258,16 @@ class PendingPage extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
+                      const Text(
                         'Anda dapat login dengan:',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: AppColors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -263,8 +275,9 @@ class PendingPage extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: AppColors.backgroundAlt,
                           borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.accentLight),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,31 +287,31 @@ class PendingPage extends ConsumerWidget {
                                 const Icon(
                                   Icons.email_outlined,
                                   size: 16,
-                                  color: Colors.white70,
+                                  color: AppColors.textMuted,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Email: $email',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Row(
+                            const Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.lock,
                                   size: 16,
-                                  color: Colors.white70,
+                                  color: AppColors.textMuted,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   'Password: (yang Anda daftarkan)',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -327,32 +340,32 @@ class PendingPage extends ConsumerWidget {
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Rekening Koperasi',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      const Text(
+                        'Rekening Koperasi',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
+                      ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    const Text(
                       'Simpan nomor rekening ini untuk keperluan setor simpanan.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.55),
+                        color: AppColors.textMuted,
                       ),
                     ),
                     const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
+                        color: AppColors.backgroundAlt,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.12),
+                          color: AppColors.accentLight,
                         ),
                       ),
                       child: Column(
@@ -368,14 +381,14 @@ class PendingPage extends ConsumerWidget {
                               const Icon(
                                 Icons.credit_card,
                                 size: 16,
-                                color: Colors.white54,
+                                color: AppColors.textMuted,
                               ),
                               const SizedBox(width: 8),
                               const Expanded(
                                 child: Text(
                                   'No. Rekening :',
                                   style: TextStyle(
-                                    color: Colors.white54,
+                                    color: AppColors.textMuted,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -386,35 +399,47 @@ class PendingPage extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                _BankInfo.accountNumber,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  letterSpacing: 1.5,
-                                ),
-                                textAlign: TextAlign.justify,
-                              ),
+                              branchAsync.isLoading
+                                  ? const SizedBox(
+                                      width: 120,
+                                      height: 16,
+                                      child: LinearProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : Text(
+                                      accountNumber,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        letterSpacing: 1.5,
+                                      ),
+                                      textAlign: TextAlign.justify,
+                                    ),
                               const SizedBox(width: 8),
                               GestureDetector(
-                                onTap: () {
-                                  Clipboard.setData(
-                                    const ClipboardData(
-                                      text: _BankInfo.accountNumber,
-                                    ),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Nomor rekening disalin!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
+                                onTap: accountNumber == '—'
+                                    ? null
+                                    : () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: accountNumber),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Nomor rekening disalin!',
+                                            ),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
                                 child: const Icon(
                                   Icons.copy,
                                   size: 18,
-                                  color: AppColors.teal,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ],
@@ -432,7 +457,7 @@ class PendingPage extends ConsumerWidget {
               GlassOutlineButton(
                 text: 'Hubungi Kami via WhatsApp',
                 icon: Icons.chat_bubble_outline,
-                onPressed: () => _openWhatsApp(context, email),
+                onPressed: () => _openWhatsApp(context, email, waNumber),
               ).animate(delay: 600.ms).fadeIn(duration: 600.ms),
 
               const SizedBox(height: 16),
@@ -444,9 +469,9 @@ class PendingPage extends ConsumerWidget {
                   ref.read(registrationProvider.notifier).reset();
                   context.go(Routes.welcome);
                 },
-                child: Text(
+                child: const Text(
                   'Kembali ke Beranda',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
 
@@ -475,14 +500,14 @@ class _NextStepItem extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.2),
+              color: AppColors.primary.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 number,
                 style: const TextStyle(
-                  color: Colors.blue,
+                  color: AppColors.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -493,8 +518,8 @@ class _NextStepItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
                 fontSize: 13,
               ),
             ),
@@ -520,18 +545,18 @@ class _BankRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white54),
+        Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ),
         Text(
           value,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),

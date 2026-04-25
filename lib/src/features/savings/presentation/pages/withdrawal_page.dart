@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,23 +9,16 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
+import '../providers/branch_provider.dart';
 
-// ── Konstanta cabang (hardcode sementara) ─────────────────────────────────────
-
-class _BranchInfo {
-  static const String address = 'Jl. Koperasi No. 1, Bandung, Jawa Barat 40110';
-  static const String phone = '022-1234-5678';
-  static const String whatsapp = '62895627540107';
-  static const String hours = 'Senin – Jumat, 08.00 – 16.00 WIB';
-}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 /// Halaman penarikan dana — mengarahkan user untuk datang ke cabang
-class WithdrawalPage extends StatelessWidget {
+class WithdrawalPage extends ConsumerWidget {
   const WithdrawalPage({super.key});
 
-  Future<void> _openWhatsApp(BuildContext context) async {
+  Future<void> _openWhatsApp(BuildContext context, String waNumber) async {
     const message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya ingin melakukan penarikan dana tabungan. '
@@ -32,10 +26,10 @@ class WithdrawalPage extends StatelessWidget {
 
     final encoded = Uri.encodeComponent(message);
     final appUrl = Uri.parse(
-      'whatsapp://send?phone=${_BranchInfo.whatsapp}&text=$encoded',
+      'whatsapp://send?phone=$waNumber&text=$encoded',
     );
     final webUrl = Uri.parse(
-      'https://wa.me/${_BranchInfo.whatsapp}?text=$encoded',
+      'https://wa.me/$waNumber?text=$encoded',
     );
 
     try {
@@ -61,8 +55,8 @@ class WithdrawalPage extends StatelessWidget {
     }
   }
 
-  Future<void> _callBranch(BuildContext context) async {
-    final uri = Uri.parse('tel:${_BranchInfo.phone}');
+  Future<void> _callBranch(BuildContext context, String phone) async {
+    final uri = Uri.parse('tel:$phone');
     try {
       await launchUrl(uri);
     } catch (_) {
@@ -74,8 +68,45 @@ class WithdrawalPage extends StatelessWidget {
     }
   }
 
+  Future<void> _openMaps(BuildContext context) async {
+    const lat = -6.947160396034162;
+    const lng = 107.5974021491414;
+    final googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+    final geoUrl = Uri.parse('geo:$lat,$lng?q=$lat,$lng');
+
+    try {
+      final launched = await launchUrl(
+        geoUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka Google Maps.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final branchAsync = ref.watch(branchProvider);
+    final waNumber = branchAsync.whenOrNull(data: (b) => b.whatsappNumber) ?? '';
+    final phone = branchAsync.whenOrNull(data: (b) => b.phoneNumber) ?? '—';
+    final branchName = branchAsync.whenOrNull(data: (b) => b.name) ?? 'Kantor Cabang KoperasiQu';
+
     return SimpleGradientBackground(
       child: SafeArea(
         child: Column(
@@ -91,12 +122,12 @@ class WithdrawalPage extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.arrow_back,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 20,
                       ),
                     ),
@@ -107,7 +138,7 @@ class WithdrawalPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -156,19 +187,19 @@ class WithdrawalPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
 
                     const SizedBox(height: 8),
 
-                    Text(
+                    const Text(
                       'Silakan datang ke kantor cabang KoperasiQu terdekat untuk melakukan penarikan dana tabungan Anda.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.65),
+                        color: AppColors.textSecondary,
                         height: 1.6,
                       ),
                     ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
@@ -189,12 +220,12 @@ class WithdrawalPage extends StatelessWidget {
                                     width: 36,
                                     height: 36,
                                     decoration: BoxDecoration(
-                                      color: AppColors.teal.withOpacity(0.15),
+                                      color: AppColors.primary.withOpacity(0.10),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.location_on_rounded,
-                                      color: AppColors.teal,
+                                      color: AppColors.primary,
                                       size: 18,
                                     ),
                                   ),
@@ -204,44 +235,55 @@ class WithdrawalPage extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 16),
+                              // Kantor Cabang — tanpa tombol salin
+                              _InfoTile(
+                                icon: Icons.store_outlined,
+                                label: 'Kantor Cabang',
+                                value: branchName,
+                              ),
+                              const Divider(color: AppColors.accentLight, height: 20),
+                              // Alamat — dengan tombol buka Google Maps
                               _InfoTile(
                                 icon: Icons.place_outlined,
                                 label: 'Alamat',
-                                value: _BranchInfo.address,
-                                onTap: () {
-                                  Clipboard.setData(
-                                    const ClipboardData(
-                                      text: _BranchInfo.address,
-                                    ),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Alamat disalin!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                tapLabel: 'Salin',
+                                value:
+                                    'Jl. Soekarno-Hatta No.267, Kb. Lega, Kec. Bojongloa Kidul, Kota Bandung, Jawa Barat 40235',
+                                onTap: () => _openMaps(context),
+                                tapLabel: 'Maps',
+                                tapIcon: Icons.map_outlined,
                               ),
-                              const Divider(color: Colors.white12, height: 20),
+                              const Divider(color: AppColors.accentLight, height: 20),
                               _InfoTile(
                                 icon: Icons.access_time_rounded,
                                 label: 'Jam Operasional',
-                                value: _BranchInfo.hours,
+                                value: 'Senin – Jumat, 08.00 – 16.00 WIB',
                               ),
-                              const Divider(color: Colors.white12, height: 20),
+                              const Divider(color: AppColors.accentLight, height: 20),
+                              // Telepon — tombol Salin (bukan Hubungi)
                               _InfoTile(
                                 icon: Icons.phone_outlined,
                                 label: 'Telepon',
-                                value: _BranchInfo.phone,
-                                onTap: () => _callBranch(context),
-                                tapLabel: 'Hubungi',
+                                value: branchAsync.isLoading ? 'Memuat...' : phone,
+                                onTap: phone == '—'
+                                    ? null
+                                    : () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: phone),
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Nomor telepon disalin!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                tapLabel: 'Salin',
                               ),
                             ],
                           ),
@@ -266,12 +308,12 @@ class WithdrawalPage extends StatelessWidget {
                                     width: 36,
                                     height: 36,
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.15),
+                                      color: AppColors.primary.withOpacity(0.10),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.checklist_rounded,
-                                      color: Colors.blue,
+                                      color: AppColors.primary,
                                       size: 18,
                                     ),
                                   ),
@@ -281,7 +323,7 @@ class WithdrawalPage extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -327,17 +369,17 @@ class WithdrawalPage extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.info_outline,
-                            color: Colors.white54,
+                            color: AppColors.textMuted,
                             size: 16,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
+                            child: const Text(
                               'Jika ada pertanyaan sebelum datang ke cabang, '
                               'Anda dapat menghubungi admin kami melalui WhatsApp di bawah ini.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withOpacity(0.5),
+                                color: AppColors.textMuted,
                                 height: 1.5,
                               ),
                             ),
@@ -352,17 +394,19 @@ class WithdrawalPage extends StatelessWidget {
                     GlassButton(
                       text: 'Tanya via WhatsApp',
                       icon: Icons.chat_bubble_outline_rounded,
-                      onPressed: () => _openWhatsApp(context),
+                      onPressed: waNumber.isEmpty
+                          ? null
+                          : () => _openWhatsApp(context, waNumber),
                     ).animate(delay: 450.ms).fadeIn(duration: 400.ms),
 
                     const SizedBox(height: 12),
 
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: Text(
+                      child: const Text(
                         'Kembali',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: AppColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -389,6 +433,7 @@ class _InfoTile extends StatelessWidget {
     required this.value,
     this.onTap,
     this.tapLabel,
+    this.tapIcon,
   });
 
   final IconData icon;
@@ -396,13 +441,14 @@ class _InfoTile extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
   final String? tapLabel;
+  final IconData? tapIcon;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: Colors.white38),
+        Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -410,9 +456,9 @@ class _InfoTile extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.45),
+                  color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: 2),
@@ -420,7 +466,7 @@ class _InfoTile extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -434,16 +480,25 @@ class _InfoTile extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.teal.withOpacity(0.15),
+                color: AppColors.primary.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                tapLabel!,
-                style: const TextStyle(
-                  color: AppColors.teal,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (tapIcon != null) ...[
+                    Icon(tapIcon, size: 12, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    tapLabel!,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -492,7 +547,7 @@ class _StepItem extends StatelessWidget {
                 ),
               ),
             ),
-            if (!isLast) Container(width: 1, height: 28, color: Colors.white12),
+            if (!isLast) Container(width: 1, height: 28, color: AppColors.accentLight),
           ],
         ),
         const SizedBox(width: 12),
@@ -501,9 +556,9 @@ class _StepItem extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
-                color: Colors.white.withOpacity(0.75),
+                color: AppColors.textSecondary,
                 height: 1.4,
               ),
             ),

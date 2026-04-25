@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 
@@ -109,42 +108,36 @@ class GlassOutlineButton extends StatelessWidget {
     return SizedBox(
       width: width ?? double.infinity,
       height: 56,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: OutlinedButton(
-            onPressed: onPressed,
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: Colors.white.withOpacity(0.3),
-                width: 1.5,
-              ),
-              backgroundColor: Colors.white.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 20, color: Colors.white),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  text,
-                  style:
-                      textStyle ??
-                      const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                ),
-              ],
-            ),
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(
+            color: AppColors.primary,
+            width: 1.5,
           ),
+          backgroundColor: AppColors.primary.withOpacity(0.06),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              text,
+              style:
+                  textStyle ??
+                  const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+            ),
+          ],
         ),
       ),
     );
@@ -170,25 +163,23 @@ class GlassIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(size / 2),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: GestureDetector(
-          onTap: onPressed,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Icon(icon, size: iconSize, color: color ?? Colors.white),
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.08),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.25),
+            width: 1,
           ),
+        ),
+        child: Icon(
+          icon,
+          size: iconSize,
+          color: color ?? AppColors.primary,
         ),
       ),
     );
@@ -212,54 +203,55 @@ class GlassQuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        (color ?? AppColors.primary).withOpacity(0.8),
-                        (color ?? AppColors.teal).withOpacity(0.6),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 24),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.accentLight,
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.055),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    (color ?? AppColors.primary).withOpacity(0.85),
+                    (color ?? AppColors.primaryLight).withOpacity(0.70),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

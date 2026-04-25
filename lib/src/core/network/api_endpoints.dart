@@ -35,4 +35,7 @@ class ApiEndpoints {
   // Password reset
   static const String forgotPassword = '/password/forgot';
   static const String resetPassword = '/password/reset';
+
+  // Koperasi
+  static const String branches = '/branches';
 }

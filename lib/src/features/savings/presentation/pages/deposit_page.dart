@@ -56,7 +56,6 @@ class _DepositPageState extends ConsumerState<DepositPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return SimpleGradientBackground(
       child: SafeArea(
         child: Column(
@@ -72,10 +71,13 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -84,7 +86,7 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -130,7 +132,7 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   Consumer(
@@ -140,9 +142,9 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                                           .valueOrNull;
                                       return Text(
                                         wallet?.balanceFormatted ?? '-',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 12,
-                                          color: Colors.white.withOpacity(0.6),
+                                          color: AppColors.textMuted,
                                         ),
                                       );
                                     },
@@ -167,23 +169,23 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Jumlah Setoran',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white.withOpacity(0.7),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 16),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Rp',
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: AppColors.textMuted,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -194,12 +196,12 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                                     style: const TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       hintText: '0',
                                       hintStyle: TextStyle(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: AppColors.accentLight,
                                       ),
                                       border: InputBorder.none,
                                       contentPadding: EdgeInsets.zero,
@@ -236,18 +238,20 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? AppColors.primary
-                                          : Colors.white.withOpacity(0.1),
+                                          : AppColors.backgroundAlt,
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.primary
-                                            : Colors.white.withOpacity(0.2),
+                                            : AppColors.accentLight,
                                       ),
                                     ),
                                     child: Text(
                                       Formatters.formatCurrency(amount),
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : AppColors.textPrimary,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -268,21 +272,23 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Catatan (opsional)',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white.withOpacity(0.7),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
                               controller: _noteController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                              ),
+                              decoration: const InputDecoration(
                                 hintText: 'Contoh: Setoran bulanan',
                                 hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.4),
+                                  color: AppColors.textMuted,
                                 ),
                                 border: InputBorder.none,
                               ),
@@ -309,14 +315,12 @@ class _DepositPageState extends ConsumerState<DepositPage> {
                               context.push(Routes.transactionHistory),
                           icon: const Icon(
                             Icons.history,
-                            color: Colors.white70,
+                            color: AppColors.primary,
                             size: 18,
                           ),
-                          label: Text(
+                          label: const Text(
                             'Lihat Riwayat Transaksi',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                            ),
+                            style: TextStyle(color: AppColors.primary),
                           ),
                         ),
                       ),
@@ -357,4 +361,3 @@ class _ThousandSeparatorFormatter extends TextInputFormatter {
     );
   }
 }
-

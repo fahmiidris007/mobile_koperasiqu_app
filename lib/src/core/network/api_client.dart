@@ -7,7 +7,7 @@ import 'auth_interceptor.dart';
 class ApiClient {
   ApiClient._();
 
-  static const String baseUrl = 'http://148.230.102.52:8000/api';
+  static const String baseUrl = 'http://34.87.41.221:8000/api';
 
   static Dio? _instance;
 

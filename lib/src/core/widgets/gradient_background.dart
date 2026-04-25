@@ -18,43 +18,44 @@ class GradientBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: gradient ?? AppColors.liquidGlassGradient,
-        ),
+        color: gradient != null ? null : AppColors.background,
+        decoration: gradient != null
+            ? BoxDecoration(gradient: gradient)
+            : null,
         child: Stack(
           children: [
-            // Animated blob decorations
+            // Subtle decorative blobs — soft emerald tones
             if (animate) ...[
               Positioned(
-                top: -100,
-                right: -100,
+                top: -80,
+                right: -80,
                 child: _AnimatedBlob(
-                  size: 300,
-                  color: AppColors.teal.withOpacity(0.3),
-                  duration: const Duration(seconds: 8),
+                  size: 280,
+                  color: AppColors.primaryLight.withOpacity(0.12),
+                  duration: const Duration(seconds: 9),
                 ),
               ),
               Positioned(
-                bottom: -150,
-                left: -100,
+                bottom: -120,
+                left: -80,
                 child: _AnimatedBlob(
-                  size: 350,
-                  color: AppColors.purple.withOpacity(0.3),
-                  duration: const Duration(seconds: 10),
+                  size: 320,
+                  color: AppColors.accent.withOpacity(0.10),
+                  duration: const Duration(seconds: 11),
                   reverse: true,
                 ),
               ),
               Positioned(
-                top: MediaQuery.of(context).size.height * 0.4,
-                right: -50,
+                top: MediaQuery.of(context).size.height * 0.45,
+                right: -40,
                 child: _AnimatedBlob(
-                  size: 200,
-                  color: AppColors.primary.withOpacity(0.2),
-                  duration: const Duration(seconds: 12),
+                  size: 180,
+                  color: AppColors.accentLight.withOpacity(0.18),
+                  duration: const Duration(seconds: 13),
                 ),
               ),
             ],
@@ -121,13 +122,14 @@ class SimpleGradientBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: gradient ?? AppColors.liquidGlassGradient,
-        ),
+        color: gradient != null ? null : AppColors.background,
+        decoration: gradient != null
+            ? BoxDecoration(gradient: gradient)
+            : null,
         child: SafeArea(child: child),
       ),
     );

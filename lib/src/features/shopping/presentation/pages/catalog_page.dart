@@ -53,25 +53,28 @@ class CatalogPage extends ConsumerWidget {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
-                        ),
+                        border: Border.all(color: AppColors.accentLight),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: TextField(
-                        style: const TextStyle(color: Colors.white),
+                      child: const TextField(
+                        style: TextStyle(color: AppColors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Cari produk...',
-                          hintStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                          ),
+                          hintStyle: TextStyle(color: AppColors.textMuted),
                           prefixIcon: Icon(
                             Icons.search,
-                            color: Colors.white.withOpacity(0.5),
+                            color: AppColors.textMuted,
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
+                          contentPadding: EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
                           ),
@@ -142,7 +145,7 @@ class CatalogPage extends ConsumerWidget {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white38,
+                        color: AppColors.accentLight,
                         strokeWidth: 2,
                       ),
                     ),
@@ -156,18 +159,24 @@ class CatalogPage extends ConsumerWidget {
                         label: 'Semua',
                         icon: Icons.grid_view,
                         isSelected: selectedSlug == null,
-                        onTap: () => ref
-                            .read(selectedCategorySlugProvider.notifier)
-                            .state = null,
+                        onTap: () =>
+                            ref
+                                    .read(selectedCategorySlugProvider.notifier)
+                                    .state =
+                                null,
                       ),
-                      ...categories.map((cat) => _CategoryChip(
-                            label: cat.name,
-                            icon: _resolveIcon(cat.iconName),
-                            isSelected: selectedSlug == cat.slug,
-                            onTap: () => ref
-                                .read(selectedCategorySlugProvider.notifier)
-                                .state = cat.slug,
-                          )),
+                      ...categories.map(
+                        (cat) => _CategoryChip(
+                          label: cat.name,
+                          icon: _resolveIcon(cat.iconName),
+                          isSelected: selectedSlug == cat.slug,
+                          onTap: () =>
+                              ref
+                                  .read(selectedCategorySlugProvider.notifier)
+                                  .state = cat
+                                  .slug,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -181,7 +190,7 @@ class CatalogPage extends ConsumerWidget {
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.all(40),
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               ),
             ),
@@ -190,19 +199,23 @@ class CatalogPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    Icon(Icons.error_outline,
-                        color: Colors.white38, size: 48),
+                    const Icon(
+                      Icons.error_outline,
+                      color: AppColors.accentLight,
+                      size: 48,
+                    ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'Gagal memuat produk',
-                      style:
-                          TextStyle(color: Colors.white.withOpacity(0.7)),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () => ref.invalidate(productsApiProvider),
-                      child: const Text('Coba Lagi',
-                          style: TextStyle(color: AppColors.teal)),
+                      child: const Text(
+                        'Coba Lagi',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
                     ),
                   ],
                 ),
@@ -210,19 +223,20 @@ class CatalogPage extends ConsumerWidget {
             ),
             data: (products) {
               if (products.isEmpty) {
-                return SliverToBoxAdapter(
+                return const SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(40),
+                    padding: EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        Icon(Icons.shopping_bag_outlined,
-                            size: 64,
-                            color: Colors.white.withOpacity(0.3)),
-                        const SizedBox(height: 16),
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 64,
+                          color: AppColors.accentLight,
+                        ),
+                        SizedBox(height: 16),
                         Text(
                           'Tidak ada produk',
-                          style: TextStyle(
-                              color: Colors.white.withOpacity(0.6)),
+                          style: TextStyle(color: AppColors.textMuted),
                         ),
                       ],
                     ),
@@ -232,23 +246,19 @@ class CatalogPage extends ConsumerWidget {
               return SliverPadding(
                 padding: const EdgeInsets.all(20),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 14,
                     crossAxisSpacing: 14,
                     childAspectRatio: 0.7,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final product = products[index];
-                      return _ProductCard(product: product)
-                          .animate(delay: (index * 50).ms)
-                          .fadeIn(duration: 400.ms)
-                          .scale(begin: const Offset(0.95, 0.95));
-                    },
-                    childCount: products.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = products[index];
+                    return _ProductCard(product: product)
+                        .animate(delay: (index * 50).ms)
+                        .fadeIn(duration: 400.ms)
+                        .scale(begin: const Offset(0.95, 0.95));
+                  }, childCount: products.length),
                 ),
               );
             },
@@ -282,23 +292,25 @@ class _CategoryChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
+          color: isSelected ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : Colors.white.withOpacity(0.2),
+            color: isSelected ? AppColors.primary : AppColors.accentLight,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: Colors.white),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: Colors.white,
+                color: isSelected ? Colors.white : AppColors.textPrimary,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
@@ -337,9 +349,9 @@ class _ProductCard extends ConsumerWidget {
                 children: [
                   Container(
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: const BorderRadius.vertical(
+                    decoration: const BoxDecoration(
+                      color: AppColors.backgroundAlt,
+                      borderRadius: BorderRadius.vertical(
                         top: Radius.circular(18),
                       ),
                     ),
@@ -363,7 +375,9 @@ class _ProductCard extends ConsumerWidget {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(8),
@@ -395,8 +409,9 @@ class _ProductCard extends ConsumerWidget {
                                   : '${product.name} ditambahkan ke wishlist',
                             ),
                             duration: const Duration(seconds: 2),
-                            backgroundColor:
-                                isWishlisted ? Colors.grey : Colors.green,
+                            backgroundColor: isWishlisted
+                                ? Colors.grey
+                                : Colors.green,
                           ),
                         );
                       },
@@ -404,12 +419,14 @@ class _ProductCard extends ConsumerWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
+                          color: AppColors.surface.withOpacity(0.85),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
-                          color: isWishlisted ? Colors.red : Colors.white,
+                          color: isWishlisted
+                              ? AppColors.error
+                              : AppColors.textMuted,
                           size: 18,
                         ),
                       ),
@@ -434,28 +451,27 @@ class _ProductCard extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const Spacer(),
-                    // Rating stars
                     Row(
                       children: [
-                        Icon(Icons.star, size: 12, color: Colors.amber),
+                        const Icon(Icons.star, size: 12, color: Colors.amber),
                         const SizedBox(width: 2),
                         Text(
                           product.rate.toStringAsFixed(1),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
-                            color: Colors.white.withOpacity(0.6),
+                            color: AppColors.textMuted,
                           ),
                         ),
                         const Spacer(),
                         Text(
                           '~${product.serviceTime}m',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
-                            color: Colors.white.withOpacity(0.5),
+                            color: AppColors.textMuted,
                           ),
                         ),
                       ],
@@ -466,7 +482,7 @@ class _ProductCard extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.teal,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -480,11 +496,11 @@ class _ProductCard extends ConsumerWidget {
   }
 
   Widget _defaultImage() {
-    return Center(
+    return const Center(
       child: Icon(
-        _resolveIcon(product.category.iconName),
+        Icons.image_not_supported_outlined,
         size: 48,
-        color: Colors.white.withOpacity(0.3),
+        color: AppColors.accentLight,
       ),
     );
   }

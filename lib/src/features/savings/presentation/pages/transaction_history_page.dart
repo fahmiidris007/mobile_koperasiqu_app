@@ -46,12 +46,12 @@ class _TransactionHistoryPageState
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.primary.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 18,
                       ),
                     ),
@@ -63,7 +63,7 @@ class _TransactionHistoryPageState
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -74,14 +74,15 @@ class _TransactionHistoryPageState
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: AppColors.primary.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '${filtered.length} transaksi',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                      style: const TextStyle(
+                        color: AppColors.primary,
                         fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -132,7 +133,7 @@ class _TransactionHistoryPageState
             Expanded(
               child: txAsync.isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: Colors.white38),
+                      child: CircularProgressIndicator(color: AppColors.primary),
                     )
                   : filtered.isEmpty
                   ? _buildEmpty()
@@ -161,16 +162,16 @@ class _TransactionHistoryPageState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.receipt_long_outlined,
             size: 64,
-            color: Colors.white.withOpacity(0.3),
+            color: AppColors.accentLight,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Belum ada transaksi',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: AppColors.textMuted,
               fontSize: 15,
             ),
           ),
@@ -200,18 +201,18 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           gradient: isSelected ? AppColors.primaryGradient : null,
-          color: isSelected ? null : Colors.white.withOpacity(0.1),
+          color: isSelected ? null : AppColors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : Colors.white.withOpacity(0.2),
+                : AppColors.accentLight,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+            color: isSelected ? Colors.white : AppColors.textSecondary,
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -262,15 +263,15 @@ class _HistoryItem extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   Formatters.formatDateTime(transaction.createdAt),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.5),
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
@@ -286,7 +287,7 @@ class _HistoryItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: isCredit ? AppColors.success : Colors.white,
+                  color: isCredit ? AppColors.success : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 3),
@@ -295,7 +296,7 @@ class _HistoryItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: transaction.isPending
                       ? Colors.orange.withOpacity(0.18)
-                      : Colors.white.withOpacity(0.08),
+                      : AppColors.backgroundAlt,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -304,7 +305,7 @@ class _HistoryItem extends StatelessWidget {
                     fontSize: 10,
                     color: transaction.isPending
                         ? Colors.orange
-                        : Colors.white.withOpacity(0.5),
+                        : AppColors.textMuted,
                   ),
                 ),
               ),

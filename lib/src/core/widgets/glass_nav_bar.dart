@@ -28,40 +28,34 @@ class GlassNavBar extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-          child: Container(
-            height: 72,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(navItems.length, (index) {
-                final isSelected = index == currentIndex;
-                return _NavBarItem(
-                  item: navItems[index],
-                  isSelected: isSelected,
-                  onTap: () => onTap(index),
-                );
-              }),
-            ),
+      child: Container(
+        height: 72,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: AppColors.accentLight,
+            width: 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(navItems.length, (index) {
+            final isSelected = index == currentIndex;
+            return _NavBarItem(
+              item: navItems[index],
+              isSelected: isSelected,
+              onTap: () => onTap(index),
+            );
+          }),
         ),
       ),
     );
@@ -108,14 +102,14 @@ class _NavBarItem extends StatelessWidget {
           children: [
             Icon(
               isSelected ? (item.activeIcon ?? item.icon) : item.icon,
-              color: isSelected ? Colors.white : Colors.white60,
+              color: isSelected ? Colors.white : AppColors.textMuted,
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               item.label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white60,
+                color: isSelected ? Colors.white : AppColors.textMuted,
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),

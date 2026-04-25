@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
@@ -31,22 +32,19 @@ class WelcomePage extends StatelessWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                      ),
+                      color: AppColors.primaryLight.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: AppColors.primaryLight.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(26),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Image.asset(
-                          'assets/images/koperasiqu_logo.png',
+                          'assets/images/koperasiqu.png',
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -56,11 +54,11 @@ class WelcomePage extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Welcome text
-                  Text(
+                  const Text(
                     'Selamat Datang di',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.8),
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
@@ -71,19 +69,19 @@ class WelcomePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  Text(
+                  const Text(
                     'Koperasi Digital untuk\nMasa Depan Anda',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.5,
-                      color: Colors.white.withOpacity(0.7),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -152,16 +150,16 @@ class _FeatureItem extends StatelessWidget {
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: AppColors.primary.withOpacity(0.10),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
           ),
-          child: Icon(icon, color: Colors.white, size: 28),
+          child: Icon(icon, color: AppColors.primary, size: 28),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.8)),
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
       ],
     );

@@ -68,8 +68,16 @@ class _EkycPageState extends ConsumerState<EkycPage> {
       builder: (_) => Container(
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A2B4A),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.accentLight),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -79,7 +87,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.accentLight,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -87,7 +95,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
             Text(
               isKtp ? 'Foto KTP' : 'Foto Selfie',
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -96,7 +104,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
             _SourceOption(
               icon: Icons.camera_alt_rounded,
               label: 'Buka Kamera',
-              color: AppColors.teal,
+              color: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(isKtp: isKtp, source: ImageSource.camera);
@@ -106,7 +114,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
             _SourceOption(
               icon: Icons.photo_library_rounded,
               label: 'Pilih dari Galeri',
-              color: Colors.purple,
+              color: AppColors.accent,
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(isKtp: isKtp, source: ImageSource.gallery);
@@ -184,10 +192,16 @@ class _EkycPageState extends ConsumerState<EkycPage> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: AppColors.primary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primaryLight.withOpacity(0.3),
+                      ),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -197,7 +211,7 @@ class _EkycPageState extends ConsumerState<EkycPage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -212,13 +226,13 @@ class _EkycPageState extends ConsumerState<EkycPage> {
               opacity: 0.1,
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.white70),
+                  const Icon(Icons.info_outline, color: AppColors.primary),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Text(
                       'Ambil foto KTP dan foto selfie untuk verifikasi identitas Anda',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppColors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -360,16 +374,16 @@ class _PhotoCard extends StatelessWidget {
                   : Container(
                       width: double.infinity,
                       height: 160,
-                      color: Colors.white.withOpacity(0.06),
+                      color: AppColors.backgroundAlt,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: Colors.white30),
+                          Icon(icon, size: 48, color: AppColors.accentLight),
                           const SizedBox(height: 8),
-                          Text(
+                          const Text(
                             'Ketuk untuk mengambil foto',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.4),
+                              color: AppColors.textMuted,
                               fontSize: 13,
                             ),
                           ),
@@ -388,13 +402,13 @@ class _PhotoCard extends StatelessWidget {
                     height: 36,
                     decoration: BoxDecoration(
                       color: hasImage
-                          ? Colors.green.withOpacity(0.2)
-                          : Colors.blue.withOpacity(0.15),
+                          ? AppColors.success.withOpacity(0.15)
+                          : AppColors.primary.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       hasImage ? Icons.check_rounded : Icons.camera_alt_rounded,
-                      color: hasImage ? Colors.green : Colors.blue,
+                      color: hasImage ? AppColors.success : AppColors.primary,
                       size: 20,
                     ),
                   ),
@@ -408,7 +422,7 @@ class _PhotoCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -416,8 +430,8 @@ class _PhotoCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             color: hasImage
-                                ? Colors.green
-                                : Colors.white.withOpacity(0.55),
+                                ? AppColors.success
+                                : AppColors.textMuted,
                           ),
                         ),
                       ],
@@ -426,7 +440,7 @@ class _PhotoCard extends StatelessWidget {
                   Text(
                     hasImage ? 'Ubah' : 'Ambil',
                     style: const TextStyle(
-                      color: AppColors.teal,
+                      color: AppColors.primary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -466,9 +480,9 @@ class _SourceOption extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
+            color: color.withOpacity(0.08),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withOpacity(0.25)),
           ),
           child: Row(
             children: [
@@ -476,7 +490,7 @@ class _SourceOption extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 22),
@@ -485,7 +499,7 @@ class _SourceOption extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -516,8 +530,8 @@ class _TipItem extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryLight,
               shape: BoxShape.circle,
             ),
           ),
@@ -525,8 +539,8 @@ class _TipItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
                 fontSize: 13,
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/widgets/gradient_background.dart';
 
 /// Splash screen with animated logo
@@ -40,15 +41,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: AppColors.primaryLight.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(35),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: AppColors.primaryLight.withOpacity(0.35),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
+                        color: AppColors.primary.withOpacity(0.18),
                         blurRadius: 40,
                         spreadRadius: 8,
                       ),
@@ -59,7 +60,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(
-                        'assets/images/koperasiqu_logo.png',
+                        'assets/images/koperasiqu.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -77,7 +78,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     letterSpacing: 1,
                   ),
                 )
@@ -88,11 +89,11 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             const SizedBox(height: 8),
 
             // Tagline
-            Text(
+            const Text(
               'Koperasi Digital untuk Masa Depan',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.7),
+                color: AppColors.textSecondary,
               ),
             ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
@@ -105,7 +106,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               child: CircularProgressIndicator(
                 strokeWidth: 3,
                 valueColor: AlwaysStoppedAnimation(
-                  Colors.white.withOpacity(0.7),
+                  AppColors.primary.withOpacity(0.6),
                 ),
               ),
             ).animate(delay: 800.ms).fadeIn(duration: 400.ms),

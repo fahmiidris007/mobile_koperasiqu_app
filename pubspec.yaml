@@ -71,9 +71,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/koperasiqu_logo.png"
-  adaptive_icon_background: "#0A2463"
-  adaptive_icon_foreground: "assets/images/koperasiqu_logo.png"
+  image_path: "assets/images/koperasiqu.png"
+  adaptive_icon_background: "#2D9E6A"
+  adaptive_icon_foreground: "assets/images/koperasiqu.png"
   remove_alpha_ios: true
   web:
     generate: false
