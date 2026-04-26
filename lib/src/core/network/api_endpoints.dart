@@ -21,6 +21,7 @@ class ApiEndpoints {
   static const String wallet = '/wallet';
   static const String walletTransactions = '/wallet/transactions';
   static const String walletTopup = '/wallet/topup';
+  static String walletTopupUploadProof(int id) => '/wallet/topup/$id/upload-proof';
 
   // Transactions
   static const String transactions = '/transactions';
@@ -31,6 +32,7 @@ class ApiEndpoints {
   static const String featuredProducts = '/products/featured';
   static const String popularProducts = '/products/popular';
   static const String topRatedProducts = '/products/top-rated';
+  static String productClick(String idOrSlug) => '/products/$idOrSlug/click';
 
   // Password reset
   static const String forgotPassword = '/password/forgot';
@@ -38,4 +40,7 @@ class ApiEndpoints {
 
   // Koperasi
   static const String branches = '/branches';
+
+  // Profile update
+  static const String userProfile = '/user/profile';
 }

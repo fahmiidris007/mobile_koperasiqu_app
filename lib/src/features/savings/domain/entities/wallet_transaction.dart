@@ -69,7 +69,8 @@ class TopupResult extends Equatable {
     required this.totalAmountFormatted,
     required this.serviceFee,
     required this.serviceFeeFormatted,
-    required this.uniqueCode,
+    this.uniqueCode,
+    this.referenceCode,
     required this.createdAt,
   });
 
@@ -81,9 +82,10 @@ class TopupResult extends Equatable {
   final String totalAmountFormatted;
   final double serviceFee;
   final String serviceFeeFormatted;
-  final int uniqueCode;
+  final int? uniqueCode;
+  final String? referenceCode;
   final DateTime createdAt;
 
   @override
-  List<Object?> get props => [id, status, amount, totalAmount, uniqueCode];
+  List<Object?> get props => [id, status, amount, totalAmount, uniqueCode, referenceCode];
 }

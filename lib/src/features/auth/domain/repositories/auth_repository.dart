@@ -1,9 +1,18 @@
 import '../entities/user.dart';
 import '../entities/registration_data.dart';
+import '../../data/models/login_response_model.dart';
 
 /// Abstract repository for authentication operations
 abstract class AuthRepository {
-  /// Login with email and password — triggers OTP sent to email
+  /// Login with email and password — returns LoginResponseModel
+  /// requiresOtp=true: OTP dikirim ke email, belum ada token
+  /// requiresOtp=false: token langsung tersimpan, user di-return
+  Future<LoginResponseModel> loginWithResponse({
+    required String email,
+    required String password,
+  });
+
+  /// Login (legacy, kept for backward compatibility)
   Future<void> login({required String email, required String password});
 
   /// Verify OTP after login — returns authenticated User + saves token

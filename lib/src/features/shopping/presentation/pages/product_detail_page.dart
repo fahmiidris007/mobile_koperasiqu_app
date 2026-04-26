@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
+import '../../data/datasources/shopping_datasource.dart';
 import '../../domain/entities/product.dart';
 import '../providers/shopping_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -70,6 +72,10 @@ class _ProductDetailContentState extends ConsumerState<_ProductDetailContent> {
 
   Future<void> _openWhatsApp(BuildContext context, String waNumber) async {
     final product = widget.product;
+
+    // Record product click/interest — fire-and-forget
+    unawaited(ShoppingDatasource().recordProductClick(product.idStr));
+
     final message =
         'Halo Admin KoperasiQu! 👋\n\n'
         'Saya tertarik untuk membeli produk berikut:\n'

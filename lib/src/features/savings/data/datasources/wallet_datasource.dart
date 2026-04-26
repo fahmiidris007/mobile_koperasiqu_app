@@ -41,19 +41,38 @@ class WalletDatasource {
 
   // ── POST /wallet/topup ─────────────────────────────────────────────────────
 
-  Future<TopupResult> topup({
-    required double amount,
-    required int uniqueCode,
-  }) async {
+  Future<TopupResult> topup({required double amount}) async {
     try {
       final response = await _dio.post(
         ApiEndpoints.walletTopup,
-        data: {'amount': amount.toInt(), 'unique_code': uniqueCode},
+        data: {'amount': amount.toInt()},
         options: Options(contentType: 'application/json'),
       );
       final data = (response.data as Map<String, dynamic>)['data']
           as Map<String, dynamic>;
       return _topupFromJson(data);
+    } on DioException catch (e) {
+      throw AuthException(_parseError(e));
+    }
+  }
+
+  // ── POST /wallet/topup/:id/upload-proof ─────────────────────────────────
+
+  Future<void> uploadTopupProof({
+    required int topupId,
+    required String imagePath,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'proof_of_payment': await MultipartFile.fromFile(
+          imagePath,
+          filename: 'proof.jpg',
+        ),
+      });
+      await _dio.post(
+        ApiEndpoints.walletTopupUploadProof(topupId),
+        data: formData,
+      );
     } on DioException catch (e) {
       throw AuthException(_parseError(e));
     }
@@ -103,7 +122,8 @@ class WalletDatasource {
       totalAmountFormatted: j['total_amount_formatted']?.toString() ?? '',
       serviceFee: (j['service_fee'] as num? ?? 0).toDouble(),
       serviceFeeFormatted: j['service_fee_formatted']?.toString() ?? 'Rp 0',
-      uniqueCode: (j['unique_code'] as num).toInt(),
+      uniqueCode: j['unique_code'] != null ? (j['unique_code'] as num).toInt() : null,
+      referenceCode: j['reference_code']?.toString(),
       createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ??
           DateTime.now(),
     );

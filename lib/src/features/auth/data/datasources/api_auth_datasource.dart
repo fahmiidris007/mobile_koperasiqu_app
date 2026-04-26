@@ -16,7 +16,8 @@ class ApiAuthDatasource {
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
-  /// POST /login — sends OTP to user's email, does NOT return token yet
+  /// POST /login — kembalikan LoginResponseModel
+  /// Jika requires_otp=false, token langsung disimpan.
   Future<LoginResponseModel> login({
     required String email,
     required String password,
@@ -27,7 +28,14 @@ class ApiAuthDatasource {
         data: {'email': email, 'password': password},
         options: Options(contentType: 'application/json'),
       );
-      return LoginResponseModel.fromJson(response.data as Map<String, dynamic>);
+      final model = LoginResponseModel.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+      // Jika 2FA tidak aktif, token sudah tersedia — simpan sekarang
+      if (!model.requiresOtp && model.authResponse != null) {
+        await TokenStorage.saveToken(model.authResponse!.token);
+      }
+      return model;
     } on DioException catch (e) {
       throw AuthException(_parseError(e));
     }
@@ -168,6 +176,15 @@ class ApiAuthDatasource {
   }
 
   Future<void> logout() async {
+    // Panggil API logout terlebih dahulu untuk invalidate token di server
+    try {
+      await _dio.post(
+        ApiEndpoints.logout,
+        options: Options(headers: {'Accept': 'application/json'}),
+      );
+    } catch (_) {
+      // Jika API gagal (misal offline/expired), tetap hapus token lokal
+    }
     await TokenStorage.deleteToken();
   }
 
