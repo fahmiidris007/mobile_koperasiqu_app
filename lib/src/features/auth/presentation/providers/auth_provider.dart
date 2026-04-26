@@ -72,13 +72,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Step 1 login: validates credentials, triggers OTP email
+  /// Step 1 login: validates credentials
+  /// - requires_otp=true → transition ke OTP screen
+  /// - requires_otp=false → langsung authenticated (2FA dinonaktifkan user)
   Future<void> login(String email, String password) async {
     state = const AuthLoading();
     try {
-      await _repository.login(email: email, password: password);
-      // Backend sent OTP — transition to OTP step
-      state = AuthOtpRequired(email);
+      final response = await _repository.loginWithResponse(
+        email: email,
+        password: password,
+      );
+      if (response.requiresOtp) {
+        // Backend sent OTP — user harus verifikasi
+        state = AuthOtpRequired(email);
+      } else {
+        // 2FA nonaktif — token sudah disimpan, ambil user dari response
+        final user = response.authResponse?.toDomainUser();
+        if (user != null) {
+          state = AuthAuthenticated(user);
+        } else {
+          state = const AuthError('Gagal mendapatkan data pengguna.');
+        }
+      }
     } on AuthException catch (e) {
       state = AuthError(e.message);
     } catch (_) {
@@ -91,7 +106,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthLoading();
     try {
       final user = await _repository.verifyLoginOtp(email: email, code: code);
-      // state = user.isApproved ? AuthAuthenticated(user) : AuthPending(user);
       state = AuthAuthenticated(user);
     } on AuthException catch (e) {
       state = AuthError(e.message);

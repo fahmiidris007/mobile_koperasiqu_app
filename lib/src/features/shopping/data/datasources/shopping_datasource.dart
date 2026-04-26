@@ -68,6 +68,17 @@ class ShoppingDatasource {
     }
   }
 
+  // ── POST /products/:id_slug/click ──────────────────────────────────────────
+
+  /// Record product interest. Fire-and-forget — error tidak di-throw.
+  Future<void> recordProductClick(String idOrSlug) async {
+    try {
+      await _dio.post(ApiEndpoints.productClick(idOrSlug));
+    } catch (_) {
+      // Intentionally silent — click tracking is non-critical
+    }
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
   List<ApiProduct> _extractProducts(dynamic responseData) {

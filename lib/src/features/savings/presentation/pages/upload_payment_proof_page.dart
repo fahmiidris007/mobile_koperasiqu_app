@@ -14,10 +14,10 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/gradient_background.dart';
+import '../../data/datasources/wallet_datasource.dart';
 import '../../domain/entities/wallet_transaction.dart';
 import '../providers/branch_provider.dart';
 import '../providers/wallet_provider.dart';
-
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -73,22 +73,14 @@ class _UploadPaymentProofPageState
     setState(() => _isSubmitting = true);
 
     try {
-      // Sementara hit API walletTopup (file bukti tidak dikirim, backend belum siap)
+      // Step 1: POST /wallet/topup — buat permintaan topup, dapatkan ID
       final result = await ref
           .read(topupNotifierProvider.notifier)
           .topup(amount: widget.amount.toDouble());
 
       if (!mounted) return;
 
-      if (result != null) {
-        await showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => _TopupResultDialog(result: result, isSuccess: true),
-        );
-        if (!mounted) return;
-        context.go(Routes.savings);
-      } else {
+      if (result == null) {
         final error = ref.read(topupNotifierProvider).error;
         await showDialog<void>(
           context: context,
@@ -97,7 +89,42 @@ class _UploadPaymentProofPageState
             isSuccess: false,
           ),
         );
+        return;
       }
+
+      // Step 2: upload bukti langsung via datasource (bypass autoDispose provider)
+      // Ini menghindari "Bad state: after dispose" karena upload adalah one-shot
+      if (_proofImage != null) {
+        try {
+          await WalletDatasource().uploadTopupProof(
+            topupId: result.id,
+            imagePath: _proofImage!.path,
+          );
+          // Refresh wallet data setelah upload
+          ref.invalidate(walletProvider);
+          ref.invalidate(walletTransactionsProvider);
+        } catch (uploadErr) {
+          log('upload proof warning (topup tetap sukses): $uploadErr');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Topup berhasil, namun gagal upload bukti'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          // Topup tetap berhasil, lanjut ke dialog sukses
+        }
+      }
+
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => _TopupResultDialog(result: result, isSuccess: true),
+      );
+      if (!mounted) return;
+      context.go(Routes.savings);
     } catch (e) {
       log('error topup proof: $e');
       if (mounted) {
@@ -121,7 +148,6 @@ class _UploadPaymentProofPageState
     final branchAsync = ref.watch(branchProvider);
 
     final amountFormatted = Formatters.formatCurrency(widget.amount);
-
 
     return SimpleGradientBackground(
       child: SafeArea(
@@ -211,7 +237,8 @@ class _UploadPaymentProofPageState
                           // Info rekening
                           _InfoRow(
                             label: 'Bank',
-                            value: branchAsync.whenOrNull(
+                            value:
+                                branchAsync.whenOrNull(
                                   data: (b) => b.bankName,
                                 ) ??
                                 '—',
@@ -220,7 +247,8 @@ class _UploadPaymentProofPageState
                           const SizedBox(height: 12),
                           _InfoRow(
                             label: 'Atas Nama',
-                            value: branchAsync.whenOrNull(
+                            value:
+                                branchAsync.whenOrNull(
                                   data: (b) => b.bankAccountName,
                                 ) ??
                                 '—',
@@ -229,79 +257,85 @@ class _UploadPaymentProofPageState
                           const SizedBox(height: 12),
 
                           // Nomor rekening + copy
-                          Builder(builder: (context) {
-                            final accountNumber = branchAsync.whenOrNull(
-                                  data: (b) => b.bankAccountNumber,
-                                ) ??
-                                '—';
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.credit_card,
-                                  size: 16,
-                                  color: AppColors.textMuted,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'No. Rekening',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.textMuted,
+                          Builder(
+                            builder: (context) {
+                              final accountNumber =
+                                  branchAsync.whenOrNull(
+                                    data: (b) => b.bankAccountNumber,
+                                  ) ??
+                                  '—';
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.credit_card,
+                                    size: 16,
+                                    color: AppColors.textMuted,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'No. Rekening',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textMuted,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      branchAsync.isLoading
-                                          ? const SizedBox(
-                                              width: 120,
-                                              height: 18,
-                                              child: LinearProgressIndicator(
-                                                color: AppColors.primary,
+                                        const SizedBox(height: 2),
+                                        branchAsync.isLoading
+                                            ? const SizedBox(
+                                                width: 120,
+                                                height: 18,
+                                                child: LinearProgressIndicator(
+                                                  color: AppColors.primary,
+                                                ),
+                                              )
+                                            : Text(
+                                                accountNumber,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.textPrimary,
+                                                  letterSpacing: 1.5,
+                                                ),
                                               ),
-                                            )
-                                          : Text(
-                                              accountNumber,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppColors.textPrimary,
-                                                letterSpacing: 1.5,
-                                              ),
-                                            ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: accountNumber == '—'
-                                      ? null
-                                      : () {
-                                          Clipboard.setData(
-                                            ClipboardData(text: accountNumber),
-                                          );
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Nomor rekening disalin!',
+                                  GestureDetector(
+                                    onTap: accountNumber == '—'
+                                        ? null
+                                        : () {
+                                            Clipboard.setData(
+                                              ClipboardData(
+                                                text: accountNumber,
                                               ),
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                        },
-                                  child: const Icon(
-                                    Icons.copy,
-                                    size: 20,
-                                    color: AppColors.primary,
+                                            );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Nomor rekening disalin!',
+                                                ),
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+                                          },
+                                    child: const Icon(
+                                      Icons.copy,
+                                      size: 20,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            );
-                          }),
+                                ],
+                              );
+                            },
+                          ),
 
                           const SizedBox(height: 16),
 
@@ -887,13 +921,6 @@ class _TopupResultDialog extends StatelessWidget {
                       value: result!.totalAmountFormatted,
                       bold: true,
                       valueColor: AppColors.success,
-                    ),
-                    const Divider(color: AppColors.accentLight, height: 16),
-                    _DialogRow(
-                      label: 'Kode Unik',
-                      value: result!.uniqueCode.toString(),
-                      bold: true,
-                      valueColor: Colors.orangeAccent,
                     ),
                     const Divider(color: AppColors.accentLight, height: 16),
                     _DialogRow(

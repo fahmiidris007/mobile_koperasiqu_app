@@ -11,6 +11,7 @@ class User extends Equatable {
     this.avatarUrl,
     this.memberId,
     this.joinDate,
+    this.is2faEnabled = false,
   });
 
   final String id;
@@ -21,6 +22,7 @@ class User extends Equatable {
   final String? avatarUrl;
   final String? memberId;
   final DateTime? joinDate;
+  final bool is2faEnabled;
 
   /// Check if user is fully approved and can access all features
   bool get isApproved => status == UserStatus.approved;
@@ -38,6 +40,7 @@ class User extends Equatable {
     avatarUrl,
     memberId,
     joinDate,
+    is2faEnabled,
   ];
 
   User copyWith({
@@ -49,6 +52,7 @@ class User extends Equatable {
     String? avatarUrl,
     String? memberId,
     DateTime? joinDate,
+    bool? is2faEnabled,
   }) {
     return User(
       id: id ?? this.id,
@@ -59,6 +63,7 @@ class User extends Equatable {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       memberId: memberId ?? this.memberId,
       joinDate: joinDate ?? this.joinDate,
+      is2faEnabled: is2faEnabled ?? this.is2faEnabled,
     );
   }
 }

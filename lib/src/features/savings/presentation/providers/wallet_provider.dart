@@ -48,15 +48,8 @@ class TopupNotifier extends StateNotifier<TopupState> {
   Future<TopupResult?> topup({required double amount}) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    // Generate random 3‑digit unique code (100–999), temporary now 200
-    final uniqueCode = 200;
-    // 100 + (DateTime.now().millisecondsSinceEpoch % 900);
-
     try {
-      final result = await _walletDatasource.topup(
-        amount: amount,
-        uniqueCode: uniqueCode,
-      );
+      final result = await _walletDatasource.topup(amount: amount);
 
       state = state.copyWith(isLoading: false, result: result);
 
@@ -84,4 +77,64 @@ class TopupNotifier extends StateNotifier<TopupState> {
 final topupNotifierProvider =
     StateNotifierProvider.autoDispose<TopupNotifier, TopupState>(
       (ref) => TopupNotifier(ref),
+    );
+
+// ── Upload Proof State ───────────────────────────────────────────────
+
+class UploadProofState {
+  const UploadProofState({
+    this.isLoading = false,
+    this.isSuccess = false,
+    this.error,
+  });
+  final bool isLoading;
+  final bool isSuccess;
+  final String? error;
+
+  UploadProofState copyWith({
+    bool? isLoading,
+    bool? isSuccess,
+    String? error,
+  }) =>
+      UploadProofState(
+        isLoading: isLoading ?? this.isLoading,
+        isSuccess: isSuccess ?? this.isSuccess,
+        error: error,
+      );
+}
+
+class UploadProofNotifier extends StateNotifier<UploadProofState> {
+  UploadProofNotifier(this._ref) : super(const UploadProofState());
+
+  final Ref _ref;
+
+  Future<bool> upload({required int topupId, required String imagePath}) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _walletDatasource.uploadTopupProof(
+        topupId: topupId,
+        imagePath: imagePath,
+      );
+      state = state.copyWith(isLoading: false, isSuccess: true);
+      _ref.invalidate(walletProvider);
+      _ref.invalidate(walletTransactionsProvider);
+      return true;
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Gagal upload bukti. Coba lagi.',
+      );
+      return false;
+    }
+  }
+
+  void reset() => state = const UploadProofState();
+}
+
+final uploadProofProvider =
+    StateNotifierProvider.autoDispose<UploadProofNotifier, UploadProofState>(
+      (ref) => UploadProofNotifier(ref),
     );

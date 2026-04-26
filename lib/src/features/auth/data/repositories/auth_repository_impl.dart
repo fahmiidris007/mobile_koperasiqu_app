@@ -1,6 +1,7 @@
 import '../../domain/entities/user.dart';
 import '../../domain/entities/registration_data.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../data/models/login_response_model.dart';
 import '../datasources/mock_auth_datasource.dart';
 
 /// Mock implementation of AuthRepository using local persistence
@@ -28,6 +29,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   final MockAuthDatasource _datasource;
+
+  @override
+  Future<LoginResponseModel> loginWithResponse({
+    required String email,
+    required String password,
+  }) async {
+    // Mock: always requires OTP
+    await _datasource.login(email: email, password: password);
+    return LoginResponseModel(requiresOtp: true, email: email, expiresInMinutes: 10);
+  }
 
   @override
   Future<void> login({required String email, required String password}) async {

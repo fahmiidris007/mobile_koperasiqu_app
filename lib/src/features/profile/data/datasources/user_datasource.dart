@@ -32,7 +32,38 @@ class UserDatasource {
     }
   }
 
+  Future<User> updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+    String? gender,
+    bool? is2faEnabled,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        '_method': 'PUT',
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (phone != null) 'phone': phone,
+        if (gender != null) 'gender': gender,
+        if (is2faEnabled != null) 'is_2fa_enabled': is2faEnabled ? '1' : '0',
+      });
+      final response = await _dio.post(
+        ApiEndpoints.userProfile,
+        data: formData,
+      );
+      final data = (response.data as Map<String, dynamic>)['data']
+          as Map<String, dynamic>;
+      return _userFromJson(data);
+    } on DioException catch (e) {
+      throw AuthException(_parseError(e));
+    }
+  }
+
   User _userFromJson(Map<String, dynamic> j) {
+    // is_2fa_enabled bisa datang sebagai int (0/1) atau bool
+    final raw2fa = j['is_2fa_enabled'];
+    final is2fa = raw2fa == true || raw2fa == 1;
     return User(
       id: j['id']?.toString() ?? '',
       name: j['name']?.toString() ?? '',
@@ -41,6 +72,7 @@ class UserDatasource {
       status: UserStatus.approved,
       avatarUrl: j['photo_url']?.toString(),
       joinDate: DateTime.tryParse(j['created_at']?.toString() ?? ''),
+      is2faEnabled: is2fa,
     );
   }
 

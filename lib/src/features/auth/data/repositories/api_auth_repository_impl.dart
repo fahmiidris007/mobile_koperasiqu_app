@@ -1,6 +1,7 @@
 import '../../domain/entities/user.dart';
 import '../../domain/entities/registration_data.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../data/models/login_response_model.dart';
 import '../datasources/api_auth_datasource.dart';
 
 
@@ -11,8 +12,15 @@ class ApiAuthRepositoryImpl implements AuthRepository {
   final ApiAuthDatasource _datasource;
 
   @override
+  Future<LoginResponseModel> loginWithResponse({
+    required String email,
+    required String password,
+  }) {
+    return _datasource.login(email: email, password: password);
+  }
+
+  @override
   Future<void> login({required String email, required String password}) async {
-    // POST /login — backend sends OTP; we don't return a user yet
     await _datasource.login(email: email, password: password);
   }
 
