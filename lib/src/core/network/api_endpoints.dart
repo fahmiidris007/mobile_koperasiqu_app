@@ -40,7 +40,9 @@ class ApiEndpoints {
 
   // Koperasi
   static const String branches = '/branches';
+  static const String banners = '/banners';
 
   // Profile update
   static const String userProfile = '/user/profile';
+  static const String changePassword = '/user/change-password';
 }

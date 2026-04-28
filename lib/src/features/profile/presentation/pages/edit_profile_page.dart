@@ -23,17 +23,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   late TextEditingController _occupationController;
   bool _isSaving = false;
   bool _initialized = false;
-  bool _is2faEnabled = false;
 
   /// Dipanggil setelah userProvider selesai load
-  void _initControllers(String name, String phone, String email, bool is2fa) {
+  void _initControllers(String name, String phone, String email) {
     if (_initialized) return;
     _initialized = true;
     _nameController = TextEditingController(text: name);
     _phoneController = TextEditingController(text: phone);
     _emailController = TextEditingController(text: email);
     _occupationController = TextEditingController();
-    _is2faEnabled = is2fa;
   }
 
   @override
@@ -63,7 +61,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
-        is2faEnabled: _is2faEnabled,
       );
       if (!mounted) return;
       // Invalidate agar profile page reload data terbaru
@@ -108,7 +105,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       ),
       data: (user) {
         // Isi controller dengan data user (hanya pertama kali)
-        _initControllers(user.name, user.phone, user.email, user.is2faEnabled);
+        _initControllers(user.name, user.phone, user.email);
 
         return GradientBackground(
           child: SafeArea(
@@ -273,74 +270,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ],
                             ),
                           ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
-
-                          const SizedBox(height: 16),
-
-                          // 2FA Toggle
-                          GlassContainer(
-                            padding: const EdgeInsets.all(20),
-                            borderRadius: 20,
-                            opacity: 0.12,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _SectionLabel('KEAMANAN AKUN'),
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 38,
-                                      height: 38,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(
-                                          0.12,
-                                        ),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.security_rounded,
-                                        color: AppColors.primary,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Verifikasi Dua Langkah',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            _is2faEnabled
-                                                ? 'OTP wajib saat login'
-                                                : 'Login langsung tanpa OTP',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.textMuted,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Switch(
-                                      value: _is2faEnabled,
-                                      onChanged: (v) =>
-                                          setState(() => _is2faEnabled = v),
-                                      activeColor: AppColors.primary,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
 
                           const SizedBox(height: 28),
 

@@ -105,6 +105,7 @@ class WalletDatasource {
       uniqueCode: j['unique_code'] != null
           ? (j['unique_code'] as num).toInt()
           : null,
+      referenceCode: j['reference_code']?.toString(),
       description: j['description']?.toString(),
       proofOfPaymentUrl: j['proof_of_payment_url']?.toString(),
       createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ??

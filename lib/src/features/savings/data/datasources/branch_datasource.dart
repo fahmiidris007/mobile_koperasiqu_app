@@ -34,6 +34,13 @@ class BranchDatasource {
       bankAccountNumber: j['bank_account_number']?.toString() ?? '',
       bankAccountName: j['bank_account_name']?.toString() ?? '',
       about: j['about']?.toString(),
+      address: j['address']?.toString(),
+      latitude: j['latitude'] != null
+          ? double.tryParse(j['latitude'].toString())
+          : null,
+      longitude: j['longitude'] != null
+          ? double.tryParse(j['longitude'].toString())
+          : null,
     );
   }
 

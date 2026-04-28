@@ -13,6 +13,7 @@ class WalletTransaction extends Equatable {
     required this.serviceFee,
     required this.serviceFeeFormatted,
     this.uniqueCode,
+    this.referenceCode,
     this.description,
     this.proofOfPaymentUrl,
     required this.createdAt,
@@ -33,6 +34,7 @@ class WalletTransaction extends Equatable {
   final double serviceFee;
   final String serviceFeeFormatted;
   final int? uniqueCode;
+  final String? referenceCode;
   final String? description;
   final String? proofOfPaymentUrl;
   final DateTime createdAt;

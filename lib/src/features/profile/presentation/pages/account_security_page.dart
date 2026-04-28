@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/utils/validators.dart';
+import '../../data/datasources/password_datasource.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({super.key});
@@ -139,17 +143,25 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                             icon: Icons.lock_outline,
                             iconColor: Colors.blue,
                             title: 'Ubah Password',
-                            subtitle: 'Terakhir diubah 30 hari lalu',
+                            subtitle: 'Ganti password akun Anda',
                             onTap: () => _showChangePasswordSheet(context),
                           ),
                           _Divider(),
                           _SecurityAction(
-                            icon: Icons.pin_outlined,
-                            iconColor: Colors.purple,
-                            title: 'Ubah M-PIN',
-                            subtitle: 'PIN transaksi 6 digit',
-                            onTap: () => _showChangePinSheet(context),
+                            icon: Icons.security_rounded,
+                            iconColor: AppColors.primary,
+                            title: 'Verifikasi Dua Langkah (2FA)',
+                            subtitle: 'Kelola keamanan login dengan OTP',
+                            onTap: () => context.push(Routes.twoFactorAuth),
                           ),
+                          // _Divider(),
+                          // _SecurityAction(
+                          //   icon: Icons.pin_outlined,
+                          //   iconColor: Colors.purple,
+                          //   title: 'Ubah M-PIN',
+                          //   subtitle: 'PIN transaksi 6 digit',
+                          //   onTap: () => _showChangePinSheet(context),
+                          // ),
                         ],
                       ),
                     ).animate(delay: 100.ms).fadeIn(duration: 400.ms),
@@ -200,40 +212,40 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                     // const SizedBox(height: 16),
 
                     // Danger zone
-                    GlassContainer(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      borderRadius: 20,
-                      opacity: 0.12,
-                      child: Column(
-                        children: [
-                          // _SecurityAction(
-                          //   icon: Icons.devices_outlined,
-                          //   iconColor: Colors.blue,
-                          //   title: 'Kelola Perangkat',
-                          //   subtitle: '1 perangkat aktif',
-                          //   onTap: () => _showSnack('Fitur segera hadir'),
-                          // ),
-                          // _Divider(),
-                          // _SecurityAction(
-                          //   icon: Icons.history_toggle_off,
-                          //   iconColor: Colors.orange,
-                          //   title: 'Riwayat Login',
-                          //   subtitle: 'Lihat aktivitas login terakhir',
-                          //   onTap: () => _showSnack('Fitur segera hadir'),
-                          // ),
-                          // _Divider(),
-                          _SecurityAction(
-                            icon: Icons.block_outlined,
-                            iconColor: AppColors.expense,
-                            title: 'Nonaktifkan Akun',
-                            subtitle: 'Akun tidak dapat digunakan sementara',
-                            onTap: () => _showDeactivateDialog(context),
-                          ),
-                        ],
-                      ),
-                    ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                    // GlassContainer(
+                    //   padding: const EdgeInsets.symmetric(vertical: 8),
+                    //   borderRadius: 20,
+                    //   opacity: 0.12,
+                    //   child: Column(
+                    //     children: [
+                    //       // _SecurityAction(
+                    //       //   icon: Icons.devices_outlined,
+                    //       //   iconColor: Colors.blue,
+                    //       //   title: 'Kelola Perangkat',
+                    //       //   subtitle: '1 perangkat aktif',
+                    //       //   onTap: () => _showSnack('Fitur segera hadir'),
+                    //       // ),
+                    //       // _Divider(),
+                    //       // _SecurityAction(
+                    //       //   icon: Icons.history_toggle_off,
+                    //       //   iconColor: Colors.orange,
+                    //       //   title: 'Riwayat Login',
+                    //       //   subtitle: 'Lihat aktivitas login terakhir',
+                    //       //   onTap: () => _showSnack('Fitur segera hadir'),
+                    //       // ),
+                    //       // _Divider(),
+                    //       _SecurityAction(
+                    //         icon: Icons.block_outlined,
+                    //         iconColor: AppColors.expense,
+                    //         title: 'Nonaktifkan Akun',
+                    //         subtitle: 'Akun tidak dapat digunakan sementara',
+                    //         onTap: () => _showDeactivateDialog(context),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
 
-                    const SizedBox(height: 24),
+                    // const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -258,19 +270,44 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _PasswordSheet(
+      builder: (sheetCtx) => _PasswordSheet(
         title: 'Ubah Password',
         currentCtrl: currentCtrl,
         newCtrl: newCtrl,
         confirmCtrl: confirmCtrl,
-        onSave: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password berhasil diubah'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+        onSave: () async {
+          if (newCtrl.text != confirmCtrl.text) {
+            ScaffoldMessenger.of(sheetCtx).showSnackBar(
+              const SnackBar(
+                content: Text('Konfirmasi password tidak cocok'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          try {
+            await PasswordDatasource().changePassword(
+              currentPassword: currentCtrl.text,
+              newPassword: newCtrl.text,
+              newPasswordConfirmation: confirmCtrl.text,
+            );
+            if (!context.mounted) return;
+            Navigator.pop(sheetCtx);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Password berhasil diubah'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(sheetCtx).showSnackBar(
+              SnackBar(
+                content: Text(e.toString().replaceFirst('Exception: ', '')),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
       ),
     );
@@ -303,7 +340,10 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Nonaktifkan Akun?',
-          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: const Text(
           'Akun Anda akan dinonaktifkan sementara. Anda tidak dapat melakukan transaksi sampai akun diaktifkan kembali.',
@@ -605,10 +645,7 @@ class _SheetField extends StatelessWidget {
       style: const TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
@@ -672,10 +709,7 @@ class _PinSheetState extends State<_PinSheet> {
           const SizedBox(height: 8),
           Text(
             'PIN 6 digit untuk transaksi',
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
-            ),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 28),
           Row(

@@ -11,6 +11,9 @@ class BranchInfo extends Equatable {
     required this.bankAccountNumber,
     required this.bankAccountName,
     this.about,
+    this.address,
+    this.latitude,
+    this.longitude,
   });
 
   final int id;
@@ -21,9 +24,15 @@ class BranchInfo extends Equatable {
   final String bankAccountNumber;
   final String bankAccountName;
   final String? about;
+  final String? address;
+  final double? latitude;
+  final double? longitude;
 
   /// Nomor WA yang dipakai untuk buka WhatsApp (tanpa +/spasi)
   String get whatsappNumber => phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+
+  /// True jika koordinat tersedia
+  bool get hasLocation => latitude != null && longitude != null;
 
   @override
   List<Object?> get props => [
@@ -35,5 +44,8 @@ class BranchInfo extends Equatable {
         bankAccountNumber,
         bankAccountName,
         about,
+        address,
+        latitude,
+        longitude,
       ];
 }

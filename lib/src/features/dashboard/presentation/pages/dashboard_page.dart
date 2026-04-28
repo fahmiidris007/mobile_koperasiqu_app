@@ -15,6 +15,8 @@ import '../../../savings/domain/entities/wallet_info.dart';
 import '../../../savings/domain/entities/wallet_transaction.dart';
 import '../../../savings/presentation/providers/branch_provider.dart';
 import '../../../savings/presentation/providers/wallet_provider.dart';
+import '../providers/banner_provider.dart';
+import '../../data/datasources/banner_datasource.dart';
 
 /// Main dashboard page
 class DashboardPage extends ConsumerWidget {
@@ -147,10 +149,13 @@ class _DashboardContent extends StatelessWidget {
             final tx = transactions.take(5).toList()[index];
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: _WalletTransactionItem(transaction: tx)
-                  .animate(delay: (400 + index * 100).ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideX(begin: 0.05, end: 0),
+              child: GestureDetector(
+                onTap: () => context.push(Routes.transactionDetail, extra: tx),
+                child: _WalletTransactionItem(transaction: tx)
+                    .animate(delay: (400 + index * 100).ms)
+                    .fadeIn(duration: 400.ms)
+                    .slideX(begin: 0.05, end: 0),
+              ),
             );
           }, childCount: transactions.take(5).length),
         ),
@@ -589,7 +594,7 @@ class _WalletTransactionItem extends StatelessWidget {
 
 // ── Promo Carousel ────────────────────────────────────────────────────────────
 
-/// Model data promo lokal (sementara sebelum API tersedia)
+/// Model data promo lokal (fallback ketika API belum ada data)
 class _PromoItem {
   const _PromoItem({
     required this.title,
@@ -608,7 +613,7 @@ class _PromoItem {
   final String badge;
 }
 
-/// List data promo lokal
+/// List data promo lokal — dipakai jika API /banners masih kosong
 const List<_PromoItem> _localPromos = [
   _PromoItem(
     title: 'Cashback Top Up! 💸',
@@ -644,15 +649,15 @@ const List<_PromoItem> _localPromos = [
   ),
 ];
 
-/// Carousel promo dengan PageView auto-scroll dan dot indicator
-class _PromoCarousel extends StatefulWidget {
+/// Carousel promo — membaca dari API /banners, fallback ke lokal jika kosong
+class _PromoCarousel extends ConsumerStatefulWidget {
   const _PromoCarousel();
 
   @override
-  State<_PromoCarousel> createState() => _PromoCarouselState();
+  ConsumerState<_PromoCarousel> createState() => _PromoCarouselState();
 }
 
-class _PromoCarouselState extends State<_PromoCarousel> {
+class _PromoCarouselState extends ConsumerState<_PromoCarousel> {
   late final PageController _pageController;
   int _currentPage = 0;
   static const _autoScrollDuration = Duration(seconds: 4);
@@ -664,10 +669,17 @@ class _PromoCarouselState extends State<_PromoCarousel> {
     _scheduleAutoScroll();
   }
 
+  int _itemCount(List<BannerModel> apiBanners) =>
+      apiBanners.isNotEmpty ? apiBanners.length : _localPromos.length;
+
   void _scheduleAutoScroll() {
     Future.delayed(_autoScrollDuration, () {
       if (!mounted) return;
-      final next = (_currentPage + 1) % _localPromos.length;
+      final count = _itemCount(
+        ref.read(bannerProvider).valueOrNull ?? [],
+      );
+      if (count == 0) return;
+      final next = (_currentPage + 1) % count;
       _pageController.animateToPage(
         next,
         duration: const Duration(milliseconds: 500),
@@ -685,6 +697,13 @@ class _PromoCarouselState extends State<_PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final bannersAsync = ref.watch(bannerProvider);
+    final apiBanners = bannersAsync.valueOrNull ?? [];
+    final useApi = apiBanners.isNotEmpty;
+    final count = _itemCount(apiBanners);
+
+    if (count == 0) return const SizedBox.shrink();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -692,7 +711,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
           height: 116,
           child: PageView.builder(
             controller: _pageController,
-            itemCount: _localPromos.length,
+            itemCount: count,
             onPageChanged: (i) => setState(() => _currentPage = i),
             itemBuilder: (context, index) {
               return AnimatedScale(
@@ -700,7 +719,9 @@ class _PromoCarouselState extends State<_PromoCarousel> {
                 duration: const Duration(milliseconds: 300),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: _PromoBannerCard(promo: _localPromos[index]),
+                  child: useApi
+                      ? _ApiBannerCard(banner: apiBanners[index])
+                      : _PromoBannerCard(promo: _localPromos[index]),
                 ),
               );
             },
@@ -712,7 +733,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
         // Dot indicator
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_localPromos.length, (i) {
+          children: List.generate(count, (i) {
             final isActive = i == _currentPage;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -731,7 +752,134 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   }
 }
 
-/// Card untuk satu item promo menggunakan GlassContainer
+/// Card untuk banner dari API (dengan imageUrl)
+class _ApiBannerCard extends StatelessWidget {
+  const _ApiBannerCard({required this.banner});
+
+  final BannerModel banner;
+
+  Color get _accentColor {
+    switch (banner.type) {
+      case 'promo':
+        return const Color(0xFF6C63FF);
+      case 'news':
+        return const Color(0xFF0BA360);
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      borderRadius: 20,
+      opacity: 0.15,
+      child: Row(
+        children: [
+          // Image atau icon
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: banner.imageUrl != null
+                ? Image.network(
+                    banner.imageUrl!,
+                    width: 46,
+                    height: 46,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: _accentColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        banner.isPromo
+                            ? Icons.local_offer_rounded
+                            : Icons.newspaper_rounded,
+                        color: _accentColor,
+                        size: 22,
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: _accentColor.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      banner.isPromo
+                          ? Icons.local_offer_rounded
+                          : Icons.newspaper_rounded,
+                      color: _accentColor,
+                      size: 22,
+                    ),
+                  ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Type badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _accentColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    banner.isPromo ? 'PROMO' : 'NEWS',
+                    style: TextStyle(
+                      color: _accentColor,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  banner.title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (banner.description != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    banner.description!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      height: 1.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card untuk item promo lokal (fallback)
 class _PromoBannerCard extends StatelessWidget {
   const _PromoBannerCard({required this.promo});
 

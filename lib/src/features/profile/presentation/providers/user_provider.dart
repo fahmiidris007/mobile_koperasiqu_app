@@ -48,7 +48,6 @@ class UpdateProfileNotifier extends StateNotifier<UpdateProfileState> {
     String? email,
     String? phone,
     String? gender,
-    bool? is2faEnabled,
   }) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
@@ -57,7 +56,6 @@ class UpdateProfileNotifier extends StateNotifier<UpdateProfileState> {
         email: email,
         phone: phone,
         gender: gender,
-        is2faEnabled: is2faEnabled,
       );
       // Refresh user data
       _ref.invalidate(userProvider);
