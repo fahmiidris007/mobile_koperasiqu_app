@@ -55,8 +55,8 @@ class PasswordDatasource {
         ApiEndpoints.changePassword,
         data: {
           'current_password': currentPassword,
-          'password': newPassword,
-          'password_confirmation': newPasswordConfirmation,
+          'new_password': newPassword,
+          'new_password_confirmation': newPasswordConfirmation,
         },
         options: Options(contentType: 'application/json'),
       );

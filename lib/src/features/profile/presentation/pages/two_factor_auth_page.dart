@@ -215,25 +215,25 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                   children: [
                     // Icon header
                     Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.35),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.35),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.shield_rounded,
-                        color: Colors.white,
-                        size: 44,
-                      ),
-                    )
+                          child: const Icon(
+                            Icons.shield_rounded,
+                            color: Colors.white,
+                            size: 44,
+                          ),
+                        )
                         .animate()
                         .fadeIn(duration: 400.ms)
                         .scale(begin: const Offset(0.8, 0.8)),
@@ -246,7 +246,7 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                       borderRadius: 20,
                       opacity: 0.12,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Text(
                             'Apa itu Verifikasi Dua Langkah?',
@@ -261,6 +261,7 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                             'Verifikasi Dua Langkah (2FA) menambahkan lapisan keamanan ekstra '
                             'pada akun Anda. Setiap kali login, Anda akan diminta memasukkan '
                             'kode OTP yang dikirimkan ke email Anda selain password.',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
@@ -308,10 +309,11 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                                 width: 46,
                                 height: 46,
                                 decoration: BoxDecoration(
-                                  color: (is2fa
-                                          ? AppColors.success
-                                          : AppColors.textMuted)
-                                      .withOpacity(0.15),
+                                  color:
+                                      (is2fa
+                                              ? AppColors.success
+                                              : AppColors.textMuted)
+                                          .withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Icon(
@@ -339,8 +341,9 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     AnimatedSwitcher(
-                                      duration:
-                                          const Duration(milliseconds: 300),
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
                                       child: Text(
                                         is2fa
                                             ? '✓ Aktif — OTP wajib saat login'
@@ -386,16 +389,13 @@ class _TwoFactorAuthPageState extends ConsumerState<TwoFactorAuthPage> {
                               horizontal: 14,
                             ),
                             decoration: BoxDecoration(
-                              color: (is2fa
-                                      ? AppColors.success
-                                      : Colors.orange)
+                              color: (is2fa ? AppColors.success : Colors.orange)
                                   .withOpacity(0.10),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: (is2fa
-                                        ? AppColors.success
-                                        : Colors.orange)
-                                    .withOpacity(0.3),
+                                color:
+                                    (is2fa ? AppColors.success : Colors.orange)
+                                        .withOpacity(0.3),
                               ),
                             ),
                             child: Row(
