@@ -53,9 +53,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!_emailFormKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      await _datasource.forgotPassword(
-        email: _emailController.text.trim(),
-      );
+      await _datasource.forgotPassword(email: _emailController.text.trim());
       if (!mounted) return;
       setState(() => _step = 1);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +107,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             borderRadius: 24,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 72,
@@ -126,6 +125,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 const SizedBox(height: 20),
                 const Text(
                   'Password Berhasil Diubah!',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -214,7 +214,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3),
+                ),
               ),
               child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
@@ -223,80 +225,88 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         const SizedBox(height: 32),
 
         Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
-          ),
-          child: const Icon(
-            Icons.lock_reset_rounded,
-            color: AppColors.primary,
-            size: 42,
-          ),
-        ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8)),
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3),
+                ),
+              ),
+              child: const Icon(
+                Icons.lock_reset_rounded,
+                color: AppColors.primary,
+                size: 42,
+              ),
+            )
+            .animate()
+            .fadeIn(duration: 400.ms)
+            .scale(begin: const Offset(0.8, 0.8)),
 
         const SizedBox(height: 32),
 
         GlassContainer(
-          padding: const EdgeInsets.all(24),
-          borderRadius: 28,
-          child: Form(
-            key: _emailFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: Text(
-                    'Lupa Password',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+              padding: const EdgeInsets.all(24),
+              borderRadius: 28,
+              child: Form(
+                key: _emailFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'Lupa Password',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Center(
-                  child: Text(
-                    'Masukkan email Anda untuk menerima kode reset password',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
+                    const SizedBox(height: 8),
+                    const Center(
+                      child: Text(
+                        'Masukkan email Anda untuk menerima kode reset password',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 28),
+                    const SizedBox(height: 28),
 
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: AppColors.textSecondary,
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      validator: Validators.email,
                     ),
-                  ),
-                  validator: Validators.email,
-                ),
 
-                const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                GlassButton(
-                  text: 'Kirim Kode Reset',
-                  icon: Icons.send_rounded,
-                  isLoading: _isLoading,
-                  onPressed: _handleSendEmail,
+                    GlassButton(
+                      text: 'Kirim Kode Reset',
+                      icon: Icons.send_rounded,
+                      isLoading: _isLoading,
+                      onPressed: _handleSendEmail,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ).animate(delay: 200.ms).fadeIn(duration: 500.ms).slideY(begin: 0.08, end: 0),
+              ),
+            )
+            .animate(delay: 200.ms)
+            .fadeIn(duration: 500.ms)
+            .slideY(begin: 0.08, end: 0),
 
         const SizedBox(height: 40),
       ],
@@ -324,7 +334,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3),
+                ),
               ),
               child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
@@ -341,34 +353,40 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.mark_email_unread_rounded,
-                    color: Colors.blue,
-                    size: 34,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Masukkan Kode OTP',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Kode dikirim ke ${_emailController.text}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textMuted,
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.mark_email_unread_rounded,
+                          color: Colors.blue,
+                          size: 34,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Masukkan Kode OTP',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Kode dikirim ke ${_emailController.text}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -408,13 +426,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             contentPadding: EdgeInsets.zero,
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: AppColors.accentLight),
+                              borderSide: const BorderSide(
+                                color: AppColors.accentLight,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                  color: AppColors.primary, width: 2),
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
                             ),
                             filled: true,
                             fillColor: AppColors.surface,
@@ -492,7 +513,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                   ),
                   validator: (v) => Validators.confirmPassword(
-                      v, _newPasswordController.text),
+                    v,
+                    _newPasswordController.text,
+                  ),
                 ),
 
                 const SizedBox(height: 24),
