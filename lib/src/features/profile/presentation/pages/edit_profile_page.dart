@@ -52,7 +52,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
+  Future<void> _saveChanges(bool current2fa) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
@@ -61,6 +61,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
+        is2faEnabled: current2fa,
       );
       if (!mounted) return;
       // Invalidate agar profile page reload data terbaru
@@ -253,31 +254,32 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           const SizedBox(height: 16),
 
-                          GlassContainer(
-                            padding: const EdgeInsets.all(20),
-                            borderRadius: 20,
-                            opacity: 0.12,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _SectionLabel('Pekerjaan'),
-                                const SizedBox(height: 16),
-                                _ProfileField(
-                                  controller: _occupationController,
-                                  label: 'Pekerjaan',
-                                  icon: Icons.work_outline,
-                                ),
-                              ],
-                            ),
-                          ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
-
+                          // GlassContainer(
+                          //   padding: const EdgeInsets.all(20),
+                          //   borderRadius: 20,
+                          //   opacity: 0.12,
+                          //   child: Column(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       _SectionLabel('Pekerjaan'),
+                          //       const SizedBox(height: 16),
+                          //       _ProfileField(
+                          //         controller: _occupationController,
+                          //         label: 'Pekerjaan',
+                          //         icon: Icons.work_outline,
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
                           const SizedBox(height: 28),
 
                           // Save button
                           SizedBox(
                             width: double.infinity,
                             child: GestureDetector(
-                              onTap: _isSaving ? null : _saveChanges,
+                              onTap: _isSaving
+                                  ? null
+                                  : () => _saveChanges(user.is2faEnabled),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,

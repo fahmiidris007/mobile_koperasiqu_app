@@ -37,6 +37,7 @@ class UserDatasource {
     String? email,
     String? phone,
     String? gender,
+    bool? is2faEnabled,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -45,6 +46,7 @@ class UserDatasource {
         if (email != null) 'email': email,
         if (phone != null) 'phone': phone,
         if (gender != null) 'gender': gender,
+        if (is2faEnabled != null) 'is_2fa_enabled': is2faEnabled ? 1 : 0,
       });
       final response = await _dio.post(
         ApiEndpoints.userProfile,
