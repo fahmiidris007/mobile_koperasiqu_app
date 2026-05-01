@@ -346,11 +346,10 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildRekeningCard(BuildContext context) {
-    final accountNumber = branchAsync.whenOrNull(
-          data: (b) => b.bankAccountNumber,
-        ) ??
-        '—';
-    final bankLabel = branchAsync.whenOrNull(
+    final accountNumber =
+        branchAsync.whenOrNull(data: (b) => b.bankAccountNumber) ?? '—';
+    final bankLabel =
+        branchAsync.whenOrNull(
           data: (b) => '${b.bankName} · ${b.bankAccountName}',
         ) ??
         'No. Rekening KoperasiQu';
@@ -669,15 +668,10 @@ class _PromoCarouselState extends ConsumerState<_PromoCarousel> {
     _scheduleAutoScroll();
   }
 
-  int _itemCount(List<BannerModel> apiBanners) =>
-      apiBanners.isNotEmpty ? apiBanners.length : _localPromos.length;
-
   void _scheduleAutoScroll() {
     Future.delayed(_autoScrollDuration, () {
       if (!mounted) return;
-      final count = _itemCount(
-        ref.read(bannerProvider).valueOrNull ?? [],
-      );
+      final count = ref.read(promoBannersProvider).valueOrNull?.length ?? 0;
       if (count == 0) return;
       final next = (_currentPage + 1) % count;
       _pageController.animateToPage(
@@ -697,10 +691,9 @@ class _PromoCarouselState extends ConsumerState<_PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final bannersAsync = ref.watch(bannerProvider);
+    final bannersAsync = ref.watch(promoBannersProvider);
     final apiBanners = bannersAsync.valueOrNull ?? [];
-    final useApi = apiBanners.isNotEmpty;
-    final count = _itemCount(apiBanners);
+    final count = apiBanners.length;
 
     if (count == 0) return const SizedBox.shrink();
 
@@ -719,9 +712,7 @@ class _PromoCarouselState extends ConsumerState<_PromoCarousel> {
                 duration: const Duration(milliseconds: 300),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: useApi
-                      ? _ApiBannerCard(banner: apiBanners[index])
-                      : _PromoBannerCard(promo: _localPromos[index]),
+                  child: _ApiBannerCard(banner: apiBanners[index]),
                 ),
               );
             },
@@ -871,114 +862,6 @@ class _ApiBannerCard extends StatelessWidget {
                   ),
                 ],
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Card untuk item promo lokal (fallback)
-class _PromoBannerCard extends StatelessWidget {
-  const _PromoBannerCard({required this.promo});
-
-  final _PromoItem promo;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      borderRadius: 20,
-      opacity: 0.15,
-      child: Row(
-        children: [
-          // Icon circle dengan accent color
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: promo.accentColor.withOpacity(0.2),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: promo.accentColor.withOpacity(0.4),
-                width: 1.5,
-              ),
-            ),
-            child: Icon(promo.icon, color: promo.accentColor, size: 22),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Text content
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: promo.accentColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    promo.badge,
-                    style: TextStyle(
-                      color: promo.accentColor,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  promo.title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  promo.subtitle,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    height: 1.3,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // CTA button
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: promo.accentColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: promo.accentColor.withOpacity(0.5)),
-            ),
-            child: Text(
-              promo.label,
-              style: TextStyle(
-                color: promo.accentColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
             ),
           ),
         ],
