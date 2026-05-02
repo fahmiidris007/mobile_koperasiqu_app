@@ -10,6 +10,8 @@ import '../../features/auth/presentation/pages/pending_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell.dart';
+import '../../features/dashboard/presentation/pages/banner_detail_page.dart';
+import '../../features/dashboard/data/datasources/banner_datasource.dart';
 import '../../features/savings/presentation/pages/savings_detail_page.dart';
 import '../../features/savings/presentation/pages/deposit_page.dart';
 import '../../features/savings/presentation/pages/upload_payment_proof_page.dart';
@@ -56,6 +58,7 @@ class Routes {
   static const String transactionHistory = '/savings/history';
   static const String transactionDetail = '/savings/history/detail';
   static const String notifications = '/notifications';
+  static const String bannerDetail = '/banner-detail';
 }
 
 /// App router configuration class
@@ -202,6 +205,15 @@ class AppRouter {
         builder: (context, state) {
           final tx = state.extra as WalletTransaction;
           return TransactionDetailPage(transaction: tx);
+        },
+      ),
+
+      // Banner / Promo Detail (without bottom navigation)
+      GoRoute(
+        path: Routes.bannerDetail,
+        builder: (context, state) {
+          final banner = state.extra as BannerModel;
+          return BannerDetailPage(banner: banner);
         },
       ),
 

@@ -173,7 +173,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3),
+                ),
               ),
               child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
@@ -182,31 +184,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
         const SizedBox(height: 16),
 
-        Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
-              ),
-              child: const Center(
-                child: Text(
-                  'K',
-                  style: TextStyle(
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms)
-            .scale(begin: const Offset(0.9, 0.9)),
+        // Container(
+        //       width: 80,
+        //       height: 80,
+        //       decoration: BoxDecoration(
+        //         color: AppColors.primaryLight.withOpacity(0.12),
+        //         borderRadius: BorderRadius.circular(22),
+        //         border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+        //       ),
+        //       child: const Center(
+        //         child: Text(
+        //           'K',
+        //           style: TextStyle(
+        //             fontSize: 42,
+        //             fontWeight: FontWeight.bold,
+        //             color: AppColors.primary,
+        //           ),
+        //         ),
+        //       ),
+        //     )
+        //     .animate()
+        //     .fadeIn(duration: 500.ms)
+        //     .scale(begin: const Offset(0.9, 0.9)),
 
-        const SizedBox(height: 40),
-
+        // const SizedBox(height: 40),
         GlassContainer(
               padding: const EdgeInsets.all(24),
               borderRadius: 28,
@@ -283,9 +284,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         onPressed: () => context.push(Routes.forgotPassword),
                         child: const Text(
                           'Lupa Password?',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                          ),
+                          style: TextStyle(color: AppColors.primary),
                         ),
                       ),
                     ),
@@ -309,9 +308,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'atau',
-                            style: TextStyle(
-                              color: AppColors.textMuted,
-                            ),
+                            style: TextStyle(color: AppColors.textMuted),
                           ),
                         ),
                         const Expanded(
@@ -328,9 +325,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         child: RichText(
                           text: const TextSpan(
                             text: 'Belum punya akun? ',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: TextStyle(color: AppColors.textSecondary),
                             children: [
                               TextSpan(
                                 text: 'Daftar Sekarang',
@@ -385,7 +380,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3),
+                ),
               ),
               child: const Icon(Icons.arrow_back, color: AppColors.primary),
             ),
@@ -426,10 +423,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 8),
               const Text(
                 'Kode OTP telah dikirim ke',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textMuted,
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
               ),
               const SizedBox(height: 4),
               Text(
@@ -518,10 +512,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 children: [
                   const Text(
                     'Belum menerima kode? ',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 13),
                   ),
                   GestureDetector(
                     onTap: _handleResendOtp,
@@ -548,15 +539,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           borderRadius: 14,
           child: Row(
             children: [
-              const Icon(Icons.info_outline, color: AppColors.textMuted, size: 16),
+              const Icon(
+                Icons.info_outline,
+                color: AppColors.textMuted,
+                size: 16,
+              ),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'OTP dikirim ke email — masukkan kode yang diterima',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
-                  ),
+                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                 ),
               ),
             ],

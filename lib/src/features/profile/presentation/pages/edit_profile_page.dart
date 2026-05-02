@@ -158,53 +158,53 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       child: Column(
                         children: [
                           // Avatar
-                          Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              Container(
-                                width: 90,
-                                height: 90,
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.primaryGradient,
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _nameController.text.isNotEmpty
-                                        ? _nameController.text
-                                              .split(' ')
-                                              .take(2)
-                                              .map((w) => w[0])
-                                              .join()
-                                              .toUpperCase()
-                                        : user.name.isNotEmpty
-                                        ? user.name[0].toUpperCase()
-                                        : 'U',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ).animate().fadeIn(duration: 400.ms),
+                          // Stack(
+                          //   alignment: Alignment.bottomRight,
+                          //   children: [
+                          //     Container(
+                          //       width: 90,
+                          //       height: 90,
+                          //       decoration: BoxDecoration(
+                          //         gradient: AppColors.primaryGradient,
+                          //         borderRadius: BorderRadius.circular(28),
+                          //       ),
+                          //       child: Center(
+                          //         child: Text(
+                          //           _nameController.text.isNotEmpty
+                          //               ? _nameController.text
+                          //                     .split(' ')
+                          //                     .take(2)
+                          //                     .map((w) => w[0])
+                          //                     .join()
+                          //                     .toUpperCase()
+                          //               : user.name.isNotEmpty
+                          //               ? user.name[0].toUpperCase()
+                          //               : 'U',
+                          //           style: const TextStyle(
+                          //             color: Colors.white,
+                          //             fontWeight: FontWeight.bold,
+                          //             fontSize: 30,
+                          //           ),
+                          //         ),
+                          //       ),
+                          //     ),
+                          //     Container(
+                          //       width: 28,
+                          //       height: 28,
+                          //       decoration: BoxDecoration(
+                          //         color: AppColors.primary,
+                          //         borderRadius: BorderRadius.circular(8),
+                          //       ),
+                          //       child: const Icon(
+                          //         Icons.camera_alt,
+                          //         size: 16,
+                          //         color: Colors.white,
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ).animate().fadeIn(duration: 400.ms),
 
-                          const SizedBox(height: 28),
+                          // const SizedBox(height: 28),
 
                           // Form fields
                           GlassContainer(

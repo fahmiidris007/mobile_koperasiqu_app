@@ -6,6 +6,9 @@ import '../../../auth/data/datasources/mock_auth_datasource.dart' show AuthExcep
 
 /// Model banner dari API GET /banners
 class BannerModel {
+  /// Base URL storage untuk resolve path gambar relatif
+  static const String storageBaseUrl = 'http://34.87.41.221:8000';
+
   const BannerModel({
     required this.id,
     required this.title,
@@ -14,6 +17,7 @@ class BannerModel {
     this.imageUrl,
     this.linkUrl,
     this.isActive,
+    this.publishedAt,
   });
 
   final int id;
@@ -22,22 +26,41 @@ class BannerModel {
   /// Tipe banner: 'promo' atau 'news'
   final String type;
   final String? description;
+
+  /// Full URL gambar (sudah di-resolve dari path relatif)
   final String? imageUrl;
   final String? linkUrl;
   final bool? isActive;
+  final DateTime? publishedAt;
 
   bool get isPromo => type == 'promo';
   bool get isNews => type == 'news';
+  bool get hasImage => imageUrl != null && imageUrl!.isNotEmpty;
 
   factory BannerModel.fromJson(Map<String, dynamic> j) {
+    // Ambil path gambar — bisa dari field 'image_url' atau 'image'
+    final rawImage =
+        j['image_url']?.toString() ?? j['image']?.toString();
+
+    // Resolve ke full URL jika path relatif (dimulai dengan '/')
+    String? resolvedImage;
+    if (rawImage != null && rawImage.isNotEmpty) {
+      resolvedImage = rawImage.startsWith('http')
+          ? rawImage
+          : '$storageBaseUrl$rawImage';
+    }
+
     return BannerModel(
       id: (j['id'] as num).toInt(),
       title: j['title']?.toString() ?? '',
-      type: j['type']?.toString() ?? 'promo',
+      type: j['type']?.toString() ?? 'news',
       description: j['description']?.toString(),
-      imageUrl: j['image_url']?.toString() ?? j['image']?.toString(),
+      imageUrl: resolvedImage,
       linkUrl: j['link_url']?.toString() ?? j['link']?.toString(),
       isActive: j['is_active'] as bool? ?? true,
+      publishedAt: j['published_at'] != null
+          ? DateTime.tryParse(j['published_at'].toString())
+          : null,
     );
   }
 }
