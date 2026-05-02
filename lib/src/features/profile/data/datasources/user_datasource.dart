@@ -46,7 +46,26 @@ class UserDatasource {
         if (email != null) 'email': email,
         if (phone != null) 'phone': phone,
         if (gender != null) 'gender': gender,
-        if (is2faEnabled != null) 'is_2fa_enabled': is2faEnabled ? '1' : '0',
+        if (is2faEnabled != null) 'is_2fa_enabled': is2faEnabled ? 1 : 0,
+      });
+      final response = await _dio.post(
+        ApiEndpoints.userProfile,
+        data: formData,
+      );
+      final data = (response.data as Map<String, dynamic>)['data']
+          as Map<String, dynamic>;
+      return _userFromJson(data);
+    } on DioException catch (e) {
+      throw AuthException(_parseError(e));
+    }
+  }
+
+  /// Khusus untuk update 2FA — hanya kirim is_2fa_enabled
+  Future<User> update2FA({required bool enabled}) async {
+    try {
+      final formData = FormData.fromMap({
+        '_method': 'PUT',
+        'is_2fa_enabled': enabled ? '1' : '0',
       });
       final response = await _dio.post(
         ApiEndpoints.userProfile,

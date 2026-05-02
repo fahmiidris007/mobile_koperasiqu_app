@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/theme/colors.dart';
@@ -142,7 +144,13 @@ class _TransactionHistoryPageState
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        return _HistoryItem(transaction: filtered[index])
+                        return _HistoryItem(
+                          transaction: filtered[index],
+                          onTap: () => context.push(
+                            Routes.transactionDetail,
+                            extra: filtered[index],
+                          ),
+                        )
                             .animate(delay: (index * 40).ms)
                             .fadeIn(duration: 300.ms)
                             .slideX(begin: 0.04, end: 0);
@@ -223,14 +231,17 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _HistoryItem extends StatelessWidget {
-  const _HistoryItem({required this.transaction});
+  const _HistoryItem({required this.transaction, required this.onTap});
 
   final WalletTransaction transaction;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final isCredit = transaction.isCredit;
-    return GlassContainer(
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassContainer(
       padding: const EdgeInsets.all(14),
       borderRadius: 14,
       opacity: 0.1,
@@ -313,6 +324,7 @@ class _HistoryItem extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

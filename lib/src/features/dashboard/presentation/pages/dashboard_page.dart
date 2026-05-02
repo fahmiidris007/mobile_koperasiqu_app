@@ -15,6 +15,8 @@ import '../../../savings/domain/entities/wallet_info.dart';
 import '../../../savings/domain/entities/wallet_transaction.dart';
 import '../../../savings/presentation/providers/branch_provider.dart';
 import '../../../savings/presentation/providers/wallet_provider.dart';
+import '../providers/banner_provider.dart';
+import '../../data/datasources/banner_datasource.dart';
 
 /// Main dashboard page
 class DashboardPage extends ConsumerWidget {
@@ -147,10 +149,13 @@ class _DashboardContent extends StatelessWidget {
             final tx = transactions.take(5).toList()[index];
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: _WalletTransactionItem(transaction: tx)
-                  .animate(delay: (400 + index * 100).ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideX(begin: 0.05, end: 0),
+              child: GestureDetector(
+                onTap: () => context.push(Routes.transactionDetail, extra: tx),
+                child: _WalletTransactionItem(transaction: tx)
+                    .animate(delay: (400 + index * 100).ms)
+                    .fadeIn(duration: 400.ms)
+                    .slideX(begin: 0.05, end: 0),
+              ),
             );
           }, childCount: transactions.take(5).length),
         ),
@@ -172,49 +177,56 @@ class _DashboardContent extends StatelessWidget {
               .toUpperCase()
         : 'K';
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Avatar - tap to go to profile
-        GestureDetector(
-          onTap: () => context.push(Routes.profile),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Center(
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
+        // GestureDetector(
+        //   onTap: () => context.push(Routes.profile),
+        //   child: Container(
+        //     width: 48,
+        //     height: 48,
+        //     decoration: BoxDecoration(
+        //       gradient: AppColors.primaryGradient,
+        //       borderRadius: BorderRadius.circular(14),
+        //     ),
+        //     child: Center(
+        //       child: Text(
+        //         initial,
+        //         style: const TextStyle(
+        //           color: Colors.white,
+        //           fontWeight: FontWeight.bold,
+        //           fontSize: 16,
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(width: 12),
 
         // Greeting
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Selamat Datang,',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-              ),
-              Text(
-                userName.isNotEmpty ? userName : 'Anggota',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+        GestureDetector(
+          onTap: () => context.push(Routes.profile),
+          child: Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Selamat Datang,',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  userName.isNotEmpty ? userName : 'Anggota',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
 
@@ -341,11 +353,10 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildRekeningCard(BuildContext context) {
-    final accountNumber = branchAsync.whenOrNull(
-          data: (b) => b.bankAccountNumber,
-        ) ??
-        '—';
-    final bankLabel = branchAsync.whenOrNull(
+    final accountNumber =
+        branchAsync.whenOrNull(data: (b) => b.bankAccountNumber) ?? '—';
+    final bankLabel =
+        branchAsync.whenOrNull(
           data: (b) => '${b.bankName} · ${b.bankAccountName}',
         ) ??
         'No. Rekening KoperasiQu';
@@ -589,7 +600,7 @@ class _WalletTransactionItem extends StatelessWidget {
 
 // ── Promo Carousel ────────────────────────────────────────────────────────────
 
-/// Model data promo lokal (sementara sebelum API tersedia)
+/// Model data promo lokal (fallback ketika API belum ada data)
 class _PromoItem {
   const _PromoItem({
     required this.title,
@@ -608,7 +619,7 @@ class _PromoItem {
   final String badge;
 }
 
-/// List data promo lokal
+/// List data promo lokal — dipakai jika API /banners masih kosong
 const List<_PromoItem> _localPromos = [
   _PromoItem(
     title: 'Cashback Top Up! 💸',
@@ -644,15 +655,15 @@ const List<_PromoItem> _localPromos = [
   ),
 ];
 
-/// Carousel promo dengan PageView auto-scroll dan dot indicator
-class _PromoCarousel extends StatefulWidget {
+/// Carousel banner — membaca dari API /banners (semua tipe)
+class _PromoCarousel extends ConsumerStatefulWidget {
   const _PromoCarousel();
 
   @override
-  State<_PromoCarousel> createState() => _PromoCarouselState();
+  ConsumerState<_PromoCarousel> createState() => _PromoCarouselState();
 }
 
-class _PromoCarouselState extends State<_PromoCarousel> {
+class _PromoCarouselState extends ConsumerState<_PromoCarousel> {
   late final PageController _pageController;
   int _currentPage = 0;
   static const _autoScrollDuration = Duration(seconds: 4);
@@ -660,14 +671,16 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.88);
+    _pageController = PageController(viewportFraction: 0.92);
     _scheduleAutoScroll();
   }
 
   void _scheduleAutoScroll() {
     Future.delayed(_autoScrollDuration, () {
       if (!mounted) return;
-      final next = (_currentPage + 1) % _localPromos.length;
+      final count = ref.read(bannerProvider).valueOrNull?.length ?? 0;
+      if (count == 0) return;
+      final next = (_currentPage + 1) % count;
       _pageController.animateToPage(
         next,
         duration: const Duration(milliseconds: 500),
@@ -685,103 +698,254 @@ class _PromoCarouselState extends State<_PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 116,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: _localPromos.length,
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            itemBuilder: (context, index) {
-              return AnimatedScale(
-                scale: _currentPage == index ? 1.0 : 0.95,
-                duration: const Duration(milliseconds: 300),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: _PromoBannerCard(promo: _localPromos[index]),
-                ),
-              );
-            },
+    final bannersAsync = ref.watch(bannerProvider);
+
+    return bannersAsync.when(
+      loading: () => const SizedBox(
+        height: 140,
+        child: Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
           ),
         ),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (banners) {
+        if (banners.isEmpty) return const SizedBox.shrink();
+        final count = banners.length;
 
-        const SizedBox(height: 12),
-
-        // Dot indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_localPromos.length, (i) {
-            final isActive = i == _currentPage;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: isActive ? 20 : 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: isActive ? AppColors.primary : AppColors.accentLight,
-                borderRadius: BorderRadius.circular(3),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 140,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: count,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                itemBuilder: (context, index) {
+                  return AnimatedScale(
+                    scale: _currentPage == index ? 1.0 : 0.95,
+                    duration: const Duration(milliseconds: 300),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: _ApiBannerCard(banner: banners[index]),
+                    ),
+                  );
+                },
               ),
-            );
-          }),
-        ),
-      ],
+            ),
+
+            if (count > 1) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(count, (i) {
+                  final isActive = i == _currentPage;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 20 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.primary
+                          : Colors.white.withOpacity(0.35),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
 
-/// Card untuk satu item promo menggunakan GlassContainer
-class _PromoBannerCard extends StatelessWidget {
-  const _PromoBannerCard({required this.promo});
+/// Card untuk banner dari API
+/// - Jika ada imageUrl: tampilkan gambar full dengan text overlay
+/// - Jika tidak ada: tampilkan GlassContainer dengan icon + teks
+class _ApiBannerCard extends StatelessWidget {
+  const _ApiBannerCard({required this.banner});
 
-  final _PromoItem promo;
+  final BannerModel banner;
+
+  Color get _accentColor {
+    switch (banner.type) {
+      case 'promo':
+        return const Color(0xFF6C63FF);
+      case 'news':
+        return AppColors.primary;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  String get _badgeLabel {
+    switch (banner.type) {
+      case 'promo':
+        return 'PROMO';
+      case 'news':
+        return 'INFO';
+      default:
+        return banner.type.toUpperCase();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(Routes.bannerDetail, extra: banner),
+      child: banner.hasImage ? _buildImageCard() : _buildGlassCard(),
+    );
+  }
+
+  /// Card dengan gambar full-width dan text overlay di bawah
+  Widget _buildImageCard() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Gambar background
+          Image.network(
+            banner.imageUrl!,
+            fit: BoxFit.cover,
+            loadingBuilder: (_, child, progress) {
+              if (progress == null) return child;
+              return Container(
+                color: AppColors.background,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: progress.expectedTotalBytes != null
+                        ? progress.cumulativeBytesLoaded /
+                              progress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (_, __, ___) => Container(
+              color: AppColors.glassWhite,
+              child: Center(
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  color: Colors.white38,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+
+          // Gradient overlay bawah untuk teks
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(14, 32, 14, 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.65)],
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Badge type
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _accentColor.withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _badgeLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      banner.title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Fallback card tanpa gambar — GlassContainer dengan icon
+  Widget _buildGlassCard() {
     return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       borderRadius: 20,
       opacity: 0.15,
       child: Row(
         children: [
-          // Icon circle dengan accent color
           Container(
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: promo.accentColor.withOpacity(0.2),
+              color: _accentColor.withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: promo.accentColor.withOpacity(0.4),
+                color: _accentColor.withOpacity(0.4),
                 width: 1.5,
               ),
             ),
-            child: Icon(promo.icon, color: promo.accentColor, size: 22),
+            child: Icon(
+              banner.isPromo
+                  ? Icons.local_offer_rounded
+                  : Icons.newspaper_rounded,
+              color: _accentColor,
+              size: 22,
+            ),
           ),
-
           const SizedBox(width: 12),
-
-          // Text content
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 6,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: promo.accentColor.withOpacity(0.2),
+                    color: _accentColor.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    promo.badge,
+                    _badgeLabel,
                     style: TextStyle(
-                      color: promo.accentColor,
+                      color: _accentColor,
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
@@ -790,47 +954,29 @@ class _PromoBannerCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  promo.title,
+                  banner.title,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  promo.subtitle,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    height: 1.3,
+                if (banner.description != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    banner.description!,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.6),
+                      height: 1.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ],
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // CTA button
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: promo.accentColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: promo.accentColor.withOpacity(0.5)),
-            ),
-            child: Text(
-              promo.label,
-              style: TextStyle(
-                color: promo.accentColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
             ),
           ),
         ],

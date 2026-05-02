@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_koperasiqu_app/src/features/savings/domain/entities/branch_info.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/gradient_background.dart';
@@ -10,7 +11,6 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/glass_button.dart';
 import '../../../../core/theme/colors.dart';
 import '../providers/branch_provider.dart';
-
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -25,12 +25,8 @@ class WithdrawalPage extends ConsumerWidget {
         'Mohon informasi lebih lanjut mengenai prosedur penarikan. Terima kasih 🙏';
 
     final encoded = Uri.encodeComponent(message);
-    final appUrl = Uri.parse(
-      'whatsapp://send?phone=$waNumber&text=$encoded',
-    );
-    final webUrl = Uri.parse(
-      'https://wa.me/$waNumber?text=$encoded',
-    );
+    final appUrl = Uri.parse('whatsapp://send?phone=$waNumber&text=$encoded');
+    final webUrl = Uri.parse('https://wa.me/$waNumber?text=$encoded');
 
     try {
       final launched = await launchUrl(
@@ -68,9 +64,38 @@ class WithdrawalPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _openMaps(BuildContext context) async {
-    const lat = -6.947160396034162;
-    const lng = 107.5974021491414;
+  Future<void> _openMaps(BuildContext context, BranchInfo? branch) async {
+    if (branch == null || !branch.hasLocation) {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.backgroundAlt,
+            title: const Text(
+              'Lokasi Tidak Tersedia',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
+            content: const Text(
+              'Maaf, informasi lokasi untuk tujuan ini belum tersedia.',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    final lat = branch.latitude!;
+    final lng = branch.longitude!;
     final googleMapsUrl = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
     );
@@ -103,9 +128,11 @@ class WithdrawalPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final branchAsync = ref.watch(branchProvider);
-    final waNumber = branchAsync.whenOrNull(data: (b) => b.whatsappNumber) ?? '';
-    final phone = branchAsync.whenOrNull(data: (b) => b.phoneNumber) ?? '—';
-    final branchName = branchAsync.whenOrNull(data: (b) => b.name) ?? 'Kantor Cabang KoperasiQu';
+    final branch = branchAsync.valueOrNull;
+    final waNumber = branch?.whatsappNumber ?? '';
+    final phone = branch?.phoneNumber ?? '—';
+    final branchName = branch?.name ?? 'Kantor Cabang KoperasiQu';
+    final address = branch?.address ?? 'Alamat belum tersedia';
 
     return SimpleGradientBackground(
       child: SafeArea(
@@ -220,7 +247,9 @@ class WithdrawalPage extends ConsumerWidget {
                                     width: 36,
                                     height: 36,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.10),
+                                      color: AppColors.primary.withOpacity(
+                                        0.10,
+                                      ),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
@@ -247,38 +276,52 @@ class WithdrawalPage extends ConsumerWidget {
                                 label: 'Kantor Cabang',
                                 value: branchName,
                               ),
-                              const Divider(color: AppColors.accentLight, height: 20),
+                              const Divider(
+                                color: AppColors.accentLight,
+                                height: 20,
+                              ),
                               // Alamat — dengan tombol buka Google Maps
                               _InfoTile(
                                 icon: Icons.place_outlined,
                                 label: 'Alamat',
-                                value:
-                                    'Jl. Soekarno-Hatta No.267, Kb. Lega, Kec. Bojongloa Kidul, Kota Bandung, Jawa Barat 40235',
-                                onTap: () => _openMaps(context),
+                                value: address,
+                                onTap: () => _openMaps(context, branch),
                                 tapLabel: 'Maps',
                                 tapIcon: Icons.map_outlined,
                               ),
-                              const Divider(color: AppColors.accentLight, height: 20),
+                              const Divider(
+                                color: AppColors.accentLight,
+                                height: 20,
+                              ),
                               _InfoTile(
                                 icon: Icons.access_time_rounded,
                                 label: 'Jam Operasional',
                                 value: 'Senin – Jumat, 08.00 – 16.00 WIB',
                               ),
-                              const Divider(color: AppColors.accentLight, height: 20),
+                              const Divider(
+                                color: AppColors.accentLight,
+                                height: 20,
+                              ),
                               // Telepon — tombol Salin (bukan Hubungi)
                               _InfoTile(
                                 icon: Icons.phone_outlined,
                                 label: 'Telepon',
-                                value: branchAsync.isLoading ? 'Memuat...' : phone,
+                                value: branchAsync.isLoading
+                                    ? 'Memuat...'
+                                    : phone,
                                 onTap: phone == '—'
                                     ? null
                                     : () {
                                         Clipboard.setData(
                                           ClipboardData(text: phone),
                                         );
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           const SnackBar(
-                                            content: Text('Nomor telepon disalin!'),
+                                            content: Text(
+                                              'Nomor telepon disalin!',
+                                            ),
                                             duration: Duration(seconds: 2),
                                           ),
                                         );
@@ -308,7 +351,9 @@ class WithdrawalPage extends ConsumerWidget {
                                     width: 36,
                                     height: 36,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.10),
+                                      color: AppColors.primary.withOpacity(
+                                        0.10,
+                                      ),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
@@ -547,7 +592,8 @@ class _StepItem extends StatelessWidget {
                 ),
               ),
             ),
-            if (!isLast) Container(width: 1, height: 28, color: AppColors.accentLight),
+            if (!isLast)
+              Container(width: 1, height: 28, color: AppColors.accentLight),
           ],
         ),
         const SizedBox(width: 12),

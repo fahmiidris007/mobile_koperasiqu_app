@@ -81,6 +81,10 @@ class ApiAuthDatasource {
         'salary': data.monthlyIncome.toString(),
         'marital': _maritalToApi(data.maritalStatus),
         'kids': data.numberOfChildren.toString(),
+        // Nama penanggung jawab / kontak darurat
+        'person_name': data.fullName,
+        'contact_person': data.phone,
+        'number_contact_person': data.phone,
         // File uploads (selfie = photo, KTP = ktp_photo)
         if (data.selfiePhotoPath.isNotEmpty)
           'photo': await MultipartFile.fromFile(

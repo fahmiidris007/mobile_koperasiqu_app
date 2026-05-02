@@ -57,25 +57,25 @@ class ProfilePage extends ConsumerWidget {
                               child: Column(
                                 children: [
                                   // Avatar
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      gradient: AppColors.primaryGradient,
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        _initials(user.name),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 28,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
+                                  // Container(
+                                  //   width: 80,
+                                  //   height: 80,
+                                  //   decoration: BoxDecoration(
+                                  //     gradient: AppColors.primaryGradient,
+                                  //     borderRadius: BorderRadius.circular(24),
+                                  //   ),
+                                  //   child: Center(
+                                  //     child: Text(
+                                  //       _initials(user.name),
+                                  //       style: const TextStyle(
+                                  //         color: Colors.white,
+                                  //         fontWeight: FontWeight.bold,
+                                  //         fontSize: 28,
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  // const SizedBox(height: 16),
 
                                   // Name
                                   Text(
