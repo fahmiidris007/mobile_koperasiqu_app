@@ -204,9 +204,9 @@ class _DashboardContent extends StatelessWidget {
         // const SizedBox(width: 12),
 
         // Greeting
-        GestureDetector(
-          onTap: () => context.push(Routes.profile),
-          child: Expanded(
+        Expanded(
+          child: GestureDetector(
+            onTap: () => context.push(Routes.profile),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

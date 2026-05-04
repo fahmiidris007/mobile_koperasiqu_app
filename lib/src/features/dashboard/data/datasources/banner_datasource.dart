@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
-import '../../../auth/data/datasources/mock_auth_datasource.dart' show AuthException;
+import '../../../auth/data/datasources/mock_auth_datasource.dart'
+    show AuthException;
 
 /// Model banner dari API GET /banners
 class BannerModel {
   /// Base URL storage untuk resolve path gambar relatif
-  static const String storageBaseUrl = 'http://34.87.41.221:8000';
+  static const String storageBaseUrl = 'https://koperasisjm.biz.id';
 
   const BannerModel({
     required this.id,
@@ -39,8 +40,7 @@ class BannerModel {
 
   factory BannerModel.fromJson(Map<String, dynamic> j) {
     // Ambil path gambar — bisa dari field 'image_url' atau 'image'
-    final rawImage =
-        j['image_url']?.toString() ?? j['image']?.toString();
+    final rawImage = j['image_url']?.toString() ?? j['image']?.toString();
 
     // Resolve ke full URL jika path relatif (dimulai dengan '/')
     String? resolvedImage;

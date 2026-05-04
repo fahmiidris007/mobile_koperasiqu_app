@@ -1,4 +1,4 @@
-package com.example.mobile_koperasiqu_app
+package com.araya.koperasiqu
 
 import io.flutter.embedding.android.FlutterActivity
 
