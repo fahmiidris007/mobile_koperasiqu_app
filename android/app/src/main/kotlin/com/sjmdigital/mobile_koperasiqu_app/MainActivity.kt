@@ -1,4 +1,4 @@
-package com.araya.koperasiqu
+package com.sjmdigital.koperasiqu
 
 import io.flutter.embedding.android.FlutterActivity
 
