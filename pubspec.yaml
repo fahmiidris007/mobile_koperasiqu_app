@@ -1,7 +1,7 @@
 name: mobile_koperasiqu_app
 description: "KoperasiQu - Koperasi Digital untuk Masa Depan Anda"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.9.2
